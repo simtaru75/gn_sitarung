@@ -1,0 +1,968 @@
+{% extends 'dst-district/landing/base.html' %}
+{% load static %}
+
+{% block title %}{% if site.name %}{{ site.name }}{% else %} — FOLUR Program{% endif %}{% endblock %}
+{% block page_slug %}landing{% endblock %}
+
+{% block body %}
+<div class="topo-bg"></div>
+<div class="grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="{% url 'dst:landing' %}" class="brand">
+      <div class="brand-mark">
+        {% if theme_logo_url %}
+          <img src="{{ theme_logo_url }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 2px;">
+        {% else %}L{% endif %}
+      </div>
+      <div class="brand-text">
+        <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+        <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+      </div>
+    </a>
+    <input type="checkbox" id="navToggle" class="nav-toggle-cb" hidden>
+    <label for="navToggle" class="nav-toggle" aria-label="Buka / tutup menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </label>
+    <ul class="nav-menu">
+      {% if sections.screening_tools %}<li><a href="#screening-tools">Screening</a></li>{% endif %}
+      {% if sections.layanan_data %}<li><a href="#layanan-data">Layanan</a></li>{% endif %}
+      {% if sections.indikator_strategis %}<li><a href="#indikator-strategis">Indikator</a></li>{% endif %}
+      {% if sections.dokumen %}<li><a href="#dokumen">Dokumen</a></li>{% endif %}
+      {% if sections.katalog_data %}<li><a href="#katalog-data">Katalog</a></li>{% endif %}
+      {% if sections.eksplorasi_dataset %}<li><a href="#eksplorasi-dataset">Dataset</a></li>{% endif %}
+      {% if sections.tentang_program %}<li><a href="#tentang-program">Tentang</a></li>{% endif %}
+    </ul>
+  </div>
+</nav>
+
+{% if sections.hero %}
+<section class="hero" id="beranda">
+  <div class="hero-left">
+    <div class="hero-eyebrow">DST · {{ nama_kabupaten }}</div>
+    <h1 class="hero-title">
+      Data otoritatif<br>
+      untuk <span class="italic">tata kelola</span><br>
+      zonasi spasial <span class="underline">berkelanjutan</span>
+    </h1>
+  </div>
+  <div class="hero-right">
+    {% if theme_logo_url %}
+    <img class="hero-logo" src="{{ theme_logo_url }}" alt="Logo {{ nama_kabupaten|default:site.name }}">
+    {% endif %}
+    <p class="hero-lede">
+      {{ site.name|default:"(Nama Aplikasi)" }} adalah <strong>HUB data daerah</strong> yang mengelola dokumen kebijakan dan layer spasial terkait Integrated Landscape Management. Data pada situs ini terhubung otomatis dengan DST Nasional untuk analisis kebijakan terpadu lintas yurisdiksi.
+    </p>
+  </div>
+</section>
+{% endif %}
+
+{% if sections.hero_carousel %}
+<section class="hero-carousel-wrap" id="beranda-carousel" aria-label="Hero carousel">
+
+  <button class="carousel-side-btn left" id="heroCarouselPrev" aria-label="Slide sebelumnya" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button class="carousel-side-btn right" id="heroCarouselNext" aria-label="Slide berikutnya">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+
+  <div class="hero-track" id="heroCarouselTrack">
+
+    <!-- ── Slide 1 — Kakao / Beranda Utama ── -->
+    <div class="hero-slide" role="group" aria-label="Slide 1 dari 4">
+      <div class="hero">
+        <div class="hero-bg">
+          <img class="hero-illus" src="{% static 'dst-district/img/folur-kakao.svg' %}" alt="" aria-hidden="true">
+        </div>
+        <div class="hero-left">
+          <div class="hero-eyebrow">FOLUR · {{ nama_kabupaten }}</div>
+          <h1 class="hero-title">
+            Data otoritatif<br>
+            untuk <span class="italic">tata kelola</span><br>
+            bentang lahan <span class="underline">berkelanjutan</span>
+          </h1>
+          <div class="hero-meta">
+            <div>Walidata · <strong>BAPPEDA {{ nama_kabupaten }}</strong></div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <p class="hero-lede">
+            {{ site.name|default:"(Nama Aplikasi)" }} adalah <strong>hub data kabupaten</strong> yang mengelola dokumen kebijakan dan layer spasial terkait Integrated Landscape Management. Data di sini dipanen otomatis oleh DST Nasional FOLUR.
+          </p>
+          <div class="hero-cta">
+            <a href="{% url 'dst:document_explore' %}" class="btn-primary">
+              Jelajahi Dokumen
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="{% url 'dst:dataset_explore' %}" class="btn-secondary underline-hover">Eksplore Dataset Spasial</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Slide 2 — Padi / Komoditas ── -->
+    <div class="hero-slide" role="group" aria-label="Slide 2 dari 4">
+      <div class="hero">
+        <div class="hero-bg">
+          <img class="hero-illus" src="{% static 'dst-district/img/folur-padi.svg' %}" alt="" aria-hidden="true">
+        </div>
+        <div class="hero-left">
+          <div class="hero-eyebrow">Komoditas Strategis · FOLUR {{ nama_kabupaten }}</div>
+          <h1 class="hero-title">
+            {{ komoditas_fokus.0.nama|default:"Kakao rakyat" }}<br>
+            dan <span class="italic">{{ komoditas_fokus.1.nama|default:"padi sawah" }}</span><br>
+            dalam <br />satu <span class="underline">lanskap</span>
+          </h1>
+          <div class="hero-meta">
+            <div>Komoditas · <strong>FOLUR</strong></div>
+            <div>Padi · <strong>LP2B aktif</strong></div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <p class="hero-lede">
+            {{ nama_kabupaten }} mengelola <strong>dua komoditas FOLUR</strong> secara terpadu — {{ komoditas_fokus.0.nama|default:"kakao rakyat" }} dan {{ komoditas_fokus.1.nama|default:"padi sawah" }} berkelanjutan. DST menyediakan Dataset spasial untuk memantau konversi lahan dan kinerja produksi.
+          </p>
+          <div class="hero-cta">
+            <a href="#komoditas" class="btn-primary">
+              Lihat Komoditas Fokus
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="{% url 'dst:dataset_explore' %}" class="btn-secondary underline-hover">Eksplore Dataset Spasial</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Slide 3 — Kopi / Repositori Kebijakan ── -->
+    <div class="hero-slide" role="group" aria-label="Slide 3 dari 4">
+      <div class="hero">
+        <div class="hero-bg">
+          <img class="hero-illus" src="{% static 'dst-district/img/folur-kopi.svg' %}" alt="" aria-hidden="true">
+        </div>
+        <div class="hero-left">
+          <div class="hero-eyebrow">Repositori Kebijakan · FOLUR {{ nama_kabupaten }}</div>
+          <h1 class="hero-title">
+            Perda, Perbup,<br>
+            dan <span class="italic">kebijakan</span>
+            dalam <br />satu <span class="underline">direktori</span>
+          </h1>
+          <div class="hero-meta">
+            <div><strong>{{ landing_documents_total|default:0 }}</strong> · Dokumen aktif</div>
+            <div>Lisensi · <strong>CC BY 4.0</strong></div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <p class="hero-lede">
+            Seluruh dokumen kebijakan {{ nama_kabupaten }} yang berkaitan dengan tata ruang, komoditas, dan lingkungan hidup tersedia dalam <strong>satu direktori terstruktur</strong> dengan metadata SNI ISO 19115.
+          </p>
+          <div class="hero-cta">
+            <a href="{% url 'dst:document_explore' %}" class="btn-primary">
+              Telusuri Dokumen
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="{% url 'dst:dataset_explore' %}" class="btn-secondary underline-hover">Eksplore Dataset Spasial</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Slide 4 — Sawit / Open Data ── -->
+    <div class="hero-slide" role="group" aria-label="Slide 4 dari 4">
+      <div class="hero">
+        <div class="hero-bg">
+          <img class="hero-illus" src="{% static 'dst-district/img/folur-sawit.svg' %}" alt="" aria-hidden="true">
+        </div>
+        <div class="hero-left">
+          <div class="hero-eyebrow">Transparansi · Open Data · Satu Data Indonesia</div>
+          <h1 class="hero-title">
+            Data publik,<br>
+            <span class="italic">terbuka</span> dan<br>
+            dapat <br /><span class="underline">diverifikasi</span>
+          </h1>
+          <div class="hero-meta">
+            <div>Kerangka · <strong>SDI</strong></div>
+            <div>Akses · <strong>Terbuka</strong></div>
+            <div>Peta · <strong>KSP</strong></div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <p class="hero-lede">
+            DST {{ nama_kabupaten }} dibangun di atas prinsip <strong>Satu Data Indonesia (SDI)</strong> dan Kebijakan Satu Peta (KSP). Semua data dapat diakses, diunduh, dan digunakan kembali oleh masyarakat dan sistem pemerintahan mana pun.
+          </p>
+          <div class="hero-cta">
+            <a href="#tentang-program" class="btn-primary">
+              Pelajari Kerangka SDI
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="{% url 'dst:dataset_explore' %}" class="btn-secondary underline-hover">Eksplore Dataset Spasial</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /hero-track -->
+</section>
+<script>
+(function () {
+  var track   = document.getElementById('heroCarouselTrack');
+  var prevBtn = document.getElementById('heroCarouselPrev');
+  var nextBtn = document.getElementById('heroCarouselNext');
+  if (!track) return;
+
+  var TOTAL = track.querySelectorAll('.hero-slide').length || 1, current = 0, timer = null;
+
+  function goTo(n) {
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+    track.style.transform = 'translateX(-' + (current / TOTAL * 100) + '%)';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === TOTAL - 1;
+  }
+
+  function startAutoplay() {
+    clearInterval(timer);
+    timer = setInterval(function () {
+      goTo(current < TOTAL - 1 ? current + 1 : 0);
+    }, 5000);
+  }
+
+  prevBtn.addEventListener('click', function () { goTo(current - 1); clearInterval(timer); });
+  nextBtn.addEventListener('click', function () { goTo(current + 1); clearInterval(timer); });
+
+  var touchX = 0;
+  track.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', function (e) {
+    var diff = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) { goTo(diff > 0 ? current + 1 : current - 1); clearInterval(timer); }
+  });
+
+  goTo(0);
+  startAutoplay();
+})();
+</script>
+{% endif %}
+
+{% if sections.statistik %}
+<section class="stats-strip" id="statistik">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-label">Dokumen Kebijakan</div>
+      <div class="stat-value">{{ landing_documents_total|default:0 }}</div>
+      <div class="stat-meta">Perda, Perbup, RPJMD, Renstra</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Layer Spasial</div>
+      <div class="stat-value">{{ landing_datasets_total|default:0 }}</div>
+      <div class="stat-meta">Vektor & raster · ter-publish</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Screening Tools</div>
+      <div class="stat-value">{{ screening_count }}</div>
+      <div class="stat-meta">Realtime AoI generated · Audit Log</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Komoditi Unggulan</div>
+      <div class="stat-value">{{ komoditas_aktif_count|default:0 }}</div>
+      <div class="stat-meta">Fokus komoditi unggulan daerah/FOLUR</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if sections.pencarian %}
+<!-- SEARCH SECTION -->
+<section class="search-section" id="cari">
+  <div class="search-inner">
+
+    <!-- Header -->
+    <div class="search-header">
+      <div>
+        <div class="search-eyebrow">Pencarian Data · Repositori Daerah</div>
+        <h2 class="search-title">Temukan dataset<br>yang <span class="italic">tepat</span></h2>
+      </div>
+      <p class="search-desc">
+        Telusuri seluruh repositori {{ site.name|default:"(Nama Aplikasi)" }} — mulai dari
+        <strong>dokumen kebijakan</strong>, <strong>layer spasial</strong>, hingga
+        <strong>metadata</strong> — dalam satu antarmuka pencarian. Filter berdasarkan
+        jenis data, walidata, atau kata kunci spesifik sesuai kebutuhan analisis Anda.
+      </p>
+    </div>
+
+    <!-- Main search box -->
+    <div class="search-box-wrap">
+      <div class="search-box-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Pencarian Utama
+      </div>
+      <form class="search-input-row" id="mainSearchForm" method="get" action="{% url 'dst:dataset_explore' %}">
+        <input class="search-input" type="text" name="q"
+          placeholder="Ketik nama dokumen, layer, atau topik — mis. 'RTRW', 'kakao', 'LP2B', 'HCV'…">
+        <button class="search-btn" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Cari Data
+        </button>
+      </form>
+      <!-- Quick filter chips: menentukan tujuan pencarian kotak utama -->
+      <div class="search-chips">
+        <span class="search-chip-label">Cari di:</span>
+        <button class="search-chip active" type="button" data-target="{% url 'dst:dataset_explore' %}">Semua</button>
+        <button class="search-chip" type="button" data-target="{% url 'dst:document_explore' %}">Dokumen</button>
+        <button class="search-chip" type="button" data-target="{% url 'dst:dataset_explore' %}">Layer Spasial</button>
+      </div>
+    </div>
+
+    <!-- 3-panel pencarian terspesialisasi -->
+    <div class="search-panels">
+
+      <!-- Panel 1: Dokumen Kebijakan -->
+      <div class="search-panel">
+        <div class="sp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="sp-title">Dokumen <span class="italic">Kebijakan</span></div>
+          <div class="sp-desc">Perda, Perbup, RPJMD, Renstra, SK Bupati, dan dokumen regulasi lain yang mengatur tata kelola lahan dan komoditas di {{ nama_kabupaten }}.</div>
+        </div>
+        <div class="sp-tags">
+          <span class="sp-tag">RTRW</span>
+          <span class="sp-tag">Perda</span>
+          <span class="sp-tag">SK Bupati</span>
+          <span class="sp-tag">RPJMD</span>
+          <span class="sp-tag">Renstra</span>
+        </div>
+        <form class="sp-search-row" method="get" action="{% url 'dst:document_explore' %}">
+          <input class="sp-input" type="text" name="q" placeholder="Judul atau nomor dokumen…">
+          <button class="sp-btn" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+        <div class="sp-meta">
+          <div class="sp-count"><strong>{{ landing_documents_total|default:0 }}</strong>dokumen aktif</div>
+          <a href="{% url 'dst:document_explore' %}" class="sp-link">
+            Lihat semua
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Panel 2: Dataset Spasial -->
+      <div class="search-panel">
+        <div class="sp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+        </div>
+        <div>
+          <div class="sp-title">Dataset <span class="italic">Spasial</span></div>
+          <div class="sp-desc">Layer vektor dan raster yang mencakup pola ruang, komoditas, kawasan konservasi, DAS, infrastruktur, dan batas administrasi {{ nama_kabupaten }}.</div>
+        </div>
+        <div class="sp-tags">
+          <span class="sp-tag">Pola Ruang</span>
+          <span class="sp-tag">Kakao</span>
+          <span class="sp-tag">LP2B</span>
+          <span class="sp-tag">HCV/HCS</span>
+          <span class="sp-tag">DAS</span>
+        </div>
+        <form class="sp-search-row" method="get" action="{% url 'dst:dataset_explore' %}">
+          <input class="sp-input" type="text" name="q" placeholder="Nama layer atau topik…">
+          <button class="sp-btn" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+        <div class="sp-meta">
+          <div class="sp-count"><strong>{{ landing_datasets_total|default:0 }}</strong>layer aktif</div>
+          <a href="{% url 'dst:dataset_explore' %}" class="sp-link">
+            Lihat semua
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom stats strip -->
+    <div class="search-stats">
+      <div class="ss-cell">
+        <div class="ss-num">{{ landing_documents_total|default:0 }}</div>
+        <div class="ss-label">Dokumen<br>kebijakan</div>
+      </div>
+      <div class="ss-cell">
+        <div class="ss-num">{{ landing_datasets_total|default:0 }}</div>
+        <div class="ss-label">Layer spasial<br>ter-publish</div>
+      </div>
+      <div class="ss-cell">
+        <div class="ss-num">100%</div>
+        <div class="ss-label">Dapat diakses<br>via OGC API</div>
+      </div>
+      <div class="ss-cell">
+        <div class="ss-num">CC</div>
+        <div class="ss-label">Lisensi terbuka<br>CC BY 4.0</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<script>
+  (function () {
+    var section = document.getElementById('cari');
+    if (!section) return;
+
+    // Chip "Cari di:" — satu aktif; menentukan tujuan kotak pencarian utama.
+    var mainForm = section.querySelector('#mainSearchForm');
+    var chips = section.querySelectorAll('.search-chip');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        if (mainForm && chip.dataset.target) {
+          mainForm.setAttribute('action', chip.dataset.target);
+        }
+      });
+    });
+
+    // Klik sp-tag → isi input panel terkait (lalu tekan tombol cari panel).
+    section.querySelectorAll('.sp-tag').forEach(function (tag) {
+      tag.addEventListener('click', function () {
+        var form = tag.closest('.search-panel').querySelector('.sp-search-row');
+        var input = form && form.querySelector('.sp-input');
+        if (input) { input.value = tag.textContent; input.focus(); }
+      });
+    });
+  })();
+</script>
+{% endif %}
+
+{% if sections.screening_tools %}
+<section class="map-showcase" id="screening-tools">
+  <div class="map-inner">
+    <div class="map-text">
+      <div class="section-eyebrow">Modul Screening Tools</div>
+      <h2 class="section-title"> <span class="italic">Decision Support Tool</span><br> untuk Sinkronisasi Intervensi Zonasi Spasial</h2>
+      <p> <strong>Analisis {{ site.name|default:"(Nama Aplikasi)" }}</strong> — Modul screening tools untuk memenuhi kebutuhan publik yang mengoverlay data Aoi/PoI dengan layer-layer peta dasar, peta tematik dan peta rencana di dalam modul pemetaan interaktif dengan outpout laporan pdf: Pola&Struktur Ruang RTRW, Kawasan Rawan Bencana, jaringan jalan &amp;  peta tematik lainnya.</p>
+      <p style="margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--ink-400); text-transform: uppercase; letter-spacing: 0.1em;">Layer via OGC WMS/WFS · QGIS/ArcGIS friendly.</p>
+      <div class="hero-cta" style="margin-top: 22px;">
+        <a href="{% url 'dst:webgis' %}" class="btn-primary" target="_blank" rel="noopener">
+          Screening Tools
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </a>
+        {% if sections.capaian_folur %}
+        <a href="{% url 'dst:capaian_publik' %}" class="btn-secondary">
+          Capaian Program
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="map-viewport">
+      <img class="map-svg" src="{% static 'img/zonasi-folur.png' %}" alt="Peta (Nama Aplikasi)" style="object-fit: contain; background: #f1ede7;">
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if sections.komoditas %}
+<section class="commodity-section" id="komoditas">
+  <div class="commodity-header">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">FOLUR · Komoditas</div>
+        <h2 class="section-title">Komoditas<br><span class="italic">Fokus</span></h2>
+      </div>
+      <p class="section-desc">Komoditas strategis yang menjadi prioritas program FOLUR di {{ nama_kabupaten }} — dikelola secara berkelanjutan untuk mendorong produktivitas pertanian sekaligus menjaga kawasan bernilai tinggi (HCV/HCS).</p>
+    </div>
+  </div>
+  <div class="commodity-inner">
+    {% for k in komoditas_fokus %}
+    <div class="commodity-card{% if forloop.first %} cocoa{% endif %}">
+      {% if k.gambar %}
+      <img class="commodity-glyph" src="{{ k.gambar.url }}" alt="{{ k.nama }}" style="object-fit: cover; border-radius: 6px;">
+      {% else %}
+      <svg class="commodity-glyph" viewBox="0 0 64 64" fill="none" stroke="{% if forloop.first %}#C77D3E{% else %}#1F3A2E{% endif %}" stroke-width="1.4">
+        <path d="M32 12 Q22 26 24 40 Q26 54 32 56 Q38 54 40 40 Q42 26 32 12 Z"/>
+        <path d="M32 18 L32 54" stroke-dasharray="2,3"/>
+        <path d="M26 28 Q32 33 38 28"/><path d="M25 38 Q32 44 39 38"/>
+      </svg>
+      {% endif %}
+      <div class="cm-label"{% if not forloop.first %} style="color: var(--ochre-600);"{% endif %}>Komoditas Fokus · {{ forloop.counter|stringformat:"02d" }}</div>
+      <h3 class="cm-title">{{ k.nama }}</h3>
+      <p class="cm-text">{{ k.deskripsi|default:"Komoditas unggulan daerah dalam kerangka tata kelola bentang lahan FOLUR." }}</p>
+      {% if k.dataset_id or k.dokumen_id %}
+      <div class="cm-stats" style="grid-template-columns: 1fr; gap: 8px;">
+        {% if k.dataset_id %}<a href="{% url 'dst:dataset_detail' k.dataset_id %}" style="display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none; color:var(--ochre);">→ Peta kesesuaian lahan</a>{% endif %}
+        {% if k.dokumen_id %}<a href="{% url 'dst:document_detail' k.dokumen_id %}" style="display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none; color:var(--ochre);">→ Literatur komoditi</a>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div class="commodity-card" style="grid-column: 1 / -1;">
+      <div class="cm-label">Komoditas Fokus</div>
+      <p class="cm-text">Belum ada komoditas fokus yang ditampilkan. Atur lewat Panel Admin → Pengaturan Sistem → FOLUR.</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if sections.layanan_data %}
+<style>
+  .layanan-section { max-width: 1320px; margin: 0 auto; padding: 80px 40px; border-top: 1px solid var(--line); }
+  .layanan-section .section-eyebrow { justify-content: center; }
+  .layanan-head { text-align: center; margin-bottom: 48px; }
+  .layanan-title { font-family: var(--serif); font-size: clamp(28px, 4vw, 42px); font-weight: 400; color: var(--forest); margin-bottom: 8px; font-variation-settings: "SOFT" 30; letter-spacing: -0.02em; }
+  .layanan-subtitle { font-family: var(--serif); font-size: 16px; color: var(--ink-600); font-weight: 300; max-width: 640px; margin: 0 auto; }
+  .layanan-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; }
+  .layanan-card { width: 200px; background: var(--paper); border: 1px solid var(--line); border-bottom: 3px solid transparent; padding: 26px 18px 22px; display: flex; flex-direction: column; align-items: center; gap: 14px; transition: all 0.2s; }
+  .layanan-card:hover { border-color: var(--forest); border-bottom-color: var(--ochre); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(31, 58, 46, 0.08); }
+  .layanan-card .ly-img { width: 112px; height: 112px; display: grid; place-items: center; }
+  .layanan-card .ly-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .layanan-card .ly-title { font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); font-weight: 600; line-height: 1.45; text-align: center; min-height: 3.4em; display: flex; align-items: center; }
+  .layanan-card .ly-link { margin-top: auto; font-family: var(--serif); font-size: 13px; color: var(--forest); font-style: italic; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s; }
+  .layanan-card .ly-link:hover { color: var(--ochre-600); gap: 9px; }
+  .layanan-card .ly-link svg { width: 13px; height: 13px; }
+  @media (max-width: 540px) { .layanan-section { padding: 56px 24px; } .layanan-card { width: 100%; max-width: 300px; } }
+</style>
+<section class="layanan-section" id="layanan-data">
+  <div class="layanan-head">
+    <div class="section-eyebrow" style="text-align:center;">Layanan · {{ nama_kabupaten }}</div>
+    <h2 class="layanan-title">Layanan <span class="italic">Data</span></h2>
+    <p class="layanan-subtitle">Kategori data dan layanan yang tersedia di {{ site.name|default:nama_kabupaten }}. Pilih kategori untuk melihat detailnya.</p>
+  </div>
+  <div class="layanan-grid">
+    {% for ly in layanan_data %}
+    <div class="layanan-card">
+      {% if ly.ikon_url %}<div class="ly-img"><img src="{{ ly.ikon_url }}" alt="{{ ly.judul }}" loading="lazy"></div>{% endif %}
+      <div class="ly-title">{{ ly.judul }}</div>
+      {% if ly.tautan %}
+      <a class="ly-link" href="{{ ly.tautan }}"{% if ly.tautan_external %} target="_blank" rel="noopener"{% endif %}>
+        Detail
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if sections.indikator_strategis %}
+<style>
+  .indikator-section { background: var(--cream-200); padding: 80px 40px; border-top: 1px solid var(--line); }
+  .indikator-section > * { max-width: 1320px; margin-left: auto; margin-right: auto; }
+  .indikator-section .section-eyebrow { justify-content: center; }
+  .indikator-head { text-align: center; margin-bottom: 48px; }
+  .indikator-title { font-family: var(--serif); font-size: clamp(28px, 4vw, 42px); font-weight: 400; color: var(--forest); margin-bottom: 8px; font-variation-settings: "SOFT" 30; letter-spacing: -0.02em; }
+  .indikator-subtitle { font-family: var(--serif); font-size: 16px; color: var(--ink-600); font-weight: 300; max-width: 620px; margin: 0 auto; }
+  .indikator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .indikator-card { background: var(--paper); border: 1px solid var(--line); padding: 28px 22px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; transition: all 0.2s; }
+  .indikator-card:hover { border-color: var(--forest); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(31, 58, 46, 0.08); }
+  .indikator-card .ik-title { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-600); font-weight: 600; line-height: 1.4; min-height: 2.8em; display: flex; align-items: center; }
+  .indikator-card .ik-value { font-family: var(--serif); font-size: 40px; font-weight: 500; color: var(--forest); line-height: 1; letter-spacing: -0.02em; font-variation-settings: "SOFT" 25; }
+  .indikator-card .ik-icon { width: 92px; height: 92px; display: grid; place-items: center; }
+  .indikator-card .ik-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .indikator-card .ik-desc { font-family: var(--serif); font-size: 13.5px; color: var(--ink-600); font-weight: 300; line-height: 1.5; }
+  @media (max-width: 1024px) { .indikator-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .indikator-section { padding: 56px 24px; } .indikator-grid { grid-template-columns: 1fr; } }
+</style>
+<section class="indikator-section" id="indikator-strategis">
+  <div class="indikator-head">
+    <div class="section-eyebrow" style="text-align:center;">Data Makro · {{ nama_kabupaten }}</div>
+    <h2 class="indikator-title">Indikator <span class="italic">Strategis</span></h2>
+    <p class="indikator-subtitle">Capaian indikator pembangunan {{ nama_kabupaten }} sebagai acuan perencanaan dan kebijakan berbasis data.</p>
+  </div>
+  <div class="indikator-grid">
+    {% for ind in indikator_strategis %}
+    <div class="indikator-card">
+      <div class="ik-title">{{ ind.judul }}</div>
+      <div class="ik-value">{{ ind.nilai }}</div>
+      {% if ind.ikon_url %}
+      <div class="ik-icon"><img src="{{ ind.ikon_url }}" alt="{{ ind.judul }}" loading="lazy"></div>
+      {% endif %}
+      {% if ind.deskripsi %}<div class="ik-desc">{{ ind.deskripsi }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if sections.dokumen %}
+<section class="section" id="dokumen" style="padding-top: 80px;">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Repositori · 01</div>
+      <h2 class="section-title">Dokumen<br><span class="italic">Kebijakan</span></h2>
+    </div>
+    <p class="section-desc">Regulasi daerah, rencana strategis, dan dokumen perencanaan {{ nama_kabupaten }} yang relevan dengan tata guna lahan, kehutanan, dan komoditas. Semua dokumen ter-katalog dengan metadata yang diharvest oleh DST Nasional via REST API.</p>
+  </div>
+
+  <div class="docs-list">
+    {% for d in landing_documents %}
+    <a href="{% url 'dst:document_detail' d.id %}" class="doc-row">
+      <div class="doc-year">{{ d.year|default:"—" }}</div>
+      <div class="doc-main">
+        <div class="doc-type">{{ d.doc_type }}</div>
+        <div class="doc-title">{{ d.title }}</div>
+      </div>
+      <div class="doc-authority">{{ d.authority }}</div>
+      <div class="doc-tags">
+        {% for t in d.tags %}<span class="tag">{{ t }}</span>{% endfor %}
+      </div>
+      <div class="doc-action">Lihat <span>→</span></div>
+    </a>
+    {% empty %}
+    <div style="padding: 48px 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+      Belum ada dokumen kebijakan yang ter-publish.
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if landing_documents_total %}
+  <div style="margin-top: 48px; text-align: center;">
+    <a href="{% url 'dst:document_explore' %}" class="btn-secondary underline-hover">Lihat seluruh {{ landing_documents_total }} dokumen</a>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if sections.katalog_data %}
+<section class="section" id="katalog-data" style="padding-top: 80px;">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Repositori · 02</div>
+      <h2 class="section-title">Katalog<br><span class="italic">Dataset Spasial</span></h2>
+    </div>
+    <p class="section-desc">Layer vektor dan raster yang mencakup penggunaan lahan, area konservasi, zona produksi, restorasi, dan tata ruang. Tersedia sebagai layanan WMS/WFS dan unduhan GeoPackage/GeoTIFF.</p>
+  </div>
+
+  <div class="data-grid">
+    {% for ds in landing_datasets %}
+    <a href="{% url 'dst:dataset_detail' ds.id %}" class="data-card" style="text-decoration: none; color: inherit; display: block;">
+      <div class="card-thumb">
+        {% if ds.thumbnail_url %}
+          <img src="{{ ds.thumbnail_url }}" alt="{{ ds.title }}" style="width:100%; height:100%; object-fit: cover; display: block;">
+        {% elif ds.is_raster %}
+          <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">
+            <rect width="320" height="200" fill="#1F3A2E"/>
+            <g opacity="0.85">
+              <rect x="0" y="0" width="40" height="40" fill="#3D6657" opacity="0.5"/>
+              <rect x="40" y="0" width="40" height="40" fill="#3D6657" opacity="0.7"/>
+              <rect x="80" y="0" width="40" height="40" fill="#3D6657" opacity="0.9"/>
+              <rect x="120" y="0" width="40" height="40" fill="#3D6657" opacity="0.6"/>
+              <rect x="0" y="40" width="40" height="40" fill="#3D6657" opacity="0.6"/>
+              <rect x="40" y="40" width="40" height="40" fill="#3D6657" opacity="0.85"/>
+              <rect x="80" y="40" width="40" height="40" fill="#3D6657" opacity="0.95"/>
+              <rect x="120" y="40" width="40" height="40" fill="#3D6657" opacity="0.8"/>
+              <rect x="160" y="40" width="40" height="40" fill="#3D6657" opacity="0.5"/>
+              <rect x="40" y="80" width="40" height="40" fill="#3D6657" opacity="0.7"/>
+              <rect x="80" y="80" width="40" height="40" fill="#3D6657" opacity="0.85"/>
+              <rect x="120" y="80" width="40" height="40" fill="#3D6657" opacity="0.65"/>
+            </g>
+          </svg>
+        {% else %}
+          <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">
+            <rect width="320" height="200" fill="#8B9D83"/>
+            <g opacity="0.6">
+              <path d="M40,60 L120,40 L180,80 L220,60 L280,90 L280,140 L40,140 Z" fill="#1F3A2E"/>
+              <path d="M60,140 L100,160 L160,150 L200,170 L260,150 L260,180 L60,180 Z" fill="#5D3A1F"/>
+              <path d="M0,80 Q80,60 160,90 T320,80 L320,40 L0,40 Z" fill="#C77D3E" opacity="0.4"/>
+            </g>
+            <g stroke="#F4EFE6" stroke-width="0.5" fill="none" opacity="0.4">
+              <path d="M0,50 L320,50"/><path d="M0,100 L320,100"/><path d="M0,150 L320,150"/>
+            </g>
+          </svg>
+        {% endif %}
+      </div>
+      <div class="card-cat">{{ ds.geom_label }}{% if ds.category %} · {{ ds.category }}{% endif %}</div>
+      <h3 class="card-title">{{ ds.title }}</h3>
+      <p class="card-desc">{{ ds.abstract|default:"Belum ada abstrak metadata untuk layer ini."|truncatechars:180 }}</p>
+      <div class="card-meta">
+        <span>{{ ds.srid }}</span>
+        <span>{{ ds.ogc }}</span>
+      </div>
+    </a>
+    {% empty %}
+    <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+      Belum ada layer spasial yang ter-publish.
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if landing_datasets_total %}
+  <div style="margin-top: 48px; text-align: center;">
+    <a href="{% url 'dst:dataset_explore' %}" class="btn-secondary underline-hover">Lihat seluruh {{ landing_datasets_total }} layer spasial</a>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if sections.eksplorasi_dataset %}{% include "dst-district/landing/partials/_dataset_catalog.html" %}{% endif %}
+
+{% if sections.tentang_program %}
+<section class="tentang-section" id="tentang-program">
+
+  <div class="tp-top">
+    <div class="tp-eyebrow">DST FOLUR · Tentang</div>
+    <h2 class="tp-title">Tentang <span class="italic">Program</span></h2>
+    <p class="tp-lead">
+      Program FOLUR adalah inisiatif global yang didukung UNDP dan GEF untuk mendorong
+      perubahan mendasar dalam pengelolaan sistem pangan, penggunaan lahan, dan pemulihan
+      ekosistem di Indonesia.
+    </p>
+  </div>
+
+  <div class="accordion" id="tp-accordion">
+
+    <div class="acc-item" data-index="0"> <!-- acc-item open -->
+      <button class="acc-trigger" onclick="tpToggle(0)">
+        <span class="acc-num">01</span>
+        <span class="acc-trigger-text">
+          <span class="acc-label">Latar Belakang</span>
+          <span class="acc-title">Program <span class="italic">FOLUR</span></span>
+        </span>
+        <span class="acc-chevron">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="acc-panel">
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <p class="acc-text">
+              Program <strong>Food Systems, Land Use and Restoration (FOLUR)</strong> adalah inisiatif
+              global yang didukung oleh UNDP dan GEF untuk mendorong perubahan mendasar dalam
+              pengelolaan sistem pangan, penggunaan lahan, dan pemulihan ekosistem. Di Indonesia,
+              program ini berfokus pada pengurangan deforestasi dan degradasi lahan melalui
+              penguatan tata kelola komoditas pertanian utama.
+            </p>
+            <p class="acc-text">
+              Dua komoditas strategis yang menjadi fokus utama adalah <strong>kakao rakyat</strong>
+              dan <strong>padi sawah</strong> — keduanya memiliki dampak langsung terhadap mata
+              pencaharian petani kecil sekaligus menjadi faktor penentu dalam penggunaan lahan
+              di kabupaten-kabupaten sasaran.
+            </p>
+            <div class="hl-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div class="hl-card-text">
+                Program FOLUR diimplementasikan di <strong>5 kabupaten prioritas</strong> di Indonesia —
+                Aceh Timur, Mandailing Natal, Sanggau, Luwu, dan Sorong — dalam kerangka
+                Pengelolaan Lanskap Terpadu (ILM).
+              </div>
+            </div>
+          </div>
+      </div>
+      </div>
+    </div>
+
+    <div class="acc-item" data-index="1">
+      <button class="acc-trigger" onclick="tpToggle(1)">
+        <span class="acc-num">02</span>
+        <span class="acc-trigger-text">
+          <span class="acc-label">Konteks Wilayah</span>
+          <span class="acc-title">Mengapa Kabupaten <span class="italic">Luwu?</span></span>
+        </span>
+        <span class="acc-chevron">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="acc-panel">
+        <div class="acc-body"><div class="acc-body-inner">
+          <p class="acc-text">
+            Kabupaten Luwu dipilih sebagai salah satu dari lima kabupaten prioritas FOLUR karena
+            peran strategisnya dalam produksi <strong>kakao rakyat di Sulawesi Selatan</strong>.
+            Luwu memiliki potensi besar untuk menjadi model pengelolaan lanskap yang mempertemukan
+            kepentingan produktivitas pertanian, konservasi kawasan, dan kesejahteraan petani kecil.
+          </p>
+          <p class="acc-text">
+            Dengan keragaman ekosistem — dari dataran rendah pesisir hingga kawasan perbukitan —
+            Luwu menghadapi tantangan nyata dalam menyeimbangkan ekspansi pertanian dan perlindungan
+            kawasan bernilai tinggi <strong>(HCV/HCS)</strong>. Program FOLUR hadir untuk memperkuat
+            kapasitas kabupaten dalam menghadapi tantangan tersebut melalui pendekatan berbasis data.
+          </p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="acc-item" data-index="2">
+      <button class="acc-trigger" onclick="tpToggle(2)">
+        <span class="acc-num">03</span>
+        <span class="acc-trigger-text">
+          <span class="acc-label">Platform Data</span>
+          <span class="acc-title">Peran <span class="italic">DST</span> ini</span>
+        </span>
+        <span class="acc-chevron">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="acc-panel">
+        <div class="acc-body"><div class="acc-body-inner">
+          <p class="acc-text">
+            <strong>Decision Support Tool (DST)</strong> Kabupaten Luwu adalah platform data resmi
+            yang dikelola oleh BAPPEDA selaku walidata. DST ini berfungsi sebagai jembatan antara
+            data di tingkat kabupaten dengan kebutuhan pemantauan dan evaluasi di tingkat nasional.
+          </p>
+          <p class="acc-text">
+            Seluruh dokumen kebijakan, peta tematik, dan dataset spasial yang dipublikasikan melalui
+            portal ini dapat diakses secara terbuka oleh masyarakat, dan secara otomatis dipanen
+            oleh <strong>DST Nasional</strong> untuk keperluan pelaporan program kepada UNDP dan
+            pemangku kepentingan nasional.
+          </p>
+          <div class="hl-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="hl-card-text">
+              DST Kabupaten berfungsi sebagai <strong>penyedia data (data provider)</strong> —
+              bukan alat analisis. Seluruh fungsi pemantauan dan rekomendasi kebijakan berada
+              di DST Nasional.
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="acc-item" data-index="3">
+      <button class="acc-trigger" onclick="tpToggle(3)">
+        <span class="acc-num">04</span>
+        <span class="acc-trigger-text">
+          <span class="acc-label">Pemangku Kepentingan</span>
+          <span class="acc-title">Siapa yang <span class="italic">terlibat?</span></span>
+        </span>
+        <span class="acc-chevron">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="acc-panel">
+        <div class="acc-body"><div class="acc-body-inner">
+          <p class="acc-text">
+            Pengelolaan program melibatkan berbagai pihak di tingkat kabupaten maupun nasional,
+            bekerja secara terkoordinasi dalam kerangka implementasi FOLUR.
+          </p>
+          <span class="tag-group-label">Tingkat Kabupaten</span>
+          <div class="tag-list">
+            <span class="tag">BAPPEDA Luwu</span>
+            <span class="tag">Dinas Pertanian</span>
+            <span class="tag">Dinas LH</span>
+            <span class="tag">Dinas PUPR</span>
+            <span class="tag">Dinas Kehutanan Sulsel</span>
+          </div>
+          <span class="tag-group-label">Tingkat Nasional &amp; Internasional</span>
+          <div class="tag-list">
+            <span class="tag nat">UNDP Indonesia</span>
+            <span class="tag nat">Kemenko Pangan</span>
+            <span class="tag nat">BAPPENAS</span>
+            <span class="tag nat">Kementan</span>
+            <span class="tag nat">KLHK</span>
+            <span class="tag nat">GEF</span>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+  </div><!-- /accordion -->
+
+
+</section>
+<script>
+(function() {
+  function tpToggle(index) {
+    var items = document.querySelectorAll('#tp-accordion .acc-item');
+    var target = items[index];
+    var isOpen = target.classList.contains('open');
+    items.forEach(function(i) { i.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  window.tpToggle = tpToggle;
+})();
+</script>
+{% endif %}
+
+{% if sections.mitra and mitra_list %}
+<style>
+  .partners-section { max-width: 1320px; margin: 0 auto; padding: 80px 40px; text-align: center; border-top: 1px solid var(--line); }
+  .partners-section .section-eyebrow { justify-content: center; }
+  .partners-title { font-family: var(--serif); font-size: clamp(28px, 4vw, 40px); font-weight: 400; color: var(--forest); margin-bottom: 8px; font-variation-settings: "SOFT" 30; letter-spacing: -0.02em; }
+  .partners-desc { font-family: var(--serif); font-size: 16px; color: var(--ink-600); font-weight: 300; max-width: 620px; margin: 0 auto 44px; }
+  .partners-logos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 48px; }
+  .partners-logos img { height: 100px; width: auto; object-fit: contain; display: block; }
+  .partner-logo { display: inline-flex; transition: transform 0.2s ease, opacity 0.2s ease; opacity: 0.9; }
+  .partner-logo:hover { transform: translateY(-3px); opacity: 1; }
+  @media (max-width: 700px) { .partners-section { padding: 56px 24px; } .partners-logos { gap: 28px; } .partners-logos img { height: 72px; } }
+</style>
+<section class="partners-section" id="mitra">
+  <div class="section-eyebrow" style="text-align:center;">FOLUR · Mitra Pelaksana</div>
+  <h2 class="partners-title">Implementing <span class="italic">Partners</span></h2>
+  <p class="partners-desc">Kolaborasi lintas lembaga yang mendukung tata kelola bentang lahan terpadu di {{ nama_kabupaten }}.</p>
+  <div class="partners-logos">
+    {% for m in mitra_list %}
+    {% if m.tautan %}
+    <a href="{{ m.tautan }}" target="_blank" rel="noopener" class="partner-logo" title="{{ m.nama }}"><img src="{{ m.logo.url }}" alt="{{ m.nama }}"></a>
+    {% else %}
+    <span class="partner-logo" title="{{ m.nama }}"><img src="{{ m.logo.url }}" alt="{{ m.nama }}"></span>
+    {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<footer class="landing-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{% url 'dst:landing' %}" class="brand">
+          <div class="brand-mark">
+            {% if theme_logo_url %}
+              <img src="{{ theme_logo_url }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 2px;">
+            {% else %}L{% endif %}
+          </div>
+          <div class="brand-text">
+            <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+            <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+          </div>
+        </a>
+        <p>{{ site.name|default:"(Nama Aplikasi)" }} adalah inisiatif Pemerintah Daerah {{ nama_kabupaten }} di bawah Program FOLUR Indonesia, kolaborasi lintas lembaga, untuk tata kelola zonasi spasial terpadu.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigasi</h4>
+        <ul>
+          {% if sections.hero %}<li><a href="#beranda">Beranda</a></li>{% endif %}
+          {% if sections.pencarian %}<li><a href="#cari">Pencarian Data</a></li>{% endif %}
+          {% if sections.screening_tools %}<li><a href="#screening-tools">Screening Tools</a></li>{% endif %}
+          {% if sections.layanan_data %}<li><a href="#layanan-data">Layanan Data</a></li>{% endif %}
+          {% if sections.indikator_strategis %}<li><a href="#indikator-strategis">Indikator Strategis</a></li>{% endif %}
+          {% if sections.dokumen %}<li><a href="#dokumen">Dokumen Kebijakan</a></li>{% endif %}
+          {% if sections.katalog_data %}<li><a href="#katalog-data">Katalog Data</a></li>{% endif %}
+          {% if sections.tentang_program %}<li><a href="#tentang-program">Tentang FOLUR</a></li>{% endif %}
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Akses Data</h4>
+        <ul>
+          <li><a href="/catalogue/csw" target="_blank" rel="noopener">Katalog CSW</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">WMS / WFS</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">REST API</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">Dokumentasi API</a></li>
+          <li><a href="#">Lisensi & Sitasi</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Kontak</h4>
+        <ul>
+          <li><a href="https://bappelitbangda.luwukab.go.id/">Bapelitbangda {{ nama_kabupaten }}</a></li>
+          <li><a href="/helpdesk-teknis">Helpdesk Teknis</a></li>
+          <li><a href="https://folur.id/">FOLUR UNDP Indonesia</a></li>
+          <li><a href="/kebijakan-privasi">Kebijakan Privasi</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Pemerintah Daerah {{ nama_kabupaten }}</div>
+      <a href="{% url 'account_login' %}?next={% url 'dst_auth:dashboard' %}" class="btn-login">Login</a>
+    </div>
+  </div>
+</footer>
+{% endblock %}

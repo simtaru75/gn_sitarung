@@ -1,0 +1,154 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Unggah Layer — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}layer_baru{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="layer_baru"] .page-content { max-width: 720px; margin: 0 auto; }
+  body[data-page="layer_baru"] .page-header { padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
+  body[data-page="layer_baru"] .page-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ochre-600); margin-bottom: 10px; }
+  body[data-page="layer_baru"] .page-title { font-family: var(--serif); font-size: 40px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; color: var(--forest); margin-bottom: 10px; font-variation-settings: "SOFT" 30; }
+  body[data-page="layer_baru"] .page-title .italic { font-style: italic; font-weight: 300; color: var(--cocoa); }
+  body[data-page="layer_baru"] .page-desc { font-family: var(--serif); font-size: 15px; color: var(--ink-600); font-weight: 300; line-height: 1.5; max-width: 620px; }
+
+  body[data-page="layer_baru"] .up-card { background: var(--paper); border: 1px solid var(--line); padding: 28px; }
+  body[data-page="layer_baru"] .up-drop { border: 2px dashed var(--line-strong); background: var(--cream); padding: 38px 24px; text-align: center; cursor: pointer; transition: all .15s; }
+  body[data-page="layer_baru"] .up-drop:hover, body[data-page="layer_baru"] .up-drop.drag { border-color: var(--forest); background: var(--cream-200); }
+  body[data-page="layer_baru"] .up-drop svg { width: 34px; height: 34px; color: var(--ochre-600); margin-bottom: 10px; }
+  body[data-page="layer_baru"] .up-drop-title { font-family: var(--serif); font-size: 18px; color: var(--forest); }
+  body[data-page="layer_baru"] .up-drop-hint { font-size: 12.5px; color: var(--ink-400); margin-top: 6px; }
+  body[data-page="layer_baru"] .up-file { margin-top: 14px; font-family: var(--mono); font-size: 12.5px; color: var(--forest); display: none; }
+  body[data-page="layer_baru"] .up-file.show { display: block; }
+  body[data-page="layer_baru"] .up-note { margin-top: 18px; font-size: 12.5px; color: var(--ink-600); line-height: 1.6; background: var(--cream-200); border: 1px solid var(--line); padding: 14px 16px; }
+  body[data-page="layer_baru"] .up-note strong { color: var(--forest); }
+  body[data-page="layer_baru"] .up-status { margin-top: 16px; font-size: 13px; display: none; padding: 12px 16px; border: 1px solid var(--line); line-height: 1.5; }
+  body[data-page="layer_baru"] .up-status.show { display: block; }
+  body[data-page="layer_baru"] .up-status.info { background: rgba(61,92,102,0.08); color: #3D5C66; border-color: rgba(61,92,102,0.25); }
+  body[data-page="layer_baru"] .up-status.success { background: rgba(74,107,61,0.08); color: var(--success); border-color: rgba(74,107,61,0.25); }
+  body[data-page="layer_baru"] .up-status.error { background: rgba(139,58,42,0.08); color: var(--danger); border-color: rgba(139,58,42,0.25); }
+  body[data-page="layer_baru"] .up-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  body[data-page="layer_baru"] .btn { padding: 10px 18px; font-size: 13px; font-weight: 500; border: 1px solid transparent; cursor: pointer; font-family: var(--sans); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: all .2s; }
+  body[data-page="layer_baru"] .btn svg { width: 14px; height: 14px; }
+  body[data-page="layer_baru"] .btn-primary { background: var(--forest); color: var(--cream); }
+  body[data-page="layer_baru"] .btn-primary:hover { background: var(--ink); }
+  body[data-page="layer_baru"] .btn-primary:disabled { background: var(--ink-200); color: var(--cream); cursor: not-allowed; }
+  body[data-page="layer_baru"] .btn-ghost { background: none; color: var(--forest); border-color: var(--line-strong); }
+  body[data-page="layer_baru"] .btn-ghost:hover { border-color: var(--forest); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Dataset Spasial</div>
+    <h1 class="page-title">Unggah <span class="italic">Layer</span></h1>
+    <p class="page-desc">Cukup pilih berkas — <strong>nama layer otomatis dari nama berkas</strong>. Impor diproses GeoNode (GeoServer + PostGIS) di latar belakang.</p>
+  </div>
+</header>
+
+<div class="page-content">
+  <div class="up-card">
+    {% csrf_token %}
+    <input type="file" id="layerFile" accept=".zip,.gpkg,.geojson,.json,.kml,.csv" style="display:none;">
+
+    <div class="up-drop" id="dropZone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div class="up-drop-title">Klik atau seret berkas ke sini</div>
+      <div class="up-drop-hint">Shapefile dalam <strong>.zip</strong> · GeoPackage <strong>.gpkg</strong> · GeoJSON · KML · CSV</div>
+      <div class="up-file" id="fileName"></div>
+    </div>
+
+    <div class="up-note">
+      <strong>Catatan:</strong> Untuk <strong>shapefile</strong>, kompres semua komponennya (.shp, .shx, .dbf, .prj) ke dalam satu berkas <strong>.zip</strong>. Nama layer diambil dari nama berkas. Setelah diunggah, GeoNode memproses impor di latar belakang — layer akan muncul di <strong>Dataset Spasial</strong> setelah selesai (lengkapi metadata lewat Edit Layer).
+    </div>
+
+    <div class="up-status" id="statusBox"></div>
+
+    <div class="up-actions">
+      <a href="{% url 'dst_auth:data_spasial' %}" class="btn btn-ghost">Batal</a>
+      <button type="button" class="btn btn-primary" id="uploadBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Unggah Layer
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var input = document.getElementById('layerFile');
+  var drop = document.getElementById('dropZone');
+  var fileLbl = document.getElementById('fileName');
+  var btn = document.getElementById('uploadBtn');
+  var box = document.getElementById('statusBox');
+  var uploadUrl = "{% url 'importer_upload' %}";
+  var listUrl = "{% url 'dst_auth:data_spasial' %}";
+
+  function csrf() {
+    var el = document.querySelector('input[name=csrfmiddlewaretoken]');
+    return el ? el.value : '';
+  }
+  function setStatus(cls, html) { box.className = 'up-status show ' + cls; box.innerHTML = html; }
+
+  function onPick() {
+    if (input.files && input.files.length) {
+      fileLbl.textContent = 'Berkas terpilih: ' + input.files[0].name;
+      fileLbl.classList.add('show');
+      btn.disabled = false;
+    }
+  }
+  input.addEventListener('change', onPick);
+  drop.addEventListener('click', function () { input.click(); });
+  ['dragover', 'dragenter'].forEach(function (e) {
+    drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add('drag'); });
+  });
+  ['dragleave', 'dragend'].forEach(function (e) {
+    drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove('drag'); });
+  });
+  drop.addEventListener('drop', function (ev) {
+    ev.preventDefault(); drop.classList.remove('drag');
+    if (ev.dataTransfer.files && ev.dataTransfer.files.length) {
+      input.files = ev.dataTransfer.files; onPick();
+    }
+  });
+
+  btn.addEventListener('click', function () {
+    if (!input.files || !input.files.length) return;
+    var f = input.files[0];
+    var fd = new FormData();
+    fd.append('base_file', f);
+    fd.append('action', 'upload');
+    fd.append('store_spatial_files', 'true');
+    // Untuk arsip, importer GeoNode butuh field zip_file/kmz_file agar isinya
+    // di-ekstrak & dideteksi (mis. shapefile di dalam .zip).
+    var lower = f.name.toLowerCase();
+    if (lower.endsWith('.zip')) fd.append('zip_file', f);
+    else if (lower.endsWith('.kmz')) fd.append('kmz_file', f);
+    btn.disabled = true;
+    setStatus('info', 'Mengunggah &amp; memproses <strong>' + f.name + '</strong>… mohon tunggu, jangan tutup halaman ini.');
+    fetch(uploadUrl, {
+      method: 'POST', body: fd, credentials: 'same-origin',
+      headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; })
+                     .catch(function () { return { ok: r.ok, status: r.status, body: null }; });
+    }).then(function (res) {
+      if (res.ok && res.body && res.body.execution_id) {
+        setStatus('success', 'Berkas berhasil diunggah. GeoNode sedang memproses impor di latar belakang — layer akan muncul di <strong>Dataset Spasial</strong> setelah selesai. Mengarahkan…');
+        setTimeout(function () { window.location.href = listUrl; }, 2800);
+      } else {
+        var d = res.body && (res.body.detail || res.body.message || res.body.error);
+        if (Array.isArray(d)) d = d.join(' ');
+        setStatus('error', 'Gagal mengunggah' + (d ? ': ' + d : ' (HTTP ' + res.status + ').') + '<br>Pastikan shapefile lengkap di dalam .zip, atau gunakan GeoPackage.');
+        btn.disabled = false;
+      }
+    }).catch(function (err) {
+      setStatus('error', 'Kesalahan jaringan: ' + err);
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+{% endblock %}

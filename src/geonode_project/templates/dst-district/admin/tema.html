@@ -1,0 +1,280 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Tema CMS — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}tema{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="tema"] .page-wrap { display: block; }
+  body[data-page="tema"] .page-content { max-width: 1100px; margin: 0 auto; }
+
+  body[data-page="tema"] select option { color: #1A1A1A; background: #fff; }
+
+  body[data-page="tema"] .tm-flash { margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--line); font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  body[data-page="tema"] .tm-flash.success { background: rgba(74,107,61,0.08); color: var(--success); border-color: rgba(74,107,61,0.25); }
+  body[data-page="tema"] .tm-flash.error { background: rgba(139,58,42,0.08); color: var(--danger); border-color: rgba(139,58,42,0.25); }
+  body[data-page="tema"] .tm-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="tema"] .sect-h { display: flex; align-items: baseline; gap: 16px; margin: 8px 0 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  body[data-page="tema"] .sect-num { font-family: var(--serif); font-size: 18px; color: var(--ochre); }
+  body[data-page="tema"] .sect-title { font-family: var(--serif); font-size: 24px; color: var(--forest); font-weight: 400; letter-spacing: -0.015em; }
+  body[data-page="tema"] .sect-title .italic { font-style: italic; color: var(--cocoa); }
+  body[data-page="tema"] .sect-meta { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--ink-400); text-transform: uppercase; letter-spacing: 0.1em; }
+  body[data-page="tema"] .sect-meta strong { color: var(--forest); }
+
+  body[data-page="tema"] .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; margin-bottom: 40px; }
+  body[data-page="tema"] .theme-card { background: var(--paper); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; text-align: left; font-family: inherit; overflow: hidden; padding: 0; }
+  body[data-page="tema"] .theme-card:hover { border-color: var(--forest); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  body[data-page="tema"] .theme-card.active { border-color: var(--ochre); border-width: 2px; box-shadow: 0 0 0 1px var(--ochre); }
+  body[data-page="tema"] .theme-swatch { aspect-ratio: 5/3; display: grid; grid-template-columns: 2.2fr 1fr 0.8fr; grid-template-rows: 1fr 1fr; position: relative; }
+  body[data-page="tema"] .theme-swatch .sw-main { grid-row: 1 / -1; }
+  body[data-page="tema"] .theme-swatch .sw-accent { grid-column: 2; grid-row: 1 / -1; }
+  body[data-page="tema"] .theme-swatch .sw-top { grid-column: 3; grid-row: 1; }
+  body[data-page="tema"] .theme-swatch .sw-bot { grid-column: 3; grid-row: 2; }
+  body[data-page="tema"] .theme-card-body { padding: 18px 20px 16px; flex: 1; display: flex; flex-direction: column; }
+  body[data-page="tema"] .theme-card-name { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--forest); letter-spacing: -0.01em; line-height: 1; margin-bottom: 6px; }
+  body[data-page="tema"] .theme-card-tagline { font-family: var(--mono); font-size: 10px; color: var(--ochre); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+  body[data-page="tema"] .theme-card-desc { font-size: 12.5px; color: var(--ink-600); line-height: 1.5; margin-bottom: 14px; flex: 1; }
+  body[data-page="tema"] .theme-card-tokens { display: flex; gap: 4px; margin-bottom: 14px; }
+  body[data-page="tema"] .token-chip { width: 22px; height: 22px; border: 1px solid var(--line); }
+  body[data-page="tema"] .theme-card-action { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--line); }
+  body[data-page="tema"] .ta-status { font-family: var(--mono); font-size: 10px; color: var(--ink-400); text-transform: uppercase; letter-spacing: 0.1em; }
+  body[data-page="tema"] .theme-card.active .ta-status { color: var(--ochre); font-weight: 600; }
+  body[data-page="tema"] .ta-cta { font-family: var(--mono); font-size: 11px; color: var(--forest); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  body[data-page="tema"] .ta-cta svg { width: 11px; height: 11px; }
+
+  body[data-page="tema"] .apply-card { background: var(--forest); color: var(--cream); padding: 28px 32px; }
+  body[data-page="tema"] .apply-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ochre); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  body[data-page="tema"] .apply-eyebrow svg { width: 12px; height: 12px; }
+  body[data-page="tema"] .apply-h { font-family: var(--serif); font-size: 24px; font-weight: 400; letter-spacing: -0.01em; margin-bottom: 12px; }
+  body[data-page="tema"] .apply-h .italic { font-style: italic; color: var(--ochre); }
+  body[data-page="tema"] .apply-desc { color: rgba(244,239,230,0.78); font-size: 13.5px; line-height: 1.55; max-width: 640px; margin-bottom: 20px; }
+  body[data-page="tema"] .apply-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  body[data-page="tema"] .apply-btn { padding: 10px 18px; font-size: 12px; font-weight: 500; font-family: var(--sans); cursor: pointer; border: none; letter-spacing: 0.01em; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  body[data-page="tema"] .apply-btn svg { width: 12px; height: 12px; }
+  body[data-page="tema"] .apply-btn-primary { background: var(--ochre); color: var(--forest); }
+  body[data-page="tema"] .apply-btn-primary:hover { background: var(--cream); }
+  body[data-page="tema"] .apply-btn-ghost { background: transparent; color: var(--cream); border: 1px solid rgba(244,239,230,0.25); }
+  body[data-page="tema"] .apply-btn-ghost:hover { border-color: var(--ochre); color: var(--ochre); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-wrap">
+  <div class="page-content">
+
+    <header class="page-header">
+      <div>
+        <div class="page-eyebrow">Administrasi · Tampilan</div>
+        <h1 class="page-title">Tema <span class="italic">CMS</span></h1>
+        <p class="page-desc">DST adalah platform yang sama, dipakai banyak kabupaten — tiap daerah punya karakter visualnya sendiri. Pilih palet warna yang mencerminkan identitas kabupaten Anda; setelah <strong>Terapkan</strong>, tema berlaku ke seluruh halaman publik dan panel admin.</p>
+      </div>
+    </header>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="tm-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ message }}
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="sect-h">
+      <span class="sect-num">01</span>
+      <h2 class="sect-title">Pilih <span class="italic">tema</span></h2>
+      <span class="sect-meta">Tema aktif: <strong id="activeThemeName">{{ active_theme|capfirst }}</strong></span>
+    </div>
+
+    <div class="theme-grid" id="themeGrid">
+      <button type="button" class="theme-card{% if active_theme == 'luwu' %} active{% endif %}" data-theme="luwu">
+        <div class="theme-swatch"><div class="sw-main" style="background:#1F3A2E;"></div><div class="sw-accent" style="background:#C77D3E;"></div><div class="sw-top" style="background:#F4EFE6;"></div><div class="sw-bot" style="background:#5D3A1F;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Luwu</div>
+          <div class="theme-card-tagline">Editorial Geospatial</div>
+          <div class="theme-card-desc">Hutan dataran tinggi, tanah laterit, dan komoditas kakao. Default DST — cocok untuk kabupaten agraris dengan ekosistem hutan & perkebunan rakyat.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#1F3A2E;"></span><span class="token-chip" style="background:#F4EFE6;"></span><span class="token-chip" style="background:#C77D3E;"></span><span class="token-chip" style="background:#8B9D83;"></span><span class="token-chip" style="background:#5D3A1F;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'luwu' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'pesisir' %} active{% endif %}" data-theme="pesisir">
+        <div class="theme-swatch"><div class="sw-main" style="background:#0E3F4F;"></div><div class="sw-accent" style="background:#D87A3C;"></div><div class="sw-top" style="background:#F0EAD7;"></div><div class="sw-bot" style="background:#6E3E1F;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Pesisir</div>
+          <div class="theme-card-tagline">Tropical Coastal</div>
+          <div class="theme-card-desc">Teal laut dalam, pasir hangat, dan koral senja. Untuk kabupaten maritim/kepulauan dengan ekonomi berbasis perikanan.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#0E3F4F;"></span><span class="token-chip" style="background:#F0EAD7;"></span><span class="token-chip" style="background:#D87A3C;"></span><span class="token-chip" style="background:#8AA8A8;"></span><span class="token-chip" style="background:#6E3E1F;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'pesisir' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'pegunungan' %} active{% endif %}" data-theme="pegunungan">
+        <div class="theme-swatch"><div class="sw-main" style="background:#2A3848;"></div><div class="sw-accent" style="background:#B5763C;"></div><div class="sw-top" style="background:#ECECE6;"></div><div class="sw-bot" style="background:#5C3F2A;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Pegunungan</div>
+          <div class="theme-card-tagline">Highland Stoic</div>
+          <div class="theme-card-desc">Slate biru-abu hutan pinus, putih alpine, dan tembaga hangat. Untuk kabupaten dataran tinggi berkontur tegas.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#2A3848;"></span><span class="token-chip" style="background:#ECECE6;"></span><span class="token-chip" style="background:#B5763C;"></span><span class="token-chip" style="background:#93A099;"></span><span class="token-chip" style="background:#5C3F2A;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'pegunungan' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'vulkanik' %} active{% endif %}" data-theme="vulkanik">
+        <div class="theme-swatch"><div class="sw-main" style="background:#2B2826;"></div><div class="sw-accent" style="background:#B83F2E;"></div><div class="sw-top" style="background:#EFE9DF;"></div><div class="sw-bot" style="background:#4A2A1C;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Vulkanik</div>
+          <div class="theme-card-tagline">Ash &amp; Ember</div>
+          <div class="theme-card-desc">Charcoal vulkanik, abu putih, dan bara merah. Untuk kabupaten sekitar gunung api — kontras tinggi, konteks mitigasi bencana.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#2B2826;"></span><span class="token-chip" style="background:#EFE9DF;"></span><span class="token-chip" style="background:#B83F2E;"></span><span class="token-chip" style="background:#8A8377;"></span><span class="token-chip" style="background:#4A2A1C;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'vulkanik' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'rawa' %} active{% endif %}" data-theme="rawa">
+        <div class="theme-swatch"><div class="sw-main" style="background:#2F3A26;"></div><div class="sw-accent" style="background:#CC9430;"></div><div class="sw-top" style="background:#EEE9D9;"></div><div class="sw-bot" style="background:#5A3A1A;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Rawa</div>
+          <div class="theme-card-tagline">Wetland Marigold</div>
+          <div class="theme-card-desc">Gambut hijau-zaitun, mist krem, dan marigold tua. Untuk kabupaten ekosistem rawa/gambut dengan komoditas sagu/sawit gambut.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#2F3A26;"></span><span class="token-chip" style="background:#EEE9D9;"></span><span class="token-chip" style="background:#CC9430;"></span><span class="token-chip" style="background:#9AAB87;"></span><span class="token-chip" style="background:#5A3A1A;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'rawa' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'modern' %} active{% endif %}" data-theme="modern">
+        <div class="theme-swatch"><div class="sw-main" style="background:#256180;"></div><div class="sw-accent" style="background:#E08A3C;"></div><div class="sw-top" style="background:#EAEDF1;"></div><div class="sw-bot" style="background:#2C3E46;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Modern</div>
+          <div class="theme-card-tagline">Teal Pemerintahan</div>
+          <div class="theme-card-desc">Teal birokrasi, abu muda, dan putih bersih. Tampilan formal-modern bergaya portal pemerintahan — netral untuk kabupaten mana pun.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#256180;"></span><span class="token-chip" style="background:#EAEDF1;"></span><span class="token-chip" style="background:#E08A3C;"></span><span class="token-chip" style="background:#8FA6AE;"></span><span class="token-chip" style="background:#2C3E46;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'modern' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'pastel' %} active{% endif %}" data-theme="pastel">
+        <div class="theme-swatch"><div class="sw-main" style="background:#5E4A82;"></div><div class="sw-accent" style="background:#E89BBE;"></div><div class="sw-top" style="background:#FBF4F7;"></div><div class="sw-bot" style="background:#8A6D9C;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Pastel</div>
+          <div class="theme-card-tagline">Cerah Lembut</div>
+          <div class="theme-card-desc">Lavender lembut, merah muda pastel, dan mint. Nuansa cerah-ramah yang ringan — cocok untuk tampilan publik yang hangat dan mengundang.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#5E4A82;"></span><span class="token-chip" style="background:#FBF4F7;"></span><span class="token-chip" style="background:#E89BBE;"></span><span class="token-chip" style="background:#A8C3B5;"></span><span class="token-chip" style="background:#8A6D9C;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'pastel' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+
+      <button type="button" class="theme-card{% if active_theme == 'kontras' %} active{% endif %}" data-theme="kontras">
+        <div class="theme-swatch"><div class="sw-main" style="background:#14213D;"></div><div class="sw-accent" style="background:#FCA311;"></div><div class="sw-top" style="background:#FFFFFF;"></div><div class="sw-bot" style="background:#C1121F;"></div></div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">Kontras</div>
+          <div class="theme-card-tagline">Bold Cerah</div>
+          <div class="theme-card-desc">Navy pekat, oranye terang, dan merah berani di atas putih. Kontras tinggi yang tegas &amp; mudah dibaca — menonjolkan elemen penting.</div>
+          <div class="theme-card-tokens"><span class="token-chip" style="background:#14213D;"></span><span class="token-chip" style="background:#FFFFFF;"></span><span class="token-chip" style="background:#FCA311;"></span><span class="token-chip" style="background:#2EC4B6;"></span><span class="token-chip" style="background:#C1121F;"></span></div>
+          <div class="theme-card-action"><span class="ta-status">{% if active_theme == 'kontras' %}Aktif{% else %}Tersedia{% endif %}</span><span class="ta-cta">Pilih <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        </div>
+      </button>
+    </div>
+
+    <div class="apply-card">
+      <div class="apply-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Terapkan ke seluruh DST
+      </div>
+      <div class="apply-h">Tema <span class="italic" id="applyThemeName">{{ active_theme|capfirst }}</span> akan diterapkan ke landing &amp; admin</div>
+      <p class="apply-desc">Klik kartu di atas untuk <strong style="color:var(--cream);">pratinjau langsung</strong> (seluruh halaman ini berubah warna seketika). Tekan <strong style="color:var(--cream);">Terapkan tema</strong> untuk menyimpannya secara permanen — tema dibaca dari database dan berlaku di semua halaman saat dimuat.</p>
+      <form method="post" action="" class="apply-actions">
+        {% csrf_token %}
+        <input type="hidden" name="theme" id="themeInput" value="{{ active_theme }}">
+        <label for="fontSelect" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;opacity:.85;margin:0 0 6px;">Kombinasi Font</label>
+        <select name="font_option" id="fontSelect" style="width:100%;padding:9px 12px;margin-bottom:12px;background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.28);border-radius:6px;font-size:13px;">
+          {% for opt in active_font_combos %}
+          <option value="{{ forloop.counter }}"{% if forloop.counter == font_option %} selected{% endif %}>Opsi {{ forloop.counter }} — {{ opt.label }} · {{ opt.serif }}/{{ opt.sans }}/{{ opt.mono }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="apply-btn apply-btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Terapkan tema
+        </button>
+        <button type="button" class="apply-btn apply-btn-ghost" id="resetBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          Batalkan pratinjau
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var APPLIED = "{{ active_theme|escapejs }}";
+  var APPLIED_FONT = {{ font_option }};
+  var FONT_COMBOS = {{ font_combos_json|safe }};
+  var fontSelect = document.getElementById('fontSelect');
+  var body = document.body;
+  var cards = document.querySelectorAll('#themeGrid .theme-card');
+  var themeInput = document.getElementById('themeInput');
+
+  function rebuildFonts(theme, keep) {
+    if (!fontSelect || !FONT_COMBOS[theme]) return;
+    fontSelect.innerHTML = '';
+    FONT_COMBOS[theme].forEach(function (opt, i) {
+      var o = document.createElement('option');
+      o.value = i + 1;
+      o.textContent = 'Opsi ' + (i + 1) + ' — ' + opt.label + ' · ' + opt.serif + '/' + opt.sans + '/' + opt.mono;
+      fontSelect.appendChild(o);
+    });
+    var n = FONT_COMBOS[theme].length;
+    fontSelect.value = (keep >= 1 && keep <= n) ? keep : 1;
+  }
+  var activeNameEl = document.getElementById('activeThemeName');
+  var applyNameEl = document.getElementById('applyThemeName');
+
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+  function preview(theme) {
+    body.setAttribute('data-theme', theme);
+    themeInput.value = theme;
+    rebuildFonts(theme, fontSelect ? (parseInt(fontSelect.value, 10) || 1) : 1);
+    cards.forEach(function (c) {
+      var on = c.getAttribute('data-theme') === theme;
+      c.classList.toggle('active', on);
+      var st = c.querySelector('.ta-status');
+      if (st) st.textContent = on ? 'Aktif' : 'Tersedia';
+    });
+    if (activeNameEl) activeNameEl.textContent = cap(theme);
+    if (applyNameEl) applyNameEl.textContent = cap(theme);
+    applyFont(theme, fontSelect ? parseInt(fontSelect.value, 10) : 1);
+  }
+
+  function applyFont(theme, idx) {
+    var combo = FONT_COMBOS[theme] && FONT_COMBOS[theme][idx - 1];
+    if (!combo) return;
+    var root = document.documentElement.style;
+    root.setProperty("--serif", combo.serif);
+    root.setProperty("--sans", combo.sans);
+    root.setProperty("--mono", combo.mono);
+    [combo.serif, combo.sans, combo.mono].forEach(function (stack) {
+      var fams = stack.split(",")[0].replace(/['"]/g, "").trim();
+      if (!fams || document.querySelector('link[data-font="' + fams + '"]')) return;
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.setAttribute("data-font", fams);
+      link.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(fams) + ":ital,wght@0,400;0,600;0,700;1,400&display=swap";
+      document.head.appendChild(link);
+    });
+  }
+
+  cards.forEach(function (c) {
+    c.addEventListener('click', function () { preview(c.getAttribute('data-theme')); });
+  });
+
+  var resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', function () { preview(APPLIED); rebuildFonts(APPLIED, APPLIED_FONT); applyFont(APPLIED, APPLIED_FONT); });
+
+  if (fontSelect) fontSelect.addEventListener('change', function () { applyFont(themeInput.value, parseInt(fontSelect.value, 10)); });
+})();
+</script>
+{% endblock %}

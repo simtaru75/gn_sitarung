@@ -1,0 +1,447 @@
+bps,pum,nama
+1101,11.09,Simeulue
+1102,11.10,Aceh Singkil
+1103,11.01,Aceh Selatan
+1104,11.02,Aceh Tenggara
+1105,11.03,Aceh Timur
+1106,11.04,Aceh Tengah
+1107,11.05,Aceh Barat
+1108,11.06,Aceh Besar
+1109,11.07,Pidie
+1110,11.11,Bireuen
+1111,11.08,Aceh Utara
+1112,11.12,Aceh Barat Daya
+1113,11.13,Gayo Lues
+1114,11.16,Aceh Tamiang
+1115,11.15,Nagan Raya
+1116,11.14,Aceh Jaya
+1117,11.17,Bener Meriah
+1118,11.18,Pidie Jaya
+1171,11.71,Banda Aceh
+1172,11.72,Sabang
+1173,11.74,Langsa
+1174,11.73,Lhokseumawe
+1175,11.75,Subulussalam
+1201,12.04,Nias
+1202,12.13,Mandailing Natal
+1203,12.03,Tapanuli Selatan
+1204,12.01,Tapanuli Tengah
+1205,12.02,Tapanuli Utara
+1206,12.12,Toba
+1207,12.10,Labuhanbatu
+1208,12.09,Asahan
+1209,12.08,Simalungun
+1210,12.11,Dairi
+1211,12.06,Karo
+1212,12.07,Deli Serdang
+1213,12.05,Langkat
+1214,12.14,Nias Selatan
+1215,12.16,Humbang Hasundutan
+1216,12.15,Pakpak Bharat
+1217,12.17,Samosir
+1218,12.18,Serdang Bedagai
+1219,12.19,Batu Bara
+1220,12.20,Padang Lawas Utara
+1221,12.21,Padang Lawas
+1222,12.22,Labuhanbatu Selatan
+1223,12.23,Labuhanbatu Utara
+1224,12.24,Nias Utara
+1225,12.25,Nias Barat
+1271,12.73,Sibolga
+1272,12.74,Tanjungbalai
+1273,12.72,Pematangsiantar
+1274,12.76,Tebing Tinggi
+1275,12.71,Medan
+1276,12.75,Binjai
+1277,12.77,Padangsidimpuan
+1278,12.78,Gunungsitoli
+1301,13.09,Kepulauan Mentawai
+1302,13.01,Pesisir Selatan
+1303,13.02,Solok
+1304,13.03,Sijunjung
+1305,13.04,Tanah Datar
+1306,13.05,Padang Pariaman
+1307,13.06,Agam
+1308,13.07,Lima Puluh Kota
+1309,13.08,Pasaman
+1310,13.11,Solok Selatan
+1311,13.10,Dharmasraya
+1312,13.12,Pasaman Barat
+1371,13.71,Padang
+1372,13.72,Solok
+1373,13.73,Sawahlunto
+1374,13.74,Padang Panjang
+1375,13.75,Bukittinggi
+1376,13.76,Payakumbuh
+1377,13.77,Pariaman
+1401,14.09,Kuantan Singingi
+1402,14.02,Indragiri Hulu
+1403,14.04,Indragiri Hilir
+1404,14.05,Pelalawan
+1405,14.08,Siak
+1406,14.01,Kampar
+1407,14.06,Rokan Hulu
+1408,14.03,Bengkalis
+1409,14.07,Rokan Hilir
+1410,14.10,Kepulauan Meranti
+1471,14.71,Pekanbaru
+1473,14.72,Dumai
+1501,15.01,Kerinci
+1502,15.02,Merangin
+1503,15.03,Sarolangun
+1504,15.04,Batang Hari
+1505,15.05,Muaro Jambi
+1506,15.07,Tanjung Jabung Timur
+1507,15.06,Tanjung Jabung Barat
+1508,15.09,Tebo
+1509,15.08,Bungo
+1571,15.71,Jambi
+1572,15.72,Sungai Penuh
+1601,16.01,Ogan Komering Ulu
+1602,16.02,Ogan Komering Ilir
+1603,16.03,Muara Enim
+1604,16.04,Lahat
+1605,16.05,Musi Rawas
+1606,16.06,Musi Banyuasin
+1607,16.07,Banyuasin
+1608,16.09,Ogan Komering Ulu Selatan
+1609,16.08,Ogan Komering Ulu Timur
+1610,16.10,Ogan Ilir
+1611,16.11,Empat Lawang
+1612,16.12,Penukal Abab Lematang Ilir
+1613,16.13,Musi Rawas Utara
+1671,16.71,Palembang
+1672,16.74,Prabumulih
+1673,16.72,Pagar Alam
+1674,16.73,Lubuklinggau
+1701,17.01,Bengkulu Selatan
+1702,17.02,Rejang Lebong
+1703,17.03,Bengkulu Utara
+1704,17.04,Kaur
+1705,17.05,Seluma
+1706,17.06,Mukomuko
+1707,17.07,Lebong
+1708,17.08,Kepahiang
+1709,17.09,Bengkulu Tengah
+1771,17.71,Bengkulu
+1801,18.04,Lampung Barat
+1802,18.06,Tanggamus
+1803,18.01,Lampung Selatan
+1804,18.07,Lampung Timur
+1805,18.02,Lampung Tengah
+1806,18.03,Lampung Utara
+1807,18.08,Way Kanan
+1808,18.05,Tulang Bawang
+1809,18.09,Pesawaran
+1810,18.10,Pringsewu
+1811,18.11,Mesuji
+1812,18.12,Tulang Bawang Barat
+1813,18.13,Pesisir Barat
+1871,18.71,Bandar Lampung
+1872,18.72,Metro
+1901,19.01,Bangka
+1902,19.02,Belitung
+1903,19.05,Bangka Barat
+1904,19.04,Bangka Tengah
+1905,19.03,Bangka Selatan
+1906,19.06,Belitung Timur
+1971,19.71,Pangkal Pinang
+2101,21.02,Karimun
+2102,21.01,Bintan
+2103,21.03,Natuna
+2104,21.04,Lingga
+2105,21.05,Kepulauan Anambas
+2171,21.71,Batam
+2172,21.72,Tanjung Pinang
+3101,31.01,Kepulauan Seribu
+3171,31.74,Jakarta Selatan
+3172,31.75,Jakarta Timur
+3173,31.71,Jakarta Pusat
+3174,31.73,Jakarta Barat
+3175,31.72,Jakarta Utara
+3201,32.01,Bogor
+3202,32.02,Sukabumi
+3203,32.03,Cianjur
+3204,32.04,Bandung
+3205,32.05,Garut
+3206,32.06,Tasikmalaya
+3207,32.07,Ciamis
+3208,32.08,Kuningan
+3209,32.09,Cirebon
+3210,32.10,Majalengka
+3211,32.11,Sumedang
+3212,32.12,Indramayu
+3213,32.13,Subang
+3214,32.14,Purwakarta
+3215,32.15,Karawang
+3216,32.16,Bekasi
+3217,32.17,Bandung Barat
+3218,32.18,Pangandaran
+3271,32.71,Bogor
+3272,32.72,Sukabumi
+3273,32.73,Bandung
+3274,32.74,Cirebon
+3275,32.75,Bekasi
+3276,32.76,Depok
+3277,32.77,Cimahi
+3278,32.78,Tasikmalaya
+3279,32.79,Banjar
+3301,33.01,Cilacap
+3302,33.02,Banyumas
+3303,33.03,Purbalingga
+3304,33.04,Banjarnegara
+3305,33.05,Kebumen
+3306,33.06,Purworejo
+3307,33.07,Wonosobo
+3308,33.08,Magelang
+3309,33.09,Boyolali
+3310,33.10,Klaten
+3311,33.11,Sukoharjo
+3312,33.12,Wonogiri
+3313,33.13,Karanganyar
+3314,33.14,Sragen
+3315,33.15,Grobogan
+3316,33.16,Blora
+3317,33.17,Rembang
+3318,33.18,Pati
+3319,33.19,Kudus
+3320,33.20,Jepara
+3321,33.21,Demak
+3322,33.22,Semarang
+3323,33.23,Temanggung
+3324,33.24,Kendal
+3325,33.25,Batang
+3326,33.26,Pekalongan
+3327,33.27,Pemalang
+3328,33.28,Tegal
+3329,33.29,Brebes
+3371,33.71,Magelang
+3372,33.72,Surakarta
+3373,33.73,Salatiga
+3374,33.74,Semarang
+3375,33.75,Pekalongan
+3376,33.76,Tegal
+3401,34.01,Kulon Progo
+3402,34.02,Bantul
+3403,34.03,Gunungkidul
+3404,34.04,Sleman
+3471,34.71,Yogyakarta
+3601,36.01,Pandeglang
+3602,36.02,Lebak
+3603,36.03,Tangerang
+3604,36.04,Serang
+3671,36.71,Tangerang
+3672,36.72,Cilegon
+3673,36.73,Serang
+3674,36.74,Tangerang Selatan
+5101,51.01,Jembrana
+5102,51.02,Tabanan
+5103,51.03,Badung
+5104,51.04,Gianyar
+5105,51.05,Klungkung
+5106,51.06,Bangli
+5107,51.07,Karangasem
+5108,51.08,Buleleng
+5171,51.71,Denpasar
+5201,52.01,Lombok Barat
+5202,52.02,Lombok Tengah
+5203,52.03,Lombok Timur
+5204,52.04,Sumbawa
+5205,52.05,Dompu
+5206,52.06,Bima
+5207,52.07,Sumbawa Barat
+5208,52.08,Lombok Utara
+5271,52.71,Mataram
+5272,52.72,Bima
+5301,53.12,Sumba Barat
+5302,53.11,Sumba Timur
+5303,53.01,Kupang
+5304,53.02,Timor Tengah Selatan
+5305,53.03,Timor Tengah Utara
+5306,53.04,Belu
+5307,53.05,Alor
+5308,53.13,Lembata
+5309,53.06,Flores Timur
+5310,53.07,Sikka
+5311,53.08,Ende
+5312,53.09,Ngada
+5313,53.10,Manggarai
+5314,53.14,Rote Ndao
+5315,53.15,Manggarai Barat
+5316,53.17,Sumba Tengah
+5317,53.18,Sumba Barat Daya
+5318,53.16,Nagekeo
+5319,53.19,Manggarai Timur
+5320,53.20,Sabu Raijua
+5321,53.21,Malaka
+5371,53.71,Kupang
+6101,61.01,Sambas
+6102,61.07,Bengkayang
+6103,61.08,Landak
+6104,61.02,Mempawah
+6105,61.03,Sanggau
+6106,61.04,Ketapang
+6107,61.05,Sintang
+6108,61.06,Kapuas Hulu
+6109,61.09,Sekadau
+6110,61.10,Melawi
+6111,61.11,Kayong Utara
+6112,61.12,Kubu Raya
+6171,61.71,Pontianak
+6172,61.72,Singkawang
+6201,62.01,Kotawaringin Barat
+6202,62.02,Kotawaringin Timur
+6203,62.03,Kapuas
+6204,62.04,Barito Selatan
+6205,62.05,Barito Utara
+6206,62.08,Sukamara
+6207,62.09,Lamandau
+6208,62.07,Seruyan
+6209,62.06,Katingan
+6210,62.11,Pulang Pisau
+6211,62.10,Gunung Mas
+6212,62.13,Barito Timur
+6213,62.12,Murung Raya
+6271,62.71,Palangka Raya
+6301,63.01,Tanah Laut
+6302,63.02,Kotabaru
+6303,63.03,Banjar
+6304,63.04,Barito Kuala
+6305,63.05,Tapin
+6306,63.06,Hulu Sungai Selatan
+6307,63.07,Hulu Sungai Tengah
+6308,63.08,Hulu Sungai Utara
+6309,63.09,Tabalong
+6310,63.10,Tanah Bumbu
+6311,63.11,Balangan
+6371,63.71,Banjarmasin
+6372,63.72,Banjarbaru
+6401,64.01,Paser
+6402,64.07,Kutai Barat
+6403,64.02,Kutai Kartanegara
+6404,64.08,Kutai Timur
+6405,64.03,Berau
+6409,64.09,Penajam Paser Utara
+6411,64.11,Mahakam Ulu
+6471,64.71,Balikpapan
+6472,64.72,Samarinda
+6474,64.74,Bontang
+6501,65.02,Malinau
+6502,65.01,Bulungan
+6503,65.04,Tana Tidung
+6504,65.03,Nunukan
+6571,65.71,Tarakan
+7101,71.01,Bolaang Mongondow
+7102,71.02,Minahasa
+7103,71.03,Kepulauan Sangihe
+7104,71.04,Kepulauan Talaud
+7105,71.05,Minahasa Selatan
+7106,71.06,Minahasa Utara
+7107,71.08,Bolaang Mongondow Utara
+7108,71.09,Kepulauan Siau Tagulandang Biaro
+7109,71.07,Minahasa Tenggara
+7110,71.11,Bolaang Mongondow Selatan
+7111,71.10,Bolaang Mongondow Timur
+7171,71.71,Manado
+7172,71.72,Bitung
+7173,71.73,Tomohon
+7174,71.74,Kotamobagu
+7201,72.07,Banggai Kepulauan
+7202,72.01,Banggai
+7203,72.06,Morowali
+7204,72.02,Poso
+7205,72.03,Donggala
+7206,72.04,Toli-toli
+7207,72.05,Buol
+7208,72.08,Parigi Moutong
+7209,72.09,Tojo Una-una
+7210,72.10,Sigi
+7211,72.11,Banggai Laut
+7212,72.12,Morowali Utara
+7271,72.71,Palu
+7301,73.01,Kepulauan Selayar
+7302,73.02,Bulukumba
+7303,73.03,Bantaeng
+7304,73.04,Jeneponto
+7305,73.05,Takalar
+7306,73.06,Gowa
+7307,73.07,Sinjai
+7308,73.09,Maros
+7309,73.10,Pangkajene Dan Kepulauan
+7310,73.11,Barru
+7311,73.08,Bone
+7312,73.12,Soppeng
+7313,73.13,Wajo
+7314,73.14,Sidenreng Rappang
+7315,73.15,Pinrang
+7316,73.16,Enrekang
+7317,73.17,Luwu
+7318,73.18,Tana Toraja
+7322,73.22,Luwu Utara
+7325,73.24,Luwu Timur
+7326,73.26,Toraja Utara
+7371,73.71,Makassar
+7372,73.72,Parepare
+7373,73.73,Palopo
+7401,74.04,Buton
+7402,74.03,Muna
+7403,74.02,Konawe
+7404,74.01,Kolaka
+7405,74.05,Konawe Selatan
+7406,74.06,Bombana
+7407,74.07,Wakatobi
+7408,74.08,Kolaka Utara
+7409,74.10,Buton Utara
+7410,74.09,Konawe Utara
+7411,74.11,Kolaka Timur
+7412,74.12,Konawe Kepulauan
+7413,74.13,Muna Barat
+7414,74.14,Buton Tengah
+7415,74.15,Buton Selatan
+7471,74.71,Kendari
+7472,74.72,Baubau
+7501,75.02,Boalemo
+7502,75.01,Gorontalo
+7503,75.04,Pohuwato
+7504,75.03,Bone Bolango
+7505,75.05,Gorontalo Utara
+7571,75.71,Gorontalo
+7601,76.05,Majene
+7602,76.04,Polewali Mandar
+7603,76.03,Mamasa
+7604,76.02,Mamuju
+7605,76.01,Pasangkayu
+7606,76.06,Mamuju Tengah
+8102,81.02,Maluku Tenggara
+8103,81.01,Maluku Tengah
+8104,81.04,Buru
+8105,81.07,Kepulauan Aru
+8106,81.06,Seram Bagian Barat
+8107,81.05,Seram Bagian Timur
+8108,81.08,Maluku Barat Daya
+8109,81.09,Buru Selatan
+8171,81.71,Ambon
+8172,81.72,Tual
+8201,82.01,Halmahera Barat
+8202,82.02,Halmahera Tengah
+8203,82.05,Kepulauan Sula
+8204,82.04,Halmahera Selatan
+8205,82.03,Halmahera Utara
+8206,82.06,Halmahera Timur
+8207,82.07,Pulau Morotai
+8208,82.08,Pulau Taliabu
+8271,82.71,Ternate
+8272,82.72,Tidore Kepulauan
+9101,92.03,Fakfak
+9102,92.08,Kaimana
+9103,92.07,Teluk Wondama
+9104,92.06,Teluk Bintuni
+9105,92.02,Manokwari
+9106,96.02,Sorong Selatan
+9107,96.01,Sorong
+9108,96.03,Raja Ampat
+9109,96.04,Tambrauw
+9110,96.05,Maybrat
+9111,92.11,Manokwari Selatan
+9112,92.12,Pegunungan Arfak
+9171,96.71,Sorong

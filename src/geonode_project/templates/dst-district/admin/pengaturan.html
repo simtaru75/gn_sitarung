@@ -1,0 +1,1297 @@
+{% extends 'dst-district/admin/base.html' %}
+{% load static %}
+
+{% block title %}Pengaturan Sistem — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}pengaturan{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="pengaturan"] .page-wrap { display: block; }
+  body[data-page="pengaturan"] .page-content { max-width: 980px; margin: 0 auto; }
+
+  .settings-flash {
+    margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--line);
+    font-size: 13px; display: flex; align-items: center; gap: 10px;
+    font-family: var(--sans);
+  }
+  .settings-flash.success { background: rgba(74, 107, 61, 0.08); color: var(--success); border-color: rgba(74, 107, 61, 0.25); }
+  .settings-flash.error   { background: rgba(139, 58, 42, 0.08); color: var(--danger);  border-color: rgba(139, 58, 42, 0.25); }
+  .settings-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="pengaturan"] .kv-table {
+    width: 100%; border-collapse: collapse;
+  }
+  body[data-page="pengaturan"] .kv-table th,
+  body[data-page="pengaturan"] .kv-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--line);
+    text-align: left; vertical-align: top;
+  }
+  body[data-page="pengaturan"] .kv-table tr:last-child th,
+  body[data-page="pengaturan"] .kv-table tr:last-child td { border-bottom: none; }
+  body[data-page="pengaturan"] .kv-table th {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-400); font-weight: 500;
+    width: 220px;
+  }
+  body[data-page="pengaturan"] .kv-table td {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    word-break: break-all;
+  }
+  body[data-page="pengaturan"] .kv-table td .badge {
+    display: inline-block; padding: 2px 8px;
+    background: rgba(74, 107, 61, 0.1); color: var(--success);
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; font-weight: 500;
+  }
+  body[data-page="pengaturan"] .kv-table td .badge.warn {
+    background: rgba(176, 112, 32, 0.1); color: var(--warning);
+  }
+
+  body[data-page="pengaturan"] .stats-cards {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--line-strong); border: 1px solid var(--line-strong);
+    margin-bottom: 20px;
+  }
+  body[data-page="pengaturan"] .stats-cards .stat-card {
+    background: var(--paper); padding: 18px 22px; display: flex; flex-direction: column; gap: 4px;
+  }
+  body[data-page="pengaturan"] .stats-cards .stat-card-label {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--ink-400);
+  }
+  body[data-page="pengaturan"] .stats-cards .stat-card-value {
+    font-family: var(--serif); font-size: 30px; color: var(--forest);
+    line-height: 1; letter-spacing: -0.02em; font-variation-settings: "SOFT" 30;
+  }
+
+  /* FOLUR — tabel fokus komoditas */
+  body[data-page="pengaturan"] .folur-table { width: 100%; border-collapse: collapse; }
+  body[data-page="pengaturan"] .folur-table th, body[data-page="pengaturan"] .folur-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; font-size: 13px; }
+  body[data-page="pengaturan"] .folur-table th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); font-weight: 500; }
+  body[data-page="pengaturan"] .folur-table tbody tr:last-child td { border-bottom: none; }
+  body[data-page="pengaturan"] .folur-thumb { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--line); background: var(--cream-200); display: block; }
+  body[data-page="pengaturan"] .folur-thumb-empty { width: 48px; height: 48px; display: grid; place-items: center; border: 1px dashed var(--line-strong); color: var(--ink-400); font-size: 12px; font-family: var(--mono); }
+  body[data-page="pengaturan"] .folur-link { color: var(--ochre-600); text-decoration: none; font-size: 12px; }
+  body[data-page="pengaturan"] .folur-link:hover { text-decoration: underline; }
+  body[data-page="pengaturan"] .folur-desc { color: var(--ink-600); font-size: 12px; max-width: 260px; }
+  body[data-page="pengaturan"] .folur-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  body[data-page="pengaturan"] .folur-empty { padding: 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px; }
+  body[data-page="pengaturan"] .btn-mini { padding: 5px 10px; font-size: 11px; font-family: var(--sans); border: 1px solid var(--line-strong); background: var(--paper); color: var(--forest); text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; border-radius: 0; }
+  body[data-page="pengaturan"] .btn-mini:hover { border-color: var(--forest); }
+  body[data-page="pengaturan"] .btn-mini.danger { color: var(--danger); border-color: rgba(139,58,42,0.3); }
+  body[data-page="pengaturan"] .btn-mini.danger:hover { background: var(--danger); color: var(--cream); }
+  body[data-page="pengaturan"] .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  body[data-page="pengaturan"] textarea.field-input { resize: vertical; min-height: 70px; font-family: var(--sans); }
+  @media (max-width: 700px) { body[data-page="pengaturan"] .field-row { grid-template-columns: 1fr; } }
+
+  /* Toggle Tampil/Sembunyi per baris komoditas */
+  body[data-page="pengaturan"] .fe-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; }
+  body[data-page="pengaturan"] .fe-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  body[data-page="pengaturan"] .fe-switch { width: 40px; height: 22px; background: #c9c4b8; border-radius: 11px; position: relative; transition: background 0.18s; flex-shrink: 0; }
+  body[data-page="pengaturan"] .fe-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  body[data-page="pengaturan"] .fe-toggle input:checked + .fe-switch { background: var(--success); }
+  body[data-page="pengaturan"] .fe-toggle input:checked + .fe-switch::after { transform: translateX(18px); }
+  body[data-page="pengaturan"] .fe-state { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-400); }
+  body[data-page="pengaturan"] .fe-toggle input:disabled + .fe-switch { opacity: 0.5; cursor: not-allowed; }
+  body[data-page="pengaturan"] .fe-toggle-label { font-size: 13px; color: var(--ink); font-weight: 500; }
+
+  /* Logo Situs — uploader ala foto Profil */
+  body[data-page="pengaturan"] .logo-uploader { display: flex; align-items: center; gap: 26px; }
+  body[data-page="pengaturan"] .logo-preview {
+    position: relative; width: 96px; height: 96px; flex-shrink: 0;
+    background: var(--cream); border: 1px solid var(--line-strong);
+    display: grid; place-items: center;
+  }
+  body[data-page="pengaturan"] .logo-preview-img { max-width: 82px; max-height: 82px; object-fit: contain; }
+  body[data-page="pengaturan"] .logo-preview-empty { color: var(--ink-200); display: grid; place-items: center; }
+  body[data-page="pengaturan"] .logo-preview-empty svg { width: 34px; height: 34px; }
+  body[data-page="pengaturan"] .logo-edit-btn {
+    position: absolute; bottom: -10px; right: -10px;
+    width: 30px; height: 30px; background: var(--ochre); color: var(--forest);
+    border: 2px solid var(--paper); cursor: pointer;
+    display: grid; place-items: center; transition: all 0.2s;
+  }
+  body[data-page="pengaturan"] .logo-edit-btn:hover { background: var(--cocoa); color: var(--cream); }
+  body[data-page="pengaturan"] .logo-edit-btn svg { width: 13px; height: 13px; }
+  body[data-page="pengaturan"] .logo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 13px; }
+  body[data-page="pengaturan"] .logo-link {
+    background: none; border: none; cursor: pointer; padding: 0;
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-600);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    display: inline-flex; align-items: center; gap: 6px;
+    border-bottom: 1px solid var(--line-strong); transition: color 0.15s;
+  }
+  body[data-page="pengaturan"] .logo-link:hover { color: var(--forest); }
+  body[data-page="pengaturan"] .logo-link.danger:hover { color: var(--danger); }
+  body[data-page="pengaturan"] .logo-link svg { width: 12px; height: 12px; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-wrap">
+  <div class="page-content">
+
+    <header class="page-header">
+      <div>
+        <div class="page-eyebrow">Administrasi</div>
+        <h1 class="page-title">Pengaturan <span class="italic">Sistem</span></h1>
+        <p class="page-desc">Konfigurasi inti {{ site.name|default:"DST Kabupaten Abc" }}. Field yang dapat diubah disimpan langsung ke database; sisanya bersumber dari konfigurasi Django/GeoNode (read-only).</p>
+      </div>
+    </header>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="settings-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- STATS -->
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-card-label">Dataset</div>
+        <div class="stat-card-value">{{ counts.datasets }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Dokumen</div>
+        <div class="stat-card-value">{{ counts.documents }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Pengguna</div>
+        <div class="stat-card-value">{{ counts.users }}</div>
+      </div>
+    </div>
+
+    <!-- 01: SITE IDENTITY (EDITABLE) -->
+    <section class="settings-section" id="identitas">
+      <div class="settings-section-header">
+        <span class="ss-num">01</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Identitas <span class="italic">situs</span></h2>
+          <p class="ss-sub">Nama &amp; domain situs (Django <code>Site</code>), Nama Wilayah, dan logo situs. Tersimpan ke database — dipakai allauth, branding, dan link absolut.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <form method="post" action="">
+          {% csrf_token %}
+          <div class="settings-panel-body">
+            <div class="field">
+              <label class="field-label">Nama situs/aplikasi</label>
+              <input class="field-input" type="text" name="site_name" value="{{ site.name }}" {% if not request.user.is_superuser %}readonly{% endif %} required>
+              <div class="field-help">Maks 50 karakter. Tampil pada email yang dikirim sistem.</div>
+            </div>
+            <div class="field">
+              <label class="field-label">Nama Wilayah</label>
+              <input class="field-input" type="text" name="nama_kabupaten" value="{{ nama_kabupaten }}" maxlength="100" placeholder="mis. Kabupaten Abc" {% if not request.user.is_superuser %}readonly{% endif %}>
+              <div class="field-help">Nama resmi kabupaten untuk keperluan branding. Maks 100 karakter.</div>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="field-label">Domain situs</label>
+              <input class="field-input mono" type="text" name="site_domain" value="{{ site.domain }}" {% if not request.user.is_superuser %}readonly{% endif %} required>
+              <div class="field-help">Mis. <code>dst.luwukab.go.id</code>. Digunakan untuk membentuk URL absolut.</div>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top: 1px solid var(--line); display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan identitas
+            </button>
+          </div>
+          {% endif %}
+        </form>
+
+        <!-- Logo Situs — konsep unggah seperti foto Profil -->
+        <div class="settings-panel-body" style="border-top: 1px solid var(--line);">
+          <label class="field-label" style="margin-bottom:14px;">Logo Situs</label>
+          <div class="logo-uploader">
+            <form method="post" action="" enctype="multipart/form-data" id="logoForm" style="flex-shrink:0;">
+              {% csrf_token %}
+              <input type="hidden" name="form" value="logo_upload">
+              <div class="logo-preview">
+                {% if theme_logo_url %}
+                <img class="logo-preview-img" src="{{ theme_logo_url }}" alt="Logo situs saat ini">
+                {% else %}
+                <span class="logo-preview-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </span>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                <button type="button" class="logo-edit-btn" id="logoEditBtn" title="Ganti logo situs">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
+                {% endif %}
+              </div>
+              <input type="file" name="kabupaten_logo" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml" hidden>
+            </form>
+
+            {% if request.user.is_superuser %}
+            <div class="logo-actions">
+              <button type="button" class="logo-link" id="logoChangeLink">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                {% if theme_logo_url %}Ganti Logo{% else %}Unggah Logo{% endif %}
+              </button>
+              {% if theme_logo_url %}
+              <form method="post" action="" style="display:inline;" onsubmit="return confirm('Hapus logo situs?');">
+                {% csrf_token %}
+                <input type="hidden" name="form" value="logo_remove">
+                <button type="submit" class="logo-link danger">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Hapus Logo
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <div class="field-help" style="margin-top:16px;">Terhubung dengan <strong>logo situs</strong> (tema aktif GeoNode). Format: PNG/JPG/SVG. Logo langsung tersimpan saat berkas dipilih.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02: REGIONAL & VERSION -->
+    <section class="settings-section" id="regional">
+      <div class="settings-section-header">
+        <span class="ss-num">02</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Regional &amp; <span class="italic">versi</span></h2>
+          <p class="ss-sub">Konfigurasi waktu, bahasa, dan informasi build (sumber: <code>settings.py</code>).</p>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <form method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="form" value="regional">
+          <div class="settings-panel-body">
+            <div class="field">
+              <label class="field-label">Zona waktu (greeting Dashboard)</label>
+              <select class="field-input" name="timezone" {% if not request.user.is_superuser %}disabled{% endif %}>
+                {% for code, label in tz_choices %}
+                <option value="{{ code }}" {% if code == tz_code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <div class="field-help">Zona waktu untuk salam &amp; jam pada halaman <strong>Dashboard</strong>. WIB (UTC+7), WITA (UTC+8), WIT (UTC+9).</div>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top: 1px solid var(--line); display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan zona waktu
+            </button>
+          </div>
+          {% endif %}
+        </form>
+        <div class="settings-panel-body" style="border-top: 1px solid var(--line);">
+          <table class="kv-table">
+            <tr><th>Bahasa default</th><td>{{ system.language }}</td></tr>
+            <tr><th>Zona waktu</th><td>{{ system.timezone }}</td></tr>
+            <tr><th>SITENAME</th><td>{{ system.site_name_setting|default:"—" }}</td></tr>
+            <tr><th>SITEURL</th><td>{{ system.site_url_setting|default:"—" }}</td></tr>
+            <tr><th>DEBUG</th><td>
+              {% if system.debug %}<span class="badge warn">aktif</span>{% else %}<span class="badge">nonaktif</span>{% endif %}
+            </td></tr>
+            <tr><th>GeoNode</th><td>{{ system.geonode_version }}</td></tr>
+            <tr><th>Django</th><td>{{ system.django_version }}</td></tr>
+            <tr><th>Python</th><td>{{ system.python_version }}</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03: FOLUR — FOKUS KOMODITAS (CRUD) -->
+    <section class="settings-section" id="folur">
+      <div class="settings-section-header">
+        <span class="ss-num">03</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">FOLUR · <span class="italic">Fokus Komoditas</span></h2>
+          <p class="ss-sub">Daftar komoditas unggulan daerah/FOLUR beserta tautan peta kesesuaian lahan (dataset), literatur (dokumen), dan foto. Tersimpan ke database — dapat dipakai pada halaman publik.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">A · Daftar Komoditas</div>
+        <div class="settings-panel-body" style="padding: 0;">
+          <table class="folur-table">
+            <thead>
+              <tr><th>Foto</th><th>Nama</th><th>Deskripsi</th><th>Peta Kesesuaian</th><th>Literatur</th><th>Urut</th><th>Tampil</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for k in komoditas_list %}
+              <tr>
+                <td>{% if k.gambar %}<img class="folur-thumb" src="{{ k.gambar.url }}" alt="{{ k.nama }}">{% else %}<div class="folur-thumb-empty">—</div>{% endif %}</td>
+                <td><strong>{{ k.nama }}</strong></td>
+                <td class="folur-desc">{{ k.deskripsi|truncatechars:80|default:"—" }}</td>
+                <td>{% if k.dataset %}<a class="folur-link" href="{% url 'dst:dataset_detail' k.dataset.pk %}" target="_blank" rel="noopener">{{ k.dataset.title|default:k.dataset.name }} ↗</a>{% else %}<span style="color:var(--ink-400);">—</span>{% endif %}</td>
+                <td>{% if k.dokumen %}<a class="folur-link" href="{% url 'dst:document_detail' k.dokumen.pk %}" target="_blank" rel="noopener">{{ k.dokumen.title }} ↗</a>{% else %}<span style="color:var(--ink-400);">—</span>{% endif %}</td>
+                <td>{{ k.urutan }}</td>
+                <td>
+                  {% if request.user.is_superuser %}
+                  <form method="post" action="" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="form" value="komoditas_toggle">
+                    <input type="hidden" name="komoditas_id" value="{{ k.pk }}">
+                    <label class="fe-toggle" title="Tampil/sembunyi di landing">
+                      <input type="checkbox" name="aktif" onchange="this.form.submit()" {% if k.aktif %}checked{% endif %}>
+                      <span class="fe-switch"></span>
+                      <span class="fe-state">{% if k.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                    </label>
+                  </form>
+                  {% else %}
+                  <span class="fe-state">{% if k.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="folur-actions">
+                    <a class="btn-mini" href="?edit_komoditas={{ k.pk }}#folur">Edit</a>
+                    {% if request.user.is_superuser %}
+                    <form method="post" action="" onsubmit="return confirm('Hapus komoditas {{ k.nama|escapejs }}?');" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="form" value="komoditas_delete">
+                      <input type="hidden" name="komoditas_id" value="{{ k.pk }}">
+                      <button type="submit" class="btn-mini danger">Hapus</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="8" class="folur-empty">Belum ada komoditas. Tambahkan lewat form di bawah.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">B · {% if komoditas_edit %}Edit Komoditas: {{ komoditas_edit.nama }}{% else %}Tambah Komoditas{% endif %}</div>
+        <form method="post" action="" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="form" value="komoditas_save">
+          {% if komoditas_edit %}<input type="hidden" name="komoditas_id" value="{{ komoditas_edit.pk }}">{% endif %}
+          <div class="settings-panel-body">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Nama komoditas *</label>
+                <input class="field-input" type="text" name="nama" maxlength="120" required value="{{ komoditas_edit.nama|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+                <div class="field-help">Mis. Kakao, Padi, Sawit, Cengkeh.</div>
+              </div>
+              <div class="field">
+                <label class="field-label">Urutan tampil</label>
+                <input class="field-input mono" type="number" name="urutan" min="0" value="{{ komoditas_edit.urutan|default:0 }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Deskripsi</label>
+              <textarea class="field-input" name="deskripsi" rows="3" {% if not request.user.is_superuser %}readonly{% endif %}>{{ komoditas_edit.deskripsi|default:'' }}</textarea>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Peta Kesesuaian Lahan (Dataset)</label>
+                <select class="field-input" name="dataset" {% if not request.user.is_superuser %}disabled{% endif %}>
+                  <option value="">— tidak ada —</option>
+                  {% for d in dataset_options %}
+                  <option value="{{ d.pk }}" {% if komoditas_edit and komoditas_edit.dataset_id == d.pk %}selected{% endif %}>{{ d.title|default:d.name }}</option>
+                  {% endfor %}
+                </select>
+                <div class="field-help">Tautan ke halaman peta dataset.</div>
+              </div>
+              <div class="field">
+                <label class="field-label">Literatur Komoditi (Dokumen)</label>
+                <select class="field-input" name="dokumen" {% if not request.user.is_superuser %}disabled{% endif %}>
+                  <option value="">— tidak ada —</option>
+                  {% for d in dokumen_options %}
+                  <option value="{{ d.pk }}" {% if komoditas_edit and komoditas_edit.dokumen_id == d.pk %}selected{% endif %}>{{ d.title }}</option>
+                  {% endfor %}
+                </select>
+                <div class="field-help">Tautan ke viewer dokumen.</div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Gambar / Foto</label>
+              {% if komoditas_edit and komoditas_edit.gambar %}<div style="margin-bottom:8px;"><img src="{{ komoditas_edit.gambar.url }}" alt="" style="height:64px;border:1px solid var(--line);"></div>{% endif %}
+              <input class="field-input" type="file" name="gambar" accept="image/*" {% if not request.user.is_superuser %}disabled{% endif %}>
+              <div class="field-help">Format PNG/JPG. {% if komoditas_edit %}Kosongkan bila tidak ingin mengganti gambar.{% endif %}</div>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="fe-toggle">
+                <input type="checkbox" name="aktif" {% if not komoditas_edit or komoditas_edit.aktif %}checked{% endif %} {% if not request.user.is_superuser %}disabled{% endif %}>
+                <span class="fe-switch"></span>
+                <span class="fe-toggle-label">Aktif (ditampilkan)</span>
+              </label>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;">
+            {% if komoditas_edit %}<a href="{% url 'dst_auth:pengaturan' %}#folur" class="btn btn-ghost btn-sm">Batal</a>{% endif %}
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              {% if komoditas_edit %}Simpan perubahan{% else %}Tambah komoditas{% endif %}
+            </button>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </section>
+
+    <!-- 04: IMPLEMENTING PARTNERS (CRUD) -->
+    <section class="settings-section" id="mitra">
+      <div class="settings-section-header">
+        <span class="ss-num">04</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Implementing <span class="italic">Partners</span></h2>
+          <p class="ss-sub">Kelola logo mitra pelaksana yang tampil di halaman Landing (tinggi 100px, lebar proporsional). Tersimpan ke database.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">A · Daftar Mitra</div>
+        <div class="settings-panel-body" style="padding: 0;">
+          <table class="folur-table">
+            <thead>
+              <tr><th>Logo</th><th>Nama</th><th>Tautan</th><th>Urut</th><th>Tampil</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for m in mitra_list %}
+              <tr>
+                <td>{% if m.logo %}<img class="folur-thumb" style="object-fit:contain;background:#fff;" src="{{ m.logo.url }}" alt="{{ m.nama }}">{% else %}<div class="folur-thumb-empty">—</div>{% endif %}</td>
+                <td><strong>{{ m.nama }}</strong></td>
+                <td>{% if m.tautan %}<a class="folur-link" href="{{ m.tautan }}" target="_blank" rel="noopener">{{ m.tautan|truncatechars:32 }} ↗</a>{% else %}<span style="color:var(--ink-400);">—</span>{% endif %}</td>
+                <td>{{ m.urutan }}</td>
+                <td>
+                  {% if request.user.is_superuser %}
+                  <form method="post" action="" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="form" value="mitra_toggle">
+                    <input type="hidden" name="mitra_id" value="{{ m.pk }}">
+                    <label class="fe-toggle" title="Tampil/sembunyi di landing">
+                      <input type="checkbox" name="aktif" onchange="this.form.submit()" {% if m.aktif %}checked{% endif %}>
+                      <span class="fe-switch"></span>
+                      <span class="fe-state">{% if m.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                    </label>
+                  </form>
+                  {% else %}<span class="fe-state">{% if m.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>{% endif %}
+                </td>
+                <td>
+                  <div class="folur-actions">
+                    <a class="btn-mini" href="?edit_mitra={{ m.pk }}#mitra">Edit</a>
+                    {% if request.user.is_superuser %}
+                    <form method="post" action="" onsubmit="return confirm('Hapus mitra {{ m.nama|escapejs }}?');" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="form" value="mitra_delete">
+                      <input type="hidden" name="mitra_id" value="{{ m.pk }}">
+                      <button type="submit" class="btn-mini danger">Hapus</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="folur-empty">Belum ada mitra. Tambahkan lewat form di bawah.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">B · {% if mitra_edit %}Edit Mitra: {{ mitra_edit.nama }}{% else %}Tambah Mitra{% endif %}</div>
+        <form method="post" action="" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="form" value="mitra_save">
+          {% if mitra_edit %}<input type="hidden" name="mitra_id" value="{{ mitra_edit.pk }}">{% endif %}
+          <div class="settings-panel-body">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Nama mitra *</label>
+                <input class="field-input" type="text" name="nama" maxlength="150" required value="{{ mitra_edit.nama|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+              </div>
+              <div class="field">
+                <label class="field-label">Urutan tampil</label>
+                <input class="field-input mono" type="number" name="urutan" min="0" value="{{ mitra_edit.urutan|default:0 }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Tautan situs (opsional)</label>
+              <input class="field-input mono" type="url" name="tautan" placeholder="https://..." value="{{ mitra_edit.tautan|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+            </div>
+            <div class="field">
+              <label class="field-label">Logo {% if not mitra_edit %}*{% endif %}</label>
+              {% if mitra_edit and mitra_edit.logo %}<div style="margin-bottom:8px;"><img src="{{ mitra_edit.logo.url }}" alt="" style="height:64px;background:#fff;border:1px solid var(--line);padding:4px;"></div>{% endif %}
+              <input class="field-input" type="file" name="logo" accept="image/*" {% if not mitra_edit %}required{% endif %} {% if not request.user.is_superuser %}disabled{% endif %}>
+              <div class="field-help">Tinggi tampil 100px, lebar proporsional. Disarankan PNG transparan. {% if mitra_edit %}Kosongkan bila tidak ingin mengganti logo.{% endif %}</div>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="fe-toggle">
+                <input type="checkbox" name="aktif" {% if not mitra_edit or mitra_edit.aktif %}checked{% endif %} {% if not request.user.is_superuser %}disabled{% endif %}>
+                <span class="fe-switch"></span>
+                <span class="fe-toggle-label">Aktif (ditampilkan)</span>
+              </label>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;">
+            {% if mitra_edit %}<a href="{% url 'dst_auth:pengaturan' %}#mitra" class="btn btn-ghost btn-sm">Batal</a>{% endif %}
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              {% if mitra_edit %}Simpan perubahan{% else %}Tambah mitra{% endif %}
+            </button>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </section>
+
+    <!-- 05: INDIKATOR STRATEGIS (CRUD) -->
+    <section class="settings-section" id="indikator">
+      <div class="settings-section-header">
+        <span class="ss-num">05</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Indikator <span class="italic">Strategis</span></h2>
+          <p class="ss-sub">Indikator makro daerah (IPM, pertumbuhan ekonomi, inflasi, dll.) yang tampil di Landing. Konteks khas daerah — section ini dapat disembunyikan untuk kabupaten lain via <a href="{% url 'dst_auth:frontend' %}">Frontend</a>. Ikon diambil dari berkas PNG pada <code>static/dst-district/img/indikator/</code>.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">A · Daftar Indikator</div>
+        <div class="settings-panel-body" style="padding: 0;">
+          <table class="folur-table">
+            <thead>
+              <tr><th>Ikon</th><th>Judul</th><th>Nilai</th><th>Deskripsi</th><th>Urut</th><th>Tampil</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for i in indikator_list %}
+              <tr>
+                <td>{% if i.ikon_url %}<img class="folur-thumb" src="{{ i.ikon_url }}" alt="{{ i.judul }}" style="object-fit:contain;">{% else %}<div class="folur-thumb-empty">—</div>{% endif %}</td>
+                <td><strong>{{ i.judul }}</strong></td>
+                <td><span class="mono">{{ i.nilai }}</span></td>
+                <td class="folur-desc">{{ i.deskripsi|truncatechars:60|default:"—" }}</td>
+                <td>{{ i.urutan }}</td>
+                <td>
+                  {% if request.user.is_superuser %}
+                  <form method="post" action="" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="form" value="indikator_toggle">
+                    <input type="hidden" name="indikator_id" value="{{ i.pk }}">
+                    <label class="fe-toggle" title="Tampil/sembunyi di landing">
+                      <input type="checkbox" name="aktif" onchange="this.form.submit()" {% if i.aktif %}checked{% endif %}>
+                      <span class="fe-switch"></span>
+                      <span class="fe-state">{% if i.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                    </label>
+                  </form>
+                  {% else %}
+                  <span class="fe-state">{% if i.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="folur-actions">
+                    <a class="btn-mini" href="?edit_indikator={{ i.pk }}#indikator">Edit</a>
+                    {% if request.user.is_superuser %}
+                    <form method="post" action="" onsubmit="return confirm('Hapus indikator {{ i.judul|escapejs }}?');" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="form" value="indikator_delete">
+                      <input type="hidden" name="indikator_id" value="{{ i.pk }}">
+                      <button type="submit" class="btn-mini danger">Hapus</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="7" class="folur-empty">Belum ada indikator. Tambahkan lewat form di bawah.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">B · {% if indikator_edit %}Edit Indikator: {{ indikator_edit.judul }}{% else %}Tambah Indikator{% endif %}</div>
+        <form method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="form" value="indikator_save">
+          {% if indikator_edit %}<input type="hidden" name="indikator_id" value="{{ indikator_edit.pk }}">{% endif %}
+          <div class="settings-panel-body">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Judul indikator *</label>
+                <input class="field-input" type="text" name="judul" maxlength="120" required value="{{ indikator_edit.judul|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+                <div class="field-help">Mis. Indeks Pembangunan Manusia, Inflasi.</div>
+              </div>
+              <div class="field">
+                <label class="field-label">Nilai *</label>
+                <input class="field-input mono" type="text" name="nilai" maxlength="50" required value="{{ indikator_edit.nilai|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+                <div class="field-help">Teks bebas — mis. 89%, 11,5 persen, 0,364.</div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Deskripsi</label>
+              <input class="field-input" type="text" name="deskripsi" maxlength="255" value="{{ indikator_edit.deskripsi|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+              <div class="field-help">Keterangan singkat di bawah kartu. Mis. "Data inflasi Kab Luwu tahun 2022".</div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Ikon (nama berkas PNG)</label>
+                <input class="field-input mono" type="text" name="ikon" maxlength="100" value="{{ indikator_edit.ikon|default:'' }}" placeholder="indikator-strategis-1.png" {% if not request.user.is_superuser %}readonly{% endif %}>
+                <div class="field-help">Berkas di <code>static/dst-district/img/indikator/</code>. Mis. <code>indikator-strategis-1.png</code>.</div>
+                {% if indikator_edit and indikator_edit.ikon_url %}<div style="margin-top:8px;"><img src="{{ indikator_edit.ikon_url }}" alt="" style="height:56px;border:1px solid var(--line);object-fit:contain;padding:4px;background:var(--paper);"></div>{% endif %}
+              </div>
+              <div class="field">
+                <label class="field-label">Urutan tampil</label>
+                <input class="field-input mono" type="number" name="urutan" min="0" value="{{ indikator_edit.urutan|default:0 }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="fe-toggle">
+                <input type="checkbox" name="aktif" {% if not indikator_edit or indikator_edit.aktif %}checked{% endif %} {% if not request.user.is_superuser %}disabled{% endif %}>
+                <span class="fe-switch"></span>
+                <span class="fe-toggle-label">Aktif (ditampilkan)</span>
+              </label>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;">
+            {% if indikator_edit %}<a href="{% url 'dst_auth:pengaturan' %}#indikator" class="btn btn-ghost btn-sm">Batal</a>{% endif %}
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              {% if indikator_edit %}Simpan perubahan{% else %}Tambah indikator{% endif %}
+            </button>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </section>
+
+    <!-- 06: LAYANAN DATA (CRUD) -->
+    <section class="settings-section" id="layanan-data">
+      <div class="settings-section-header">
+        <span class="ss-num">06</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Layanan <span class="italic">Data</span></h2>
+          <p class="ss-sub">Kartu kategori layanan/data yang tampil di Landing (mis. Data Ekonomi, Data Kesehatan). Konteks khas daerah — dapat disembunyikan untuk kabupaten lain via <a href="{% url 'dst_auth:frontend' %}">Frontend</a>. Gambar dari <code>static/dst-district/img/layanan/</code> (mis. <code>layanan-1.png</code>) atau URL lengkap.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">A · Daftar Layanan</div>
+        <div class="settings-panel-body" style="padding: 0;">
+          <table class="folur-table">
+            <thead>
+              <tr><th>Gambar</th><th>Judul</th><th>Tautan Detail</th><th>Urut</th><th>Tampil</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for l in layanan_list %}
+              <tr>
+                <td>{% if l.ikon_url %}<img class="folur-thumb" src="{{ l.ikon_url }}" alt="{{ l.judul }}" style="object-fit:contain;">{% else %}<div class="folur-thumb-empty">—</div>{% endif %}</td>
+                <td><strong>{{ l.judul }}</strong></td>
+                <td class="folur-desc">{% if l.tautan %}<a class="folur-link" href="{{ l.tautan }}" target="_blank" rel="noopener">{{ l.tautan|truncatechars:42 }} ↗</a>{% else %}<span style="color:var(--ink-400);">—</span>{% endif %}</td>
+                <td>{{ l.urutan }}</td>
+                <td>
+                  {% if request.user.is_superuser %}
+                  <form method="post" action="" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="form" value="layanan_toggle">
+                    <input type="hidden" name="layanan_id" value="{{ l.pk }}">
+                    <label class="fe-toggle" title="Tampil/sembunyi di landing">
+                      <input type="checkbox" name="aktif" onchange="this.form.submit()" {% if l.aktif %}checked{% endif %}>
+                      <span class="fe-switch"></span>
+                      <span class="fe-state">{% if l.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                    </label>
+                  </form>
+                  {% else %}
+                  <span class="fe-state">{% if l.aktif %}Tampil{% else %}Sembunyi{% endif %}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="folur-actions">
+                    <a class="btn-mini" href="?edit_layanan={{ l.pk }}#layanan-data">Edit</a>
+                    {% if request.user.is_superuser %}
+                    <form method="post" action="" onsubmit="return confirm('Hapus layanan {{ l.judul|escapejs }}?');" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="form" value="layanan_delete">
+                      <input type="hidden" name="layanan_id" value="{{ l.pk }}">
+                      <button type="submit" class="btn-mini danger">Hapus</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="folur-empty">Belum ada layanan. Tambahkan lewat form di bawah.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">B · {% if layanan_edit %}Edit Layanan: {{ layanan_edit.judul }}{% else %}Tambah Layanan{% endif %}</div>
+        <form method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="form" value="layanan_save">
+          {% if layanan_edit %}<input type="hidden" name="layanan_id" value="{{ layanan_edit.pk }}">{% endif %}
+          <div class="settings-panel-body">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Judul layanan *</label>
+                <input class="field-input" type="text" name="judul" maxlength="150" required value="{{ layanan_edit.judul|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+                <div class="field-help">Mis. Data Ekonomi, Data Kesehatan.</div>
+              </div>
+              <div class="field">
+                <label class="field-label">Urutan tampil</label>
+                <input class="field-input mono" type="number" name="urutan" min="0" value="{{ layanan_edit.urutan|default:0 }}" {% if not request.user.is_superuser %}readonly{% endif %}>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Gambar (nama berkas / URL)</label>
+              <input class="field-input mono" type="text" name="ikon" maxlength="255" value="{{ layanan_edit.ikon|default:'' }}" placeholder="layanan-1.png" {% if not request.user.is_superuser %}readonly{% endif %}>
+              <div class="field-help">Berkas di <code>static/dst-district/img/layanan/</code> atau URL lengkap (https://…).</div>
+              {% if layanan_edit and layanan_edit.ikon_url %}<div style="margin-top:8px;"><img src="{{ layanan_edit.ikon_url }}" alt="" style="height:56px;border:1px solid var(--line);object-fit:contain;padding:4px;background:var(--paper);"></div>{% endif %}
+            </div>
+            <div class="field">
+              <label class="field-label">Tautan Detail</label>
+              <input class="field-input" type="text" name="tautan" maxlength="255" value="{{ layanan_edit.tautan|default:'' }}" placeholder="https://… atau /path/internal" {% if not request.user.is_superuser %}readonly{% endif %}>
+              <div class="field-help">URL tujuan tombol "Detail" pada kartu. Kosongkan untuk menyembunyikan tombol.</div>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="fe-toggle">
+                <input type="checkbox" name="aktif" {% if not layanan_edit or layanan_edit.aktif %}checked{% endif %} {% if not request.user.is_superuser %}disabled{% endif %}>
+                <span class="fe-switch"></span>
+                <span class="fe-toggle-label">Aktif (ditampilkan)</span>
+              </label>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;">
+            {% if layanan_edit %}<a href="{% url 'dst_auth:pengaturan' %}#layanan-data" class="btn btn-ghost btn-sm">Batal</a>{% endif %}
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              {% if layanan_edit %}Simpan perubahan{% else %}Tambah layanan{% endif %}
+            </button>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </section>
+
+    <!-- 07: WEBGIS — MAP REFERENSI -->
+    <section class="settings-section" id="webgis">
+      <div class="settings-section-header">
+        <span class="ss-num">07</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">WebGIS · <span class="italic">Map Referensi</span></h2>
+          <p class="ss-sub">Pilih Map GeoNode yang digunakan sebagai sumber daftar layer spasial default pada halaman WebGIS. Map yang dipilih menentukan default layer teratas yang dimuat pada WebGIS.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">Konfigurasi Layer Default</div>
+        <form method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="form" value="webgis_save">
+          <div class="settings-panel-body">
+            <div class="field">
+              <label class="field-label">Map referensi WebGIS</label>
+              <select class="field-input" name="webgis_reference_map_id" {% if not request.user.is_superuser %}disabled{% endif %}>
+                <option value="">— Gunakan default dari settings.py (ID: {{ webgis_reference_map_id_fallback }}) —</option>
+                {% for m in map_options %}
+                <option value="{{ m.pk }}" {% if webgis_reference_map_id == m.pk %}selected{% endif %}>
+                  [ID {{ m.pk }}] {{ m.title|default:"(tanpa judul)" }}
+                </option>
+                {% empty %}
+                <option disabled>Belum ada Map yang tersedia di database GeoNode</option>
+                {% endfor %}
+              </select>
+              <div class="field-help">
+                Pilih Map yang sudah dibuat di GeoNode (MapStore). Layer dari Map tersebut akan dimuat secara otomatis di WebGIS.
+                {% if webgis_reference_map_id %}
+                  Saat ini aktif: <strong>ID {{ webgis_reference_map_id }}</strong>.
+                {% else %}
+                  Saat ini menggunakan fallback settings.py: <strong>ID {{ webgis_reference_map_id_fallback }}</strong>.
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% if request.user.is_superuser %}
+          <div class="settings-panel-body" style="border-top: 1px solid var(--line); display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary btn-sm" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan pengaturan WebGIS
+            </button>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </section>
+
+    <!-- 08: BACKEND SERVICES -->
+    <section class="settings-section" id="layanan">
+      <div class="settings-section-header">
+        <span class="ss-num">08</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Layanan <span class="italic">backend</span></h2>
+          <p class="ss-sub">Koneksi GeoServer, database PostGIS, dan email — dibaca dari konfigurasi aplikasi.</p>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">A · GeoServer (OGC)</div>
+        <div class="settings-panel-body">
+          <table class="kv-table">
+            <tr><th>URL publik</th><td>{{ services.geoserver_url }}</td></tr>
+            <tr><th>Username</th><td>{{ services.geoserver_user }}</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">B · Database</div>
+        <div class="settings-panel-body">
+          <table class="kv-table">
+            <tr><th>Engine</th><td>{{ services.db_engine }}</td></tr>
+            <tr><th>Nama database</th><td>{{ services.db_name }}</td></tr>
+            <tr><th>Host</th><td>{{ services.db_host }}</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">C · Email / SMTP</div>
+        <div class="settings-panel-body">
+          <table class="kv-table">
+            <tr><th>Host</th><td>{{ services.email_host }}</td></tr>
+            <tr><th>Port</th><td>{{ services.email_port }}</td></tr>
+            <tr><th>Pengirim default</th><td>{{ services.email_from }}</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09: UPLOAD LIMITS -->
+    <section class="settings-section" id="storage">
+      <div class="settings-section-header">
+        <span class="ss-num">09</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Batasan <span class="italic">unggahan</span></h2>
+          <p class="ss-sub">Batas efektif ukuran file unggahan dan ambang teknis Django (read-only).</p>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <div class="settings-panel-body">
+          <table class="kv-table">
+            <tr>
+              <th>Maks. ukuran file unggah</th>
+              <td><strong>{{ limits.max_upload_mb }} MB</strong>
+                <span style="color: var(--ink-400); font-family: var(--mono); font-size: 10px;">· DEFAULT_MAX_UPLOAD_SIZE — batas efektif per file</span></td>
+            </tr>
+            <tr>
+              <th>Ambang memori file</th>
+              <td>{{ limits.file_upload_mb }} MB
+                <span style="color: var(--ink-400); font-family: var(--mono); font-size: 10px;">· FILE_UPLOAD_MAX_MEMORY_SIZE — di atas ini ditulis ke disk, bukan batas</span></td>
+            </tr>
+            <tr>
+              <th>Maks. data non-file</th>
+              <td>{{ limits.data_upload_mb }} MB
+                <span style="color: var(--ink-400); font-family: var(--mono); font-size: 10px;">· DATA_UPLOAD_MAX_MEMORY_SIZE — form non-file; unggahan file dikecualikan</span></td>
+            </tr>
+          </table>
+          <p class="ss-sub" style="margin-top: 12px;">Batas ukuran file unggahan yang sebenarnya adalah <strong>{{ limits.max_upload_mb }} MB</strong>. Dua baris di bawahnya hanya ambang teknis Django, bukan batas ukuran unggahan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10: BACKUP DATABASE -->
+    <section class="settings-section" id="backup">
+      <div class="settings-section-header">
+        <span class="ss-num">10</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Backup <span class="italic">database</span></h2>
+          <p class="ss-sub">Daftar berkas backup database yang tersedia. Klik <strong>Unduh</strong> untuk mengunduh, buat backup baru, atau restore dari berkas.</p>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">Berkas Backup · <code>{{ backup_dir }}</code></div>
+        <div class="settings-panel-body" style="padding: 0;">
+          <table class="folur-table">
+            <thead>
+              <tr><th>Nama Berkas</th><th>Ukuran</th><th>Tanggal</th><th style="text-align:right;">Aksi</th></tr>
+            </thead>
+            <tbody>
+              {% for b in backups %}
+              <tr>
+                <td style="font-family: var(--mono); font-size: 12px;">{{ b.name }}</td>
+                <td style="font-family: var(--mono); font-size: 12px; color: var(--ink-600);">{{ b.size }}</td>
+                <td style="font-family: var(--mono); font-size: 12px; color: var(--ink-600);">{{ b.mtime|date:"d M Y · H:i" }}</td>
+                <td style="text-align:right;">
+                  {% if request.user.is_superuser %}
+                  <a class="btn-mini" href="{% url 'dst_auth:backup_download' %}?name={{ b.name|urlencode }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    Unduh
+                  </a>
+                  {% else %}<span style="color:var(--ink-400);font-size:11px;">—</span>{% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="folur-empty">
+                Belum ada berkas backup di <code>{{ backup_dir }}</code>. Klik <strong>Buat backup sekarang</strong> di bawah.
+              </td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {% if request.user.is_superuser %}
+      <div class="settings-panel" id="backup-actions">
+        <div class="settings-panel-body" style="display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start;">
+
+          <div style="flex:1; min-width:240px;">
+            <div class="settings-panel-eyebrow" style="padding:0 0 10px;">Buat Backup</div>
+            <form method="post" action="" onsubmit="var b=this.querySelector('button'); b.disabled=true; b.innerHTML='Memproses…';">
+              {% csrf_token %}
+              <input type="hidden" name="form" value="backup_create">
+              <button type="submit" class="btn btn-primary btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.77 1 6.4 2.6"/><polyline points="21 3 21 9 15 9"/></svg>
+                Buat backup sekarang
+              </button>
+            </form>
+            <div class="field-help" style="margin-top:8px;">Menjalankan <code>pg_dump</code> database aplikasi → tersimpan & muncul di tabel di atas. Schema <code>wilayah</code> (data batas administrasi BIG, statis &amp; besar) <strong>dikecualikan</strong> dari backup ini — disimpan terpisah sebagai artefak sekali.</div>
+          </div>
+
+          <div style="flex:1; min-width:300px; border-left:1px solid var(--line); padding-left:28px;">
+            <div class="settings-panel-eyebrow" style="padding:0 0 10px;">Restore Database</div>
+            <form method="post" action="" enctype="multipart/form-data"
+                  onsubmit="return confirm('PERINGATAN: Restore akan MENIMPA seluruh isi database saat ini dengan berkas yang diunggah. Tindakan ini TIDAK DAPAT DIBATALKAN.\n\nLanjutkan?');">
+              {% csrf_token %}
+              <input type="hidden" name="form" value="backup_restore">
+              <input class="field-input" type="file" name="restore_file" accept=".sql,.gz" required>
+              <button type="submit" class="btn btn-ghost btn-sm" style="margin-top:10px; border-color:var(--danger); color:var(--danger);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload &amp; Restore
+              </button>
+            </form>
+            <div class="field-help" style="margin-top:8px; color:var(--danger);">⚠ Menimpa seluruh data dengan isi berkas (.sql / .sql.gz hasil backup). Disarankan restart layanan (django &amp; celery) setelah restore.</div>
+          </div>
+
+        </div>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- ============ 11 · RESTORE DATA WILAYAH ============ -->
+    <section class="settings-section" id="wilayah">
+      <div class="settings-section-header">
+        <span class="ss-num">11</span>
+        <div class="ss-title-block">
+          <h2 class="ss-title">Restore Data <span class="italic">Wilayah</span></h2>
+          <p class="ss-sub">Muat batas administrasi resmi BIG (provinsi → desa) <strong>hanya untuk cakupan aplikasi ini</strong>, agar database tetap ramping. Schema <code>wilayah</code> akan dikosongkan lalu diisi region terpilih.</p>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow">Cakupan & Status Saat Ini</div>
+        <div class="settings-panel-body">
+          <div class="field-help" style="margin-bottom:14px;">
+            Region tersimpan:
+            {% if cakupan_level == "kabupaten" %}
+              <strong>{{ cakupan_nama_kab }} ({{ cakupan_kode_kab }})</strong> · Provinsi {{ cakupan_nama_prov }}
+            {% elif cakupan_level == "provinsi" %}
+              <strong>Provinsi {{ cakupan_nama_prov }} ({{ cakupan_kode_prov }})</strong>
+            {% else %}
+              <em>belum diatur</em>
+            {% endif %}
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <div class="wil-stat"><span class="wil-stat-num">{{ wilayah_counts.provinsi|default:0 }}</span><span class="wil-stat-lbl">Provinsi</span></div>
+            <div class="wil-stat"><span class="wil-stat-num">{{ wilayah_counts.kabkota|default:0 }}</span><span class="wil-stat-lbl">Kab/Kota</span></div>
+            <div class="wil-stat"><span class="wil-stat-num">{{ wilayah_counts.kecamatan|default:0 }}</span><span class="wil-stat-lbl">Kecamatan</span></div>
+            <div class="wil-stat"><span class="wil-stat-num">{{ wilayah_counts.desa|default:0 }}</span><span class="wil-stat-lbl">Desa/Kel</span></div>
+          </div>
+        </div>
+      </div>
+
+      {% if request.user.is_superuser %}
+      <div class="settings-panel">
+        <div class="settings-panel-eyebrow" style="padding-bottom:10px;">Muat / Ganti Region</div>
+        <div class="settings-panel-body">
+          <form method="post" action="" id="wilayah-form"
+                onsubmit="return confirm('Schema wilayah akan DIKOSONGKAN lalu diisi region terpilih. Proses berjalan di latar (beberapa menit untuk provinsi). Lanjutkan?');">
+            {% csrf_token %}
+            <input type="hidden" name="form" value="wilayah_restore">
+            <input type="hidden" name="nama_prov" id="wil-nama-prov">
+            <input type="hidden" name="nama_kab" id="wil-nama-kab">
+
+            <label class="field-label">Level cakupan wilayah</label>
+            <div style="display:flex; gap:18px; margin:4px 0 14px;">
+              <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                <input type="radio" name="cakupan_level" value="provinsi" {% if cakupan_level != "kabupaten" %}checked{% endif %}> Provinsi
+              </label>
+              <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                <input type="radio" name="cakupan_level" value="kabupaten" {% if cakupan_level == "kabupaten" %}checked{% endif %}> Kabupaten/Kota
+              </label>
+            </div>
+
+            <div class="field-row" style="display:flex; flex-wrap:wrap; gap:18px;">
+              <div style="flex:1; min-width:240px;">
+                <label class="field-label" for="wil-prov">Provinsi</label>
+                <select class="field-input" id="wil-prov" name="kode_prov" style="width:100%;" required>
+                  <option value="">— pilih provinsi —</option>
+                  {% for p in provinsi_options %}
+                  <option value="{{ p.kode }}" data-nama="{{ p.nama }}" {% if p.kode == cakupan_kode_prov %}selected{% endif %}>{{ p.nama }} ({{ p.kode }})</option>
+                  {% endfor %}
+                </select>
+                {% if not provinsi_options %}<div class="field-help" style="color:var(--danger);">Gagal memuat daftar provinsi dari BIG. Coba segarkan halaman.</div>{% endif %}
+              </div>
+              <div id="wil-kab-group" style="flex:1; min-width:240px; display:none;">
+                <label class="field-label" for="wil-kab">Kabupaten/Kota</label>
+                <select class="field-input" id="wil-kab" name="kode_kab" style="width:100%;"
+                        data-current="{{ cakupan_kode_kab }}" data-current-nama="{{ cakupan_nama_kab }}">
+                  <option value="">— pilih provinsi dulu —</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-top:16px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.77 1 6.4 2.6"/><polyline points="21 3 21 9 15 9"/></svg>
+              Muat data wilayah
+            </button>
+            <div class="field-help" style="margin-top:8px;">Sumber: <strong>Badan Informasi Geospasial (BIG)</strong>. Proses latar (Celery) — segarkan halaman untuk memantau jumlah baris. Aman dijalankan ulang.</div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Telusur kode BPS ↔ Kemendagri Kec/Desa — terhubung ke dropdown Kab/Kota -->
+      <div class="settings-panel" id="wil-kd-panel"
+           data-active-kab="{{ wil_active_kab }}"
+           data-opts-url="{% url 'dst_auth:wilayah_kecdesa_options' %}">
+        <div class="settings-panel-eyebrow" style="padding-bottom:10px;">Data Kecamatan &amp; Desa/Kelurahan</div>
+        <div class="settings-panel-body">
+          <p class="field-help" style="margin-bottom:14px;">
+            Relasi kode <strong>BPS ↔ Kemendagri</strong> mengikuti <strong>Kabupaten/Kota</strong> yang dipilih pada
+            <em>Muat / Ganti Region</em> di atas. Pilih kecamatan untuk menampilkan desa/kelurahan-nya.
+            <span id="wil-kd-src" class="wil-kd-badge" hidden></span>
+          </p>
+
+          <div class="field" style="max-width:380px; margin-bottom:18px;">
+            <label class="field-label" for="wil-kd-kec">Kecamatan</label>
+            <select class="field-input" id="wil-kd-kec" disabled>
+              <option value="__all__">— Semua Kecamatan —</option>
+            </select>
+          </div>
+
+          <div class="wil-kd-cap"><span id="wil-kd-level">Kecamatan</span> · <span id="wil-kd-count">0</span> baris</div>
+          <div class="wil-kd-tablewrap">
+            <table class="wil-kd-table">
+              <thead><tr><th class="c-no">No</th><th>Kode BPS</th><th>Kode Kemendagri</th><th>Nama Wilayah</th></tr></thead>
+              <tbody id="wil-kd-body">
+                <tr><td colspan="4" class="wil-kd-empty">Pilih Kabupaten/Kota di atas…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="field-help" style="margin-top:10px;">
+            Sumber: <strong>BIG</strong> untuk region aktif (hasil restore) · crosswalk permanen
+            (<a href="https://sig.bps.go.id/bridging-kode/" target="_blank" rel="noopener">sig.bps.go.id/bridging-kode</a>) untuk pratinjau kab lain.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<style>
+  body[data-page="pengaturan"] .wil-stat {
+    flex:1; min-width:120px; border:1px solid var(--line); padding:12px 14px;
+    display:flex; flex-direction:column; gap:2px; background:var(--paper);
+  }
+  body[data-page="pengaturan"] .wil-stat-num { font-family:var(--serif); font-size:24px; color:var(--forest); line-height:1; }
+  body[data-page="pengaturan"] .wil-stat-lbl { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-400); }
+  /* Panel telusur kode wilayah (kec/desa cakupan aktif) — gaya mirip Kode Wilayah */
+  body[data-page="pengaturan"] .wil-kd-cap { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-400); margin-bottom:6px; }
+  body[data-page="pengaturan"] .wil-kd-tablewrap { border:1px solid var(--line); overflow:auto; max-height:360px; background:var(--paper); }
+  body[data-page="pengaturan"] table.wil-kd-table { width:100%; border-collapse:collapse; font-size:13px; }
+  body[data-page="pengaturan"] .wil-kd-table thead th { position:sticky; top:0; background:#2c4a7c; color:#fff; text-align:left; padding:9px 12px; font-weight:600; font-size:12px; white-space:nowrap; z-index:1; }
+  body[data-page="pengaturan"] .wil-kd-table tbody td { padding:8px 12px; border-bottom:1px solid var(--line); color:var(--ink); }
+  body[data-page="pengaturan"] .wil-kd-table tbody tr:nth-child(even) { background:var(--cream-100,#faf8f4); }
+  body[data-page="pengaturan"] .wil-kd-table .c-no { width:54px; color:var(--ink-400); font-family:var(--mono); }
+  body[data-page="pengaturan"] .wil-kd-table .mono { font-family:var(--mono); font-size:12.5px; }
+  body[data-page="pengaturan"] .wil-kd-empty { padding:16px; color:var(--ink-400); text-align:center; }
+  body[data-page="pengaturan"] .wil-kd-badge { display:inline-block; margin-left:8px; padding:2px 8px; font-size:10.5px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.05em; vertical-align:middle; }
+  body[data-page="pengaturan"] .wil-kd-badge.badge-aktif { background:#e6f0e6; color:#1f3a2e; border:1px solid #cfe0cf; }
+  body[data-page="pengaturan"] .wil-kd-badge.badge-nasional { background:#eef2f9; color:#2c4a7c; border:1px solid #d4ddec; }
+</style>
+<script>
+(function () {
+  var form = document.getElementById('wilayah-form');
+  if (!form) return;
+  var provSel = document.getElementById('wil-prov');
+  var kabSel = document.getElementById('wil-kab');
+  var kabGroup = document.getElementById('wil-kab-group');
+  var optsUrl = "{% url 'dst_auth:wilayah_kabupaten_options' %}";
+
+  function level() {
+    var r = form.querySelector('input[name="cakupan_level"]:checked');
+    return r ? r.value : 'provinsi';
+  }
+  function syncLevel() {
+    var isKab = level() === 'kabupaten';
+    kabGroup.style.display = isKab ? '' : 'none';
+    kabSel.required = isKab;
+    if (isKab && provSel.value) loadKab(provSel.value);
+  }
+  function loadKab(prov) {
+    var cur = kabSel.getAttribute('data-current') || '';
+    var curNama = kabSel.getAttribute('data-current-nama') || '';
+    kabSel.innerHTML = '<option value="">— memuat… —</option>';
+    fetch(optsUrl + '?prov=' + encodeURIComponent(prov), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        kabSel.innerHTML = '<option value="">— pilih kabupaten/kota —</option>';
+        (d.options || []).forEach(function (o) {
+          var op = document.createElement('option');
+          op.value = o.kode; op.setAttribute('data-nama', o.nama);
+          op.textContent = o.nama + ' (' + o.kode + ')';
+          if (o.kode === cur) op.selected = true;
+          kabSel.appendChild(op);
+        });
+        kabSel.setAttribute('data-current', '');
+      })
+      .catch(function () { kabSel.innerHTML = '<option value="">— gagal memuat —</option>'; });
+  }
+
+  form.querySelectorAll('input[name="cakupan_level"]').forEach(function (r) {
+    r.addEventListener('change', syncLevel);
+  });
+  provSel.addEventListener('change', function () {
+    if (level() === 'kabupaten') loadKab(provSel.value);
+  });
+  form.addEventListener('submit', function () {
+    var po = provSel.options[provSel.selectedIndex];
+    document.getElementById('wil-nama-prov').value = po ? (po.getAttribute('data-nama') || '') : '';
+    var ko = kabSel.options[kabSel.selectedIndex];
+    document.getElementById('wil-nama-kab').value = ko ? (ko.getAttribute('data-nama') || '') : '';
+  });
+  syncLevel();
+})();
+</script>
+<script>
+(function () {
+  var panel = document.getElementById('wil-kd-panel');
+  if (!panel) return;
+  var optsUrl = panel.getAttribute('data-opts-url');
+  var activeKab = (panel.getAttribute('data-active-kab') || '').trim();
+  var sel = document.getElementById('wil-kd-kec');
+  var body = document.getElementById('wil-kd-body');
+  var levelEl = document.getElementById('wil-kd-level');
+  var countEl = document.getElementById('wil-kd-count');
+  var srcEl = document.getElementById('wil-kd-src');
+  var kabSel = document.getElementById('wil-kab');   // dropdown form restore
+  var escEl = document.createElement('span');
+  function esc(s) { escEl.textContent = (s == null ? '' : String(s)); return escEl.innerHTML; }
+
+  var data = { kecamatan: [], desa: [] };
+  var curKab = null;
+
+  function renderRows(rows, level, parentNama) {
+    levelEl.textContent = (level === 'desa')
+      ? ('Desa/Kelurahan' + (parentNama ? ' · ' + parentNama : ''))
+      : 'Kecamatan';
+    countEl.textContent = rows.length;
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="4" class="wil-kd-empty">Tidak ada data.</td></tr>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      html += '<tr><td class="c-no">' + (i + 1) + '</td><td class="mono">' +
+              esc(r.bps || '—') + '</td><td class="mono">' + esc(r.pum) +
+              '</td><td>' + esc(r.nama) + '</td></tr>';
+    }
+    body.innerHTML = html;
+  }
+
+  function renderForSelection() {
+    if (sel.value === '__all__') {
+      renderRows(data.kecamatan, 'kecamatan', '');
+    } else {
+      var kec = sel.value;
+      var list = data.desa.filter(function (d) { return d.kec === kec; });
+      var opt = sel.options[sel.selectedIndex];
+      renderRows(list, 'desa', opt ? opt.getAttribute('data-nama') : '');
+    }
+  }
+
+  function fillSelect() {
+    var html = '<option value="__all__">— Semua Kecamatan —</option>';
+    data.kecamatan.forEach(function (k) {
+      html += '<option value="' + esc(k.pum) + '" data-nama="' + esc(k.nama) + '">' +
+              esc(k.nama) + ' (' + esc(k.pum) + ')</option>';
+    });
+    sel.innerHTML = html;
+    sel.disabled = data.kecamatan.length === 0;
+  }
+
+  function setBadge(source) {
+    if (!srcEl) return;
+    if (source === 'aktif') {
+      srcEl.textContent = 'Data aktif (hasil restore)';
+      srcEl.className = 'wil-kd-badge badge-aktif'; srcEl.hidden = false;
+    } else if (source === 'nasional') {
+      srcEl.textContent = 'Pratinjau nasional';
+      srcEl.className = 'wil-kd-badge badge-nasional'; srcEl.hidden = false;
+    } else {
+      srcEl.hidden = true;
+    }
+  }
+
+  function load(kab) {
+    kab = (kab || '').trim();
+    if (kab === curKab) return;
+    curKab = kab;
+    if (!kab) {
+      data = { kecamatan: [], desa: [] };
+      fillSelect(); setBadge('');
+      levelEl.textContent = 'Kecamatan'; countEl.textContent = '0';
+      body.innerHTML = '<tr><td colspan="4" class="wil-kd-empty">Pilih Kabupaten/Kota di atas…</td></tr>';
+      return;
+    }
+    body.innerHTML = '<tr><td colspan="4" class="wil-kd-empty">Memuat…</td></tr>';
+    fetch(optsUrl + '?kab=' + encodeURIComponent(kab), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) throw new Error(d.error || 'gagal');
+        data = { kecamatan: d.kecamatan || [], desa: d.desa || [] };
+        fillSelect(); setBadge(d.source); renderForSelection();
+      })
+      .catch(function () {
+        setBadge('');
+        body.innerHTML = '<tr><td colspan="4" class="wil-kd-empty">Gagal memuat data.</td></tr>';
+      });
+  }
+
+  sel.addEventListener('change', renderForSelection);
+  if (kabSel) kabSel.addEventListener('change', function () { load(kabSel.value); });
+  // Inisialisasi: ikuti dropdown bila sudah terisi, jika belum pakai kab cakupan aktif.
+  load((kabSel && kabSel.value) ? kabSel.value : activeKab);
+})();
+</script>
+<script>
+(function () {
+  var form = document.getElementById('logoForm');
+  var input = document.getElementById('logoFileInput');
+  if (!form || !input) return;
+  var open = function () { input.click(); };
+  var editBtn = document.getElementById('logoEditBtn');
+  var changeLink = document.getElementById('logoChangeLink');
+  if (editBtn) editBtn.addEventListener('click', open);
+  if (changeLink) changeLink.addEventListener('click', open);
+  input.addEventListener('change', function () {
+    if (input.files.length) form.submit();
+  });
+})();
+</script>
+{% endblock %}

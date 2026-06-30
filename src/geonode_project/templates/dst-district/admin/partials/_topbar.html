@@ -1,0 +1,26 @@
+<div class="topbar">
+  <div class="breadcrumb">
+    {% for crumb in breadcrumb %}
+      {% if forloop.last %}
+        <span class="current">{{ crumb.label }}</span>
+      {% else %}
+        <a href="{{ crumb.url }}">{{ crumb.label }}</a>
+        <span class="sep">/</span>
+      {% endif %}
+    {% empty %}
+      <span class="current">{{ page_title|default:"Panel" }}</span>
+    {% endfor %}
+  </div>
+  <div class="topbar-right">
+    <a class="topbar-link" href="{% url 'dst_auth:profil' %}" title="Profil Pengguna">
+      <span class="topbar-avatar">{% if sidebar_user_photo_url %}<img src="{{ sidebar_user_photo_url }}" alt="">{% else %}{{ sidebar_user_initials }}{% endif %}</span>
+      <span>{{ sidebar_user_name|default:"Profil" }}</span>
+    </a>
+    <form class="logout-form" method="post" action="{% url 'account_logout' %}">
+      {% csrf_token %}
+      <button class="icon-btn" type="submit" title="Keluar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,462 @@
+{% extends 'dst-district/admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}Data Capaian — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}data_capaian{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="data_capaian"] .page-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:28px; padding-bottom:24px; border-bottom:1px solid var(--line); gap:32px; flex-wrap:wrap; }
+  body[data-page="data_capaian"] .page-eyebrow { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.14em; color:var(--ochre); margin-bottom:10px; }
+  body[data-page="data_capaian"] .page-title { font-family:var(--serif); font-size:40px; font-weight:400; line-height:1; letter-spacing:-0.02em; color:var(--forest); margin-bottom:10px; }
+  body[data-page="data_capaian"] .page-title .italic { font-style:italic; font-weight:300; color:var(--cocoa); }
+  body[data-page="data_capaian"] .page-desc { font-size:14px; color:var(--ink-600); max-width:700px; line-height:1.6; }
+  body[data-page="data_capaian"] .page-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+  /* Tombol (admin.css mendefinisikan .btn per-halaman; halaman ini perlu sendiri) */
+  body[data-page="data_capaian"] .btn { display:inline-flex; align-items:center; gap:8px; padding:9px 16px; font-family:var(--sans); font-size:13px; font-weight:500; line-height:1; text-decoration:none; cursor:pointer; border:1px solid transparent; transition:all 0.18s; }
+  body[data-page="data_capaian"] .btn svg { width:14px; height:14px; flex-shrink:0; }
+  body[data-page="data_capaian"] .btn-ghost { background:none; color:var(--forest); border:1px solid var(--line-strong); }
+  body[data-page="data_capaian"] .btn-ghost:hover { border-color:var(--forest); background:var(--cream); }
+  body[data-page="data_capaian"] .btn-primary { background:var(--forest); color:var(--cream); }
+  body[data-page="data_capaian"] .btn-primary:hover { background:var(--ink); }
+
+  body[data-page="data_capaian"] .dc-section { margin-bottom:44px; }
+  body[data-page="data_capaian"] .dc-head { display:flex; align-items:baseline; gap:14px; margin-bottom:16px; }
+  body[data-page="data_capaian"] .dc-num { font-family:var(--mono); font-size:12px; color:var(--ochre); font-weight:600; }
+  body[data-page="data_capaian"] .dc-title { font-family:var(--serif); font-size:24px; color:var(--forest); font-weight:400; line-height:1; }
+  body[data-page="data_capaian"] .dc-sub { font-size:13px; color:var(--ink-400); margin-top:5px; max-width:680px; line-height:1.5; }
+
+  body[data-page="data_capaian"] .dc-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(258px,1fr)); gap:16px; }
+  body[data-page="data_capaian"] .dc-card { border:1px solid var(--line); background:var(--paper); padding:18px 18px 16px; display:flex; flex-direction:column; gap:9px; }
+  body[data-page="data_capaian"] .dc-card h3 { font-family:var(--sans); font-size:15px; color:var(--ink); font-weight:600; margin:0; }
+  body[data-page="data_capaian"] .dc-src { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-400); }
+  body[data-page="data_capaian"] .dc-card p { font-size:13px; color:var(--ink-600); line-height:1.5; margin:0; }
+  body[data-page="data_capaian"] .dc-stat { font-family:var(--mono); font-size:22px; color:var(--forest); line-height:1.1; }
+  body[data-page="data_capaian"] .dc-stat small { font-size:11px; color:var(--ink-400); }
+  body[data-page="data_capaian"] .dc-link { margin-top:auto; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ochre); text-decoration:none; }
+  body[data-page="data_capaian"] .dc-link:hover { color:var(--forest); }
+
+  body[data-page="data_capaian"] .dc-table { width:100%; border-collapse:collapse; border:1px solid var(--line); background:var(--paper); }
+  body[data-page="data_capaian"] .dc-table th { text-align:left; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-400); padding:10px 14px; border-bottom:1px solid var(--line); background:var(--cream); }
+  body[data-page="data_capaian"] .dc-table td { padding:11px 14px; border-bottom:1px solid var(--line); font-size:13px; color:var(--ink); vertical-align:middle; }
+  body[data-page="data_capaian"] .dc-table tr:last-child td { border-bottom:none; }
+  body[data-page="data_capaian"] .mono { font-family:var(--mono); }
+
+  body[data-page="data_capaian"] .dc-badge { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.06em; padding:2px 8px; border-radius:3px; white-space:nowrap; }
+  body[data-page="data_capaian"] .dc-badge.ok { background:rgba(74,107,61,0.12); color:var(--success); }
+  body[data-page="data_capaian"] .dc-badge.need { background:#faf4e6; color:#b5852f; }
+  body[data-page="data_capaian"] .dc-badge.auto { background:rgba(64,106,87,0.12); color:var(--forest); }
+
+  body[data-page="data_capaian"] .dc-formula { display:flex; flex-direction:column; gap:12px; }
+  body[data-page="data_capaian"] .dc-frow { border:1px solid var(--line); background:var(--paper); padding:14px 16px; }
+  body[data-page="data_capaian"] .dc-frow .k { font-weight:600; font-size:14px; color:var(--ink); }
+  body[data-page="data_capaian"] .dc-frow .f { font-family:var(--mono); font-size:12px; color:var(--forest); background:var(--cream); padding:6px 10px; margin-top:9px; display:inline-block; }
+  body[data-page="data_capaian"] .dc-frow .v { font-family:var(--mono); font-size:12px; color:var(--ink-600); margin-top:7px; }
+
+  body[data-page="data_capaian"] .dc-form { border:1px solid var(--forest); background:var(--paper); padding:18px 20px; margin-top:16px; }
+  body[data-page="data_capaian"] .dc-form-row { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
+  body[data-page="data_capaian"] .dc-field { display:flex; flex-direction:column; gap:6px; }
+  body[data-page="data_capaian"] .dc-field label { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-400); }
+  body[data-page="data_capaian"] .dc-input { width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid var(--line-strong); background:var(--cream); font-family:var(--sans); font-size:13px; color:var(--ink); outline:none; }
+  body[data-page="data_capaian"] .dc-input:focus { border-color:var(--forest); }
+  body[data-page="data_capaian"] .dc-input.mono { font-family:var(--mono); }
+  body[data-page="data_capaian"] .dc-del { border:none; background:none; cursor:pointer; color:var(--danger); font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; }
+  body[data-page="data_capaian"] .dc-del:hover { text-decoration:underline; }
+
+  /* Dropdown palet warna (swatch) — pilih skema choropleth webgis2 */
+  body[data-page="data_capaian"] .palet-dd { position:relative; display:inline-block; }
+  body[data-page="data_capaian"] .palet-toggle { display:flex; align-items:center; gap:9px; width:100%; min-width:260px; box-sizing:border-box; padding:8px 11px; border:1px solid var(--line-strong); background:var(--cream); cursor:pointer; font-family:var(--sans); }
+  body[data-page="data_capaian"] .palet-toggle:hover { border-color:var(--forest); }
+  body[data-page="data_capaian"] .palet-strip { display:inline-flex; border-radius:3px; overflow:hidden; box-shadow:0 0 0 1px rgba(0,0,0,0.08); flex-shrink:0; }
+  body[data-page="data_capaian"] .palet-strip i { width:20px; height:15px; display:block; }
+  body[data-page="data_capaian"] .palet-label { flex:1; text-align:left; font-size:13px; color:var(--ink); }
+  body[data-page="data_capaian"] .palet-caret { color:var(--ink-400); font-size:11px; }
+  body[data-page="data_capaian"] .palet-menu { position:absolute; top:calc(100% + 4px); left:0; z-index:60; background:var(--paper,#fff); border:1px solid var(--line-strong); box-shadow:0 10px 28px rgba(31,58,46,0.16); padding:6px; max-height:320px; overflow:auto; min-width:280px; }
+  body[data-page="data_capaian"] .palet-opt { display:flex; align-items:center; gap:11px; width:100%; box-sizing:border-box; background:none; border:none; padding:8px 9px; cursor:pointer; text-align:left; }
+  body[data-page="data_capaian"] .palet-opt:hover { background:var(--cream); }
+  body[data-page="data_capaian"] .palet-opt.sel { background:var(--cream); box-shadow:inset 2px 0 0 var(--forest); }
+  body[data-page="data_capaian"] .palet-opt .palet-label { font-size:12.5px; color:var(--ink-600); }
+  body[data-page="data_capaian"] .palet-opt.sel .palet-label { color:var(--forest); font-weight:600; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Pengelolaan Data · FOLUR</div>
+    <h1 class="page-title">Data <span class="italic">Capaian</span></h1>
+    <p class="page-desc">Pusat kendali data Capaian Program FOLUR — <strong>sumber data</strong>, <strong>entri realisasi</strong> indikator, dan <strong>formulasi</strong> — yang menyuapi <strong style="color:var(--forest);">Sitroom</strong> internal dan halaman <strong style="color:var(--forest);">Capaian publik</strong>.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'dst_auth:capaian' %}" target="_blank" rel="noopener" class="btn btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 14c4-6 8-6 9-2 1-5 5-7 9-4"/></svg>
+      Sitroom ↗
+    </a>
+    <a href="{% url 'dst:capaian_publik' %}" target="_blank" rel="noopener" class="btn btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></svg>
+      Capaian publik ↗
+    </a>
+  </div>
+</header>
+
+<!-- 01 · SUMBER DATA -->
+<section class="dc-section">
+  <div class="dc-head">
+    <span class="dc-num">01</span>
+    <div>
+      <div class="dc-title">Sumber Data</div>
+      <div class="dc-sub">Dataset yang menyuapi indikator &amp; konteks bentang lahan. Kelola/segarkan dari tautan tiap kartu.</div>
+    </div>
+  </div>
+  <div class="dc-grid">
+    <div class="dc-card">
+      <span class="dc-src">BIG · ArcGIS REST</span>
+      <h3>Batas Wilayah</h3>
+      <p>Provinsi → desa (geometri) untuk konteks bentang lahan &amp; join IDM.</p>
+      <div class="dc-stat">{{ wilayah_counts.desa|default:0|intcomma }}<small> desa · {{ wilayah_counts.kecamatan }} kec · {{ wilayah_counts.kabkota }} kab</small></div>
+      <a class="dc-link" href="{% url 'dst_auth:pengaturan' %}#wilayah">Kelola / Restore →</a>
+    </div>
+    <div class="dc-card">
+      <span class="dc-src">Kemendesa · CKAN</span>
+      <h3>IDM Desa</h3>
+      <p>Indeks Desa Membangun (IKS/IKE/IKL, status) per desa — dasar %desa maju &amp; distribusi IDM.</p>
+      <div class="dc-stat">{{ idm_count|default:0|intcomma }}<small> desa · TA {{ idm_tahun|default:"—" }}</small></div>
+      <span class="dc-src">CLI: <span class="mono">manage.py sync_idm</span></span>
+    </div>
+    <div class="dc-card">
+      <span class="dc-src">GeoNode · GeoServer</span>
+      <h3>Dataset Spasial</h3>
+      <p>Layer tematik (WMS/WFS) untuk peta &amp; analitik Sitroom lanjutan.</p>
+      <div class="dc-stat">{{ dataset_count|default:0|intcomma }}<small> layer publish</small></div>
+      <a class="dc-link" href="{% url 'dst_auth:data_spasial' %}">Kelola Dataset Spasial →</a>
+    </div>
+    <div class="dc-card">
+      <span class="dc-src">CMS · FOLUR</span>
+      <h3>Komoditas Fokus</h3>
+      <p>Kakao, padi, dst — profil komoditas rantai nilai.</p>
+      <div class="dc-stat">{{ komoditas_count|default:0 }}<small> aktif</small></div>
+      <a class="dc-link" href="{% url 'dst_auth:pengaturan' %}#folur">Kelola Komoditas →</a>
+    </div>
+    <div class="dc-card">
+      <span class="dc-src">CMS · FOLUR</span>
+      <h3>Implementing Partners</h3>
+      <p>Mitra pelaksana — sumber KPI auto <span class="mono">TK-MITRA</span>.</p>
+      <div class="dc-stat">{{ partner_count|default:0 }}<small> mitra aktif</small></div>
+      <a class="dc-link" href="{% url 'dst_auth:pengaturan' %}#mitra">Kelola Mitra →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 02 · INDIKATOR & REALISASI (KPI) -->
+<section class="dc-section" id="kelola">
+  <div class="dc-head">
+    <span class="dc-num">02</span>
+    <div>
+      <div class="dc-title">Indikator Capaian (KPI)</div>
+      <div class="dc-sub">Kelola indikator results-framework FOLUR &amp; entri realisasi tahunannya. Manual terisi <strong>{{ kpi_manual_terisi }}/{{ kpi_manual_total }}</strong>. Definisi indikator (kode/pilar/target) hanya Super Admin; realisasi dapat diisi pengelola data.</div>
+    </div>
+  </div>
+
+  <table class="dc-table">
+    <thead>
+      <tr><th>Kode</th><th>Indikator</th><th>Pilar</th><th>Sumber</th><th>Target</th><th>Realisasi terbaru</th><th>Status</th><th>Aktif</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for r in kpi_rows %}
+      <tr>
+        <td><strong class="mono">{{ r.obj.kode }}</strong></td>
+        <td>{{ r.obj.nama }}</td>
+        <td>{{ r.obj.pilar_nama }}</td>
+        <td>{% if r.obj.sumber == 'auto' %}<span class="dc-badge auto">AUTO</span>{% else %}Manual{% endif %}</td>
+        <td class="mono">{{ r.obj.target|default:"—" }}</td>
+        <td class="mono">{% if r.ada %}{{ r.nilai|intcomma }} {{ r.obj.satuan }}{% if r.tahun %} <small>({{ r.tahun }})</small>{% endif %}{% else %}—{% endif %}</td>
+        <td>{% if r.ada %}<span class="dc-badge ok">terisi</span>{% else %}<span class="dc-badge need">perlu data</span>{% endif %}</td>
+        <td>
+          {% if request.user.is_superuser %}
+          <form method="post" action="" style="display:inline;">{% csrf_token %}
+            <input type="hidden" name="form" value="kpi_toggle">
+            <input type="hidden" name="kpi_id" value="{{ r.obj.pk }}">
+            <input type="checkbox" name="aktif" title="Aktif/nonaktif" onchange="this.form.submit()" {% if r.obj.aktif %}checked{% endif %}>
+          </form>
+          {% else %}{% if r.obj.aktif %}Ya{% else %}—{% endif %}{% endif %}
+        </td>
+        <td>
+          <a class="dc-link" href="?edit_kpi={{ r.obj.pk }}{% if r.obj.sumber == 'auto' %}#kelola-form{% else %}#entri{% endif %}">Kelola →</a>
+          {% if request.user.is_superuser %}
+          <form method="post" action="" onsubmit="return confirm('Hapus indikator {{ r.obj.kode|escapejs }}?');" style="display:inline;margin-left:10px;">{% csrf_token %}
+            <input type="hidden" name="form" value="kpi_delete">
+            <input type="hidden" name="kpi_id" value="{{ r.obj.pk }}">
+            <button type="submit" class="dc-del">Hapus</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;color:var(--ink-400);padding:22px;">Belum ada indikator.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {# Panel realisasi (manual, saat mengedit) #}
+  {% if kpi_edit and kpi_edit.sumber != 'auto' %}
+  <div class="dc-form" id="entri" style="border-color:var(--ochre);">
+    <div class="dc-head" style="margin-bottom:14px;">
+      <span class="dc-num">›</span>
+      <div>
+        <div class="dc-title" style="font-size:18px;">Realisasi — <span class="mono">{{ kpi_edit.kode }}</span> · {{ kpi_edit.nama }}</div>
+        <div class="dc-sub">Target {{ kpi_edit.target|default:"—" }} {{ kpi_edit.satuan }} · pilar {{ kpi_edit.pilar_nama }}</div>
+      </div>
+      <a href="{% url 'dst_auth:data_capaian' %}#kelola" class="dc-link" style="margin-left:auto;">Tutup ✕</a>
+    </div>
+    {% if kpi_edit.sumber_agregat == 'roll_up' %}
+    <div style="background:rgba(31,58,46,0.06);border:1px solid var(--line);border-left:3px solid var(--forest);padding:10px 13px;margin-bottom:14px;font-size:12.5px;color:var(--ink-600);line-height:1.5;">
+      <strong style="color:var(--forest);">Mode Roll-up aktif.</strong> Angka agregat indikator ini <strong>dihitung otomatis = Σ Capaian per Wilayah (desa)</strong> — isi di panel <a class="dc-link" style="margin:0;" href="#wilayah">Capaian per Wilayah</a> di bawah. Entri realisasi manual berikut <em>diabaikan</em> selama mode roll-up (tidak dihapus; ubah "Sumber angka agregat" ke <em>manual</em> untuk memakainya kembali).
+    </div>
+    {% endif %}
+    <table class="dc-table" style="margin-bottom:14px;">
+      <thead><tr><th>Tahun</th><th>Realisasi</th><th>Catatan</th><th></th></tr></thead>
+      <tbody>
+        {% for c in kpi_capaian_list %}
+        <tr>
+          <td class="mono">{{ c.tahun }}</td>
+          <td class="mono">{{ c.nilai|intcomma }} {{ kpi_edit.satuan }}</td>
+          <td>{{ c.catatan|default:"—" }}</td>
+          <td>
+            <form method="post" action="" onsubmit="return confirm('Hapus realisasi {{ c.tahun }}?');" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="form" value="kpi_capaian_delete">
+              <input type="hidden" name="indikator_id" value="{{ kpi_edit.pk }}">
+              <input type="hidden" name="capaian_id" value="{{ c.pk }}">
+              <button type="submit" class="dc-del">Hapus</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--ink-400);padding:16px;">Belum ada realisasi — tambahkan di bawah.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="kpi_capaian_save">
+      <input type="hidden" name="indikator_id" value="{{ kpi_edit.pk }}">
+      <div class="dc-form-row">
+        <div class="dc-field"><label>Tahun *</label><input class="dc-input mono" type="number" name="tahun" min="2000" max="2100" required value="{% now 'Y' %}" style="width:110px;"></div>
+        <div class="dc-field"><label>Realisasi * ({{ kpi_edit.satuan|default:"nilai" }})</label><input class="dc-input mono" type="text" name="nilai" required placeholder="mis. 540" style="width:170px;"></div>
+        <div class="dc-field" style="flex:1;min-width:200px;"><label>Catatan (opsional)</label><input class="dc-input" type="text" name="catatan" maxlength="255"></div>
+        <button class="btn btn-primary" type="submit">Simpan realisasi</button>
+      </div>
+    </form>
+  </div>
+
+  {# Panel capaian per WILAYAH (desa/kecamatan) — grid bulk #}
+  <div class="dc-form" id="wilayah" style="border-color:var(--forest);margin-top:16px;">
+    <div class="dc-head" style="margin-bottom:14px;">
+      <span class="dc-num">⊞</span>
+      <div>
+        <div class="dc-title" style="font-size:18px;">Capaian per Wilayah — <span class="mono">{{ kpi_edit.kode }}</span> · {{ kpi_edit.nama }}</div>
+        <div class="dc-sub">Entri nilai per desa/kecamatan (satuan {{ kpi_edit.satuan|default:"nilai" }}). Tampil sebagai choropleth di <a class="dc-link" href="{% url 'dst:webgis2' %}" target="_blank" rel="noopener">WebGIS Monitoring ↗</a>.</div>
+      </div>
+    </div>
+
+    <form method="get" action="{% url 'dst_auth:data_capaian' %}#wilayah" id="wilCtl" style="margin-bottom:14px;">
+      <input type="hidden" name="edit_kpi" value="{{ kpi_edit.pk }}">
+      <div class="dc-form-row" style="align-items:flex-end;">
+        <div class="dc-field"><label>Jenjang</label>
+          <select class="dc-input" name="wil_level" onchange="document.getElementById('wilCtl').submit();">
+            <option value="desa" {% if wil_level == 'desa' %}selected{% endif %}>Desa/Kelurahan</option>
+            <option value="kecamatan" {% if wil_level == 'kecamatan' %}selected{% endif %}>Kecamatan</option>
+          </select>
+        </div>
+        <div class="dc-field"><label>Tahun</label><input class="dc-input mono" type="number" name="wil_tahun" min="2000" max="2100" value="{{ wil_tahun }}" style="width:110px;"></div>
+        <button class="btn" type="submit">Tampilkan</button>
+        <div style="margin-left:auto;font-size:12px;color:var(--ink-400);">Terisi <strong style="color:var(--forest);">{{ wil_terisi }}</strong> / {{ wil_total }} {{ wil_level }}</div>
+      </div>
+    </form>
+
+    {% if wil_rows %}
+    <input type="text" id="wilFilter" class="dc-input" placeholder="Saring nama / kode wilayah…" style="margin-bottom:8px;max-width:300px;">
+    <form method="post" action="{% url 'dst_auth:data_capaian' %}#wilayah">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="kpi_wilayah_save">
+      <input type="hidden" name="indikator_id" value="{{ kpi_edit.pk }}">
+      <input type="hidden" name="level" value="{{ wil_level }}">
+      <input type="hidden" name="tahun" value="{{ wil_tahun }}">
+      <div style="max-height:440px;overflow:auto;border:1px solid var(--line);">
+        <table class="dc-table" style="margin:0;">
+          <thead><tr>
+            <th style="position:sticky;top:0;background:var(--cream-200);z-index:1;">Kode</th>
+            <th style="position:sticky;top:0;background:var(--cream-200);z-index:1;">Wilayah</th>
+            <th style="position:sticky;top:0;background:var(--cream-200);z-index:1;min-width:240px;">Kegiatan</th>
+            <th style="position:sticky;top:0;background:var(--cream-200);z-index:1;min-width:160px;">Komoditi</th>
+            <th style="position:sticky;top:0;background:var(--cream-200);z-index:1;width:170px;">Nilai ({{ kpi_edit.satuan|default:"—" }})</th>
+          </tr></thead>
+          <tbody>
+            {% for r in wil_rows %}
+            <tr class="wil-row" data-find="{{ r.nama|lower }} {{ r.parent|lower }} {{ r.kode_pum }} {{ r.kegiatan|lower }}">
+              <td class="mono" style="white-space:nowrap;">{{ r.kode_pum }}</td>
+              <td>{{ r.nama }}{% if r.parent %} <span style="color:var(--ink-400);font-size:11px;">· {{ r.parent }}</span>{% endif %}</td>
+              <td><input class="dc-input" type="text" name="kegiatan_{{ r.kode_pum }}" value="{{ r.kegiatan }}" maxlength="255" placeholder="mis. intensifikasi lahan padi" style="width:100%;min-width:220px;"></td>
+              <td><select class="dc-input" name="komoditas_{{ r.kode_pum }}" style="min-width:150px;">
+                <option value="">— pilih —</option>
+                {% for k in wil_komoditas %}<option value="{{ k.pk }}" {% if r.komoditas == k.pk %}selected{% endif %}>{{ k.nama }}</option>{% endfor %}
+              </select></td>
+              <td><input class="dc-input mono" type="text" name="nilai_{{ r.kode_pum }}" value="{{ r.nilai|default_if_none:'' }}" style="width:150px;" inputmode="decimal"></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:11.5px;color:var(--ink-400);">Kegiatan tersimpan bersama Nilai. Kosongkan <em>Nilai</em> lalu Simpan untuk menghapus baris wilayah tsb.</span>
+        <button class="btn btn-primary" type="submit">Simpan capaian per wilayah</button>
+      </div>
+    </form>
+    <script>
+      (function () {
+        var f = document.getElementById('wilFilter');
+        if (!f) return;
+        var rows = document.querySelectorAll('.wil-row');
+        f.addEventListener('input', function () {
+          var q = f.value.trim().toLowerCase();
+          rows.forEach(function (tr) {
+            tr.style.display = (!q || tr.getAttribute('data-find').indexOf(q) >= 0) ? '' : 'none';
+          });
+        });
+      })();
+    </script>
+    {% else %}
+    <div style="color:var(--ink-400);font-size:13px;padding:8px 0;">Data wilayah <strong>{{ wil_level }}</strong> cakupan aktif belum tersedia. Restore data wilayah dulu di <a class="dc-link" href="{% url 'dst_auth:pengaturan' %}#wilayah">Pengaturan</a>.</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Panel definisi indikator (Super Admin) — tambah / edit #}
+  {% if request.user.is_superuser %}
+  <div class="dc-form" id="kelola-form" style="margin-top:16px;">
+    <div class="dc-head" style="margin-bottom:14px;">
+      <span class="dc-num">{% if kpi_edit %}✎{% else %}＋{% endif %}</span>
+      <div>
+        <div class="dc-title" style="font-size:18px;">{% if kpi_edit %}Edit Indikator: {{ kpi_edit.kode }}{% else %}Tambah Indikator{% endif %}</div>
+        <div class="dc-sub">Definisi indikator results-framework (kode, pilar, satuan, target, sumber).</div>
+      </div>
+      {% if kpi_edit %}<a href="{% url 'dst_auth:data_capaian' %}#kelola-form" class="dc-link" style="margin-left:auto;">+ Tambah baru</a>{% endif %}
+    </div>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="kpi_save">
+      {% if kpi_edit %}<input type="hidden" name="kpi_id" value="{{ kpi_edit.pk }}">{% endif %}
+      <div class="dc-form-row">
+        <div class="dc-field"><label>Kode *</label><input class="dc-input mono" type="text" name="kode" maxlength="20" required value="{{ kpi_edit.kode|default:'' }}" style="width:130px;"></div>
+        <div class="dc-field" style="flex:1;min-width:240px;"><label>Nama indikator *</label><input class="dc-input" type="text" name="nama" maxlength="200" required value="{{ kpi_edit.nama|default:'' }}"></div>
+        <div class="dc-field"><label>Pilar *</label><select class="dc-input" name="pilar">{% for val,lbl in kpi_pilar_choices %}<option value="{{ val }}" {% if kpi_edit and kpi_edit.pilar == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select></div>
+      </div>
+      <div class="dc-form-row" style="margin-top:12px;">
+        <div class="dc-field" style="flex:1;min-width:280px;"><label>Deskripsi (tampil saat "perlu data")</label><textarea class="dc-input" name="deskripsi" rows="2" style="resize:vertical;">{{ kpi_edit.deskripsi|default:'' }}</textarea></div>
+      </div>
+      <div class="dc-form-row" style="margin-top:12px;">
+        <div class="dc-field"><label>Satuan</label><input class="dc-input" type="text" name="satuan" maxlength="30" value="{{ kpi_edit.satuan|default:'' }}" style="width:120px;" placeholder="ha, orang, %"></div>
+        <div class="dc-field"><label>Target</label><input class="dc-input mono" type="text" name="target" value="{{ kpi_edit.target|default:'' }}" style="width:120px;"></div>
+        <div class="dc-field"><label>Baseline</label><input class="dc-input mono" type="text" name="baseline" value="{{ kpi_edit.baseline|default:'' }}" style="width:120px;"></div>
+        <div class="dc-field"><label>Arah</label><select class="dc-input" name="arah">{% for val,lbl in kpi_arah_choices %}<option value="{{ val }}" {% if kpi_edit and kpi_edit.arah == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select></div>
+        <div class="dc-field" style="min-width:200px;"><label>Agregasi antar-tahun</label><select class="dc-input" name="agregasi">{% for val,lbl in kpi_agregasi_choices %}<option value="{{ val }}" {% if kpi_edit and kpi_edit.agregasi == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select></div>
+        <div class="dc-field" style="min-width:230px;"><label>Sumber angka agregat</label><select class="dc-input" name="sumber_agregat">{% for val,lbl in kpi_sumber_agregat_choices %}<option value="{{ val }}" {% if kpi_edit and kpi_edit.sumber_agregat == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select></div>
+        <div class="dc-field"><label>Urutan</label><input class="dc-input mono" type="number" name="urutan" min="0" value="{{ kpi_edit.urutan|default:0 }}" style="width:90px;"></div>
+      </div>
+      <div class="dc-form-row" style="margin-top:12px;">
+        <div class="dc-field" style="min-width:300px;">
+          <label>Palet warna peta <span style="color:var(--ink-400);font-weight:400;">(legenda &amp; choropleth webgis2)</span></label>
+          <div class="palet-dd" id="paletDd">
+            <input type="hidden" name="palet" id="paletInput" value="{{ kpi_edit.palet|default:'hijau' }}">
+            <button type="button" class="palet-toggle" id="paletToggle">
+              <span class="palet-strip" id="paletStripSel"></span>
+              <span class="palet-label" id="paletLabelSel">—</span>
+              <span class="palet-caret">▾</span>
+            </button>
+            <div class="palet-menu" id="paletMenu" style="display:none;">
+              {% for p in palet_choices %}
+              <button type="button" class="palet-opt" data-key="{{ p.key }}" data-label="{{ p.label }}">
+                <span class="palet-strip">{% for c in p.colors %}<i style="background:{{ c }};"></i>{% endfor %}</span>
+                <span class="palet-label">{{ p.label }}</span>
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--ink-400);margin-top:5px;">Tampil di <a class="dc-link" style="margin:0;" href="{% url 'dst:webgis2' %}" target="_blank" rel="noopener">WebGIS Monitoring ↗</a> untuk indikator ini.</div>
+        </div>
+      </div>
+      <div class="dc-form-row" style="margin-top:12px;">
+        <div class="dc-field"><label>Sumber nilai</label><select class="dc-input" name="sumber">{% for val,lbl in kpi_sumber_choices %}<option value="{{ val }}" {% if kpi_edit and kpi_edit.sumber == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select></div>
+        <div class="dc-field"><label>Auto key (bila auto)</label><input class="dc-input mono" type="text" name="auto_key" maxlength="50" value="{{ kpi_edit.auto_key|default:'' }}" style="width:160px;" placeholder="mis. mitra_aktif"></div>
+        <div class="dc-field" style="flex:1;min-width:200px;"><label>Badge tambahan</label><input class="dc-input" type="text" name="extra" maxlength="120" value="{{ kpi_edit.extra|default:'' }}" placeholder='mis. "40% perempuan"'></div>
+        <div class="dc-field"><label>Status</label><label style="display:flex;align-items:center;gap:8px;height:38px;font-size:13px;color:var(--ink-600);"><input type="checkbox" name="aktif" {% if not kpi_edit or kpi_edit.aktif %}checked{% endif %}> Aktif</label></div>
+      </div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+        <button class="btn btn-primary" type="submit">{% if kpi_edit %}Simpan perubahan{% else %}Tambah indikator{% endif %}</button>
+      </div>
+    </form>
+  </div>
+  <script>
+    (function () {
+      var dd = document.getElementById('paletDd'); if (!dd) return;
+      var inp = document.getElementById('paletInput');
+      var menu = document.getElementById('paletMenu');
+      var stripSel = document.getElementById('paletStripSel');
+      var labelSel = document.getElementById('paletLabelSel');
+      function pick(key) {
+        var opt = dd.querySelector('.palet-opt[data-key="' + key + '"]') || dd.querySelector('.palet-opt');
+        if (!opt) return;
+        inp.value = opt.getAttribute('data-key');
+        stripSel.innerHTML = opt.querySelector('.palet-strip').innerHTML;
+        labelSel.textContent = opt.getAttribute('data-label');
+        dd.querySelectorAll('.palet-opt').forEach(function (o) { o.classList.toggle('sel', o === opt); });
+      }
+      document.getElementById('paletToggle').addEventListener('click', function (e) {
+        e.stopPropagation();
+        menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
+      });
+      dd.querySelectorAll('.palet-opt').forEach(function (o) {
+        o.addEventListener('click', function () { pick(o.getAttribute('data-key')); menu.style.display = 'none'; });
+      });
+      document.addEventListener('click', function (e) { if (!dd.contains(e.target)) menu.style.display = 'none'; });
+      pick(inp.value || 'hijau');
+    })();
+  </script>
+  {% endif %}
+</section>
+
+<!-- 03 · FORMULASI -->
+<section class="dc-section">
+  <div class="dc-head">
+    <span class="dc-num">03</span>
+    <div>
+      <div class="dc-title">Formulasi</div>
+      <div class="dc-sub">Cara nilai dihitung. <strong>AUTO</strong> dari data sistem; <strong>manual</strong> dari entri realisasi.</div>
+    </div>
+  </div>
+  <div class="dc-formula">
+    <div class="dc-frow">
+      <div class="k">Luas bentang lahan <span class="dc-badge auto">AUTO</span></div>
+      <div class="f">Σ ST_Area(geom::geography) ÷ 10.000 — wilayah.kabkota (cakupan)</div>
+      <div class="v">= {{ folur_auto.luas_ha|default:"—"|intcomma }} ha</div>
+    </div>
+    <div class="dc-frow">
+      <div class="k">% Desa Mandiri + Maju <span class="dc-badge auto">AUTO</span></div>
+      <div class="f">(Σ desa status Mandiri/Maju) ÷ (Σ desa ber-IDM) × 100 — join wilayah.desa ↔ wilayah.idm</div>
+      <div class="v">= {{ folur_auto.persen_desa_maju|default:"—" }} % · rata-rata skor IDM {{ folur_auto.idm_avg|default:"—" }} (TA {{ folur_auto.periode_idm|default:"—" }})</div>
+    </div>
+    <div class="dc-frow">
+      <div class="k">TK-MITRA · Mitra pelaksana aktif <span class="dc-badge auto">AUTO</span></div>
+      <div class="f">COUNT(ImplementingPartner where aktif = true)</div>
+      <div class="v">= {{ partner_count }} mitra</div>
+    </div>
+    <div class="dc-frow">
+      <div class="k">Indikator manual (CI1, CI3, CI4, CI6, CI11, VC-*)</div>
+      <div class="f">nilai = realisasi tahunan terbaru (FolurCapaian) · persen = realisasi ÷ target (hormati arah)</div>
+      <div class="v">Diisi via Entri Data (§02) atau Pengaturan Sistem §12. Tanpa realisasi → badge "perlu data".</div>
+    </div>
+  </div>
+</section>
+{% endblock %}

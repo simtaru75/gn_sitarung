@@ -1,0 +1,503 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}{% if document %}Edit · {{ document.title|truncatechars:50 }}{% else %}Edit Dokumen{% endif %} — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}dokumen_detail{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="dokumen_detail"] .dokumen-flash {
+    margin-bottom: 18px; padding: 12px 16px; border: 1px solid var(--line);
+    font-size: 13px; display: flex; align-items: center; gap: 10px;
+    font-family: var(--sans);
+  }
+  body[data-page="dokumen_detail"] .dokumen-flash.success { background: rgba(74, 107, 61, 0.08); color: var(--success); border-color: rgba(74, 107, 61, 0.25); }
+  body[data-page="dokumen_detail"] .dokumen-flash.error   { background: rgba(139, 58, 42, 0.08); color: var(--danger);  border-color: rgba(139, 58, 42, 0.25); }
+  body[data-page="dokumen_detail"] .dokumen-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="dokumen_detail"] select[multiple] {
+    height: auto; min-height: 110px; padding: 8px;
+  }
+  body[data-page="dokumen_detail"] .empty-doc {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 60px 40px; text-align: center;
+  }
+  body[data-page="dokumen_detail"] .empty-doc h2 {
+    font-family: var(--serif); font-size: 26px; color: var(--forest);
+    margin-bottom: 12px;
+  }
+
+  /* === APPROVE TOGGLE (superuser) === */
+  body[data-page="dokumen_detail"] .approve-toggle {
+    position: relative; display: flex; align-items: center; gap: 16px;
+    padding: 16px 18px; cursor: pointer;
+    border: 1px solid var(--line-strong); background: var(--paper);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  body[data-page="dokumen_detail"] .approve-toggle:hover { border-color: var(--forest); }
+  body[data-page="dokumen_detail"] .approve-toggle:has(> input:checked) {
+    border-color: rgba(74, 124, 89, 0.45); background: rgba(74, 124, 89, 0.06);
+  }
+  body[data-page="dokumen_detail"] .approve-toggle > input {
+    position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
+  }
+  body[data-page="dokumen_detail"] .approve-switch {
+    position: relative; width: 46px; height: 26px; flex-shrink: 0;
+    background: var(--line-strong); transition: background 0.2s;
+  }
+  body[data-page="dokumen_detail"] .approve-switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; background: var(--paper);
+    box-shadow: 0 1px 2px rgba(31, 58, 46, 0.3); transition: transform 0.2s;
+  }
+  body[data-page="dokumen_detail"] .approve-toggle > input:checked + .approve-switch { background: var(--success); }
+  body[data-page="dokumen_detail"] .approve-toggle > input:checked + .approve-switch::after { transform: translateX(20px); }
+  body[data-page="dokumen_detail"] .approve-toggle > input:focus-visible + .approve-switch {
+    outline: 2px solid var(--forest); outline-offset: 2px;
+  }
+  body[data-page="dokumen_detail"] .approve-text { display: flex; flex-direction: column; gap: 3px; }
+  body[data-page="dokumen_detail"] .approve-title { font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  body[data-page="dokumen_detail"] .approve-sub { font-family: var(--sans); font-size: 11.5px; color: var(--ink-400); line-height: 1.4; }
+  body[data-page="dokumen_detail"] .approve-state {
+    margin-left: auto; flex-shrink: 0;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; font-weight: 500;
+    padding: 5px 11px; border: 1px solid var(--line-strong); color: var(--ink-400);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  body[data-page="dokumen_detail"] .approve-state::after { content: 'OFF'; }
+  body[data-page="dokumen_detail"] .approve-toggle > input:checked ~ .approve-state {
+    color: var(--success); border-color: rgba(74, 124, 89, 0.45); background: rgba(74, 124, 89, 0.08);
+  }
+  body[data-page="dokumen_detail"] .approve-toggle > input:checked ~ .approve-state::after { content: 'ON'; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="dokumen-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% if not document %}
+<div class="empty-doc">
+  <h2>Pilih dokumen untuk diedit</h2>
+  <p style="color: var(--ink-600); margin-bottom: 24px;">Buka halaman ini dari daftar Dokumen agar parameter <code>?id=</code> terisi.</p>
+  <a href="{% url 'dst_auth:dokumen' %}" class="btn btn-primary btn-sm">Kembali ke daftar dokumen</a>
+</div>
+{% else %}
+
+<div class="validation-banner">
+  <div class="vb-icon">
+    {% if document.is_published and document.is_approved %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    {% else %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+    {% endif %}
+  </div>
+  <div class="vb-text">
+    <div class="vb-title">
+      Edit dokumen
+      {% if document.is_published and document.is_approved %}
+        · <span style="color: var(--success);">ter-publish &amp; ter-approve</span>
+      {% elif document.is_published %}
+        · <span style="color: var(--warning);">menunggu approval walidata</span>
+      {% else %}
+        · <span style="color: var(--ink-400);">draft</span>
+      {% endif %}
+    </div>
+    <div class="vb-sub">Perubahan tersimpan langsung ke <code>Document</code> di database.</div>
+  </div>
+  <a href="{% url 'dst_auth:dokumen' %}" class="btn btn-ghost btn-sm" style="flex-shrink: 0;">← Kembali</a>
+</div>
+
+<form method="post" action="?id={{ document.pk }}">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save">
+
+  <div class="detail-grid">
+
+    <!-- ==================== MAIN ==================== -->
+    <div class="doc-main">
+
+      <!-- 01: INFORMASI DASAR -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">01</span>
+            <div>
+              <h2 class="ds-title">Informasi <span class="italic">dasar</span></h2>
+              <div class="ds-meta">Judul, tanggal, dan bahasa</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-group">
+            <label class="form-label">Judul Dokumen <span class="req">*</span></label>
+            <input class="form-input large" type="text" name="title" maxlength="255" required value="{{ document.title|default:'' }}">
+            <div class="form-help">Gunakan judul resmi sesuai naskah regulasi.</div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Tanggal Referensi</label>
+              <input class="form-input mono" name="date" type="date" value="{% if document.date %}{{ document.date|date:'Y-m-d' }}{% endif %}">
+              <div class="form-help">Tanggal penerbitan / penetapan dokumen.</div>
+            </div>
+            <div>
+              <label class="form-label">Bahasa</label>
+              <select class="form-select" name="language">
+                <option value="ind" {% if document.language == "ind" %}selected{% endif %}>Bahasa Indonesia (ind)</option>
+                <option value="eng" {% if document.language == "eng" %}selected{% endif %}>English (eng)</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 02: KONTEN & RINGKASAN -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">02</span>
+            <div>
+              <h2 class="ds-title">Konten &amp; <span class="italic">ringkasan</span></h2>
+              <div class="ds-meta">Abstrak, tujuan, dan informasi pendukung</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-group">
+            <label class="form-label">Abstrak / Ringkasan <span class="req">*</span></label>
+            <textarea class="form-textarea long" name="abstract" required>{{ abstract_display }}</textarea>
+            <div class="form-help">{% if has_real_abstract %}Tersimpan di field <code>abstract</code>.{% else %}<strong>Belum ada abstrak nyata</strong> — isi ringkasan agar dokumen dapat dipanen.{% endif %}</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tujuan / Purpose</label>
+            <textarea class="form-textarea" style="min-height: 80px;" name="purpose">{{ document.purpose|default:'' }}</textarea>
+            <div class="form-help">Konteks tujuan diterbitkannya dokumen ini.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Informasi Pendukung / Lineage</label>
+            <textarea class="form-textarea" name="supplemental_information">{{ document.supplemental_information|default:'' }}</textarea>
+            <div class="form-help">Tersimpan di <code>supplemental_information</code>. Pakai untuk metodologi, riwayat revisi, atau catatan editor.</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 03: KLASIFIKASI -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">03</span>
+            <div>
+              <h2 class="ds-title">Klasifikasi <span class="italic">tematik</span></h2>
+              <div class="ds-meta">Kategori ISO, region, dan kata kunci</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Kategori ISO 19115</label>
+              <select class="form-select" name="category">
+                <option value="">— Tidak ditetapkan —</option>
+                {% for c in categories %}
+                  <option value="{{ c.pk }}" {% if document.category_id == c.pk %}selected{% endif %}>{{ c.gn_description|default:c.identifier }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Pengelola / Pemilik <span class="helper">owner</span></label>
+              <select class="form-select" name="owner">
+                {% for u in walidata_users %}
+                  <option value="{{ u.pk }}" {% if document.owner_id == u.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }} ({{ u.username }})</option>
+                {% endfor %}
+              </select>
+              <div class="form-help">Produsen/pemilik data — tampil sebagai <strong>Pengelola</strong> di katalog (organisasi pengguna).</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Walidata <span class="helper">pengampu data</span></label>
+            <select class="form-select" name="walidata">
+              <option value="">— Tidak ditetapkan —</option>
+              {% for w in walidata_list %}
+                <option value="{{ w.pk }}" {% if current_walidata_id == w.pk %}selected{% endif %}>{{ w.nama }}{% if w.kepanjangan %} · {{ w.kepanjangan }}{% endif %}</option>
+              {% endfor %}
+            </select>
+            <div class="form-help">Pilih instansi pengampu/penanggung jawab data dari daftar yang Anda kelola di menu <strong>Daftar Walidata</strong> Nama instansi tampil sebagai <strong>Walidata</strong> dan menjadi filter di Jelajah Dokumen. Instansi boleh dipilih meski belum memiliki akun pengguna — proses approval ditangani admin.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Region / Cakupan</label>
+            {% include 'dst-district/admin/partials/_region_autocomplete.html' %}
+            <div class="form-help">Ketik untuk mencari, pilih satu atau beberapa. Kabupaten tanpa kata "Kabupaten" (mis. <strong>Luwu</strong>); kota dengan kata "Kota" (mis. <strong>Kota Palopo</strong>).</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Kata Kunci</label>
+            <input class="form-input" name="keywords" type="text" value="{{ keywords_csv }}" placeholder="RTRW, tata ruang, FOLUR">
+            <div class="form-help">Pisahkan dengan koma. Mengganti semua keyword yang ada.</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 04: BERKAS -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">04</span>
+            <div>
+              <h2 class="ds-title">Berkas <span class="italic">naskah</span></h2>
+              <div class="ds-meta">Read-only · ganti via uploader GeoNode native</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          {% if files or document.doc_url %}
+            {% if document.doc_url %}
+              <div class="file-uploaded">
+                <div class="file-icon-large">URL</div>
+                <div class="file-info-large">
+                  <div class="file-name-large">{{ document.doc_url|truncatechars:80 }}</div>
+                  <div class="file-meta-large">
+                    <span>External URL</span>
+                  </div>
+                </div>
+                <div class="file-actions">
+                  <a href="{{ document.doc_url }}" target="_blank" rel="noopener" title="Buka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+                </div>
+              </div>
+            {% endif %}
+            {% for f in files %}
+            <div class="file-uploaded" style="margin-top: 8px;">
+              <div class="file-icon-large">{{ document.extension|default:"FILE"|upper|slice:":4" }}</div>
+              <div class="file-info-large">
+                <div class="file-name-large">{{ f|cut:"/mnt/volumes/statics/assets/" }}</div>
+                <div class="file-meta-large">
+                  <span><strong>{{ document.extension|upper }}</strong></span>
+                  <span>{{ document.subtype|default:"document"|title }}</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div style="padding: 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+              Tidak ada berkas terlampir untuk dokumen ini.
+            </div>
+          {% endif %}
+
+        </div>
+      </section>
+
+      <!-- 05: PENERBITAN & LISENSI -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">05</span>
+            <div>
+              <h2 class="ds-title">Penerbitan &amp; <span class="italic">lisensi</span></h2>
+              <div class="ds-meta">Atribusi, lisensi, dan visibilitas</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Atribusi</label>
+              <input class="form-input" name="attribution" type="text" maxlength="255" value="{{ document.attribution|default:'' }}" placeholder="Mis. BAPPEDA Kabupaten Abc, 2024">
+            </div>
+            <div>
+              <label class="form-label">Lisensi</label>
+              <select class="form-select" name="license">
+                <option value="">— Tidak ditetapkan —</option>
+                {% for l in licenses %}
+                  <option value="{{ l.pk }}" {% if document.license_id == l.pk %}selected{% endif %}>{{ l.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Visibilitas</label>
+            <select class="form-select" name="visibility">
+              <option value="public" {% if document.is_published %}selected{% endif %}>Publik — dipublish ke katalog</option>
+              <option value="draft" {% if not document.is_published %}selected{% endif %}>Draft — belum dipublish</option>
+            </select>
+            <div class="form-help">Izin unduh publik diatur lewat tab <strong>Share</strong> dokumen di katalog GeoNode (Anyone: <em>View Metadata</em> = hanya metadata, <em>View and Download</em> = boleh unduh).</div>
+          </div>
+
+          {% if request.user.is_staff or request.user.is_superuser %}
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="approve-toggle">
+              <input type="checkbox" name="is_approved" {% if document.is_approved %}checked{% endif %}>
+              <span class="approve-switch"></span>
+              <span class="approve-text">
+                <span class="approve-title">Sudah ter-approve walidata</span>
+                <span class="approve-sub">Hanya dokumen ter-approve yang dipanen DST Nasional.</span>
+              </span>
+              <span class="approve-state"></span>
+            </label>
+          </div>
+          {% endif %}
+
+        </div>
+      </section>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 20px 0;">
+        <a href="{% url 'dst_auth:dokumen' %}" class="btn btn-ghost btn-sm">Batal</a>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Simpan perubahan
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="doc-side">
+
+      <div class="visibility-card">
+        <div class="vis-eyebrow">
+          <div class="pulse"></div>
+          Visibilitas saat ini
+        </div>
+        <div class="vis-text">
+          {% if document.is_published and document.is_approved %}
+            Dokumen <span class="italic">ter-publish &amp; ter-approve</span> — dapat dipanen DST Nasional.
+          {% elif document.is_published %}
+            Ter-publish, menunggu approval walidata.
+          {% else %}
+            <span class="italic">Draft</span> — belum tersedia ke konsumen eksternal.
+          {% endif %}
+        </div>
+        <div class="vis-stats">
+          <span>Diunduh · <strong>{{ document.popular_count|default:0 }}</strong></span>
+          <span>Diperbarui · <strong>{{ document.last_updated|timesince }} lalu</strong></span>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="side-title">Ringkasan Metadata</div>
+        </div>
+        <div class="side-card-body">
+          <div class="meta-list">
+            <div class="meta-row">
+              <div class="meta-key">Resource ID</div>
+              <div class="meta-val mono">#{{ document.pk }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">UUID</div>
+              <div class="meta-val mono" style="font-size: 10px; word-break: break-all;">{{ document.uuid|default:"—" }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Tipe Resource</div>
+              <div class="meta-val serif">Dokumen{% if document.extension %} · .{{ document.extension|upper }}{% endif %}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Subtype</div>
+              <div class="meta-val mono">{{ document.subtype|default:"—" }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Dibuat</div>
+              <div class="meta-val">{{ document.created|date:"d M Y" }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Diperbarui</div>
+              <div class="meta-val">{{ document.last_updated|date:"d M Y" }}<br><span style="font-family: var(--mono); font-size: 10px; color: var(--ink-400);">{{ document.last_updated|timesince }} lalu</span></div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Lisensi</div>
+              <div class="meta-val mono">{{ document.license.name|default:"—" }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Endpoint API</div>
+              <div class="meta-val mono" style="word-break: break-all;">/api/v2/documents/{{ document.pk }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if activity_rows %}
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="side-title">Aktivitas</div>
+          <a href="{% url 'dst_auth:audit_log' %}" class="side-action">Audit log →</a>
+        </div>
+        <div class="side-card-body">
+          <div class="activity-mini">
+            {% for row in activity_rows %}
+            <div class="activity-mini-item">
+              <div class="am-icon edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+              <div class="am-body">
+                <div class="am-text"><strong>{{ row.actor }}</strong> {{ row.verb }}</div>
+                <div class="am-meta">{{ row.timestamp|timesince }} lalu</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+</form>
+
+<!-- DANGER ZONE (separate forms) -->
+<aside style="max-width: 480px; margin-left: auto; margin-top: 24px;">
+  <div class="danger-card">
+    <div class="side-card-header" style="border-bottom: 1px solid var(--line);">
+      <div class="side-title" style="color: var(--danger);">Tindakan Sensitif</div>
+    </div>
+    <div class="danger-list">
+      <form method="post" action="?id={{ document.pk }}" style="display: contents;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="archive">
+        <div class="danger-row">
+          <div class="danger-info">
+            <div class="danger-title">Arsipkan dokumen</div>
+            <div class="danger-desc">Set <code>is_published=False</code>. Dokumen tetap dapat diakses owner tapi tidak dipanen DST Nasional.</div>
+          </div>
+          <button type="submit" class="btn-danger-outline" onclick="return confirm('Arsipkan dokumen ini?');">Arsipkan</button>
+        </div>
+      </form>
+
+      {% if request.user.is_superuser or document.owner_id == request.user.pk %}
+      <form method="post" action="?id={{ document.pk }}" style="display: contents;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <div class="danger-row">
+          <div class="danger-info">
+            <div class="danger-title">Hapus permanen</div>
+            <div class="danger-desc">Hapus row Document dari database. Tidak bisa dipulihkan.</div>
+          </div>
+          <button type="submit" class="btn-danger-outline" onclick="return confirm('Hapus dokumen ini permanen? Tidak dapat dibatalkan.');">Hapus</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</aside>
+
+{% endif %}
+{% endblock %}

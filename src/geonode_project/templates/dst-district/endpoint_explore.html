@@ -1,0 +1,211 @@
+{% extends 'dst-district/landing/base.html' %}
+{% load static %}
+
+{% block title %}Endpoint API &amp; OGC — {{ site.name|default:"(Nama Aplikasi)" }}{% endblock %}
+{% block page_slug %}endpoint-explore{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* === Eksplorasi Endpoint API & OGC (halaman publik) ============== */
+.endpoint-section { max-width: 1320px; margin: 0 auto; padding: 56px 40px 120px; }
+.endpoint-section .section-header {
+  display: grid; grid-template-columns: 1fr 2fr; gap: 80px;
+  margin-bottom: 36px; padding-bottom: 28px; border-bottom: 1px solid var(--line); align-items: end;
+}
+
+/* Base URL */
+.ep-baseurl { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; background: var(--forest); color: var(--cream); padding: 16px 22px; margin-bottom: 22px; }
+.ep-baseurl .ep-baseurl-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ochre); }
+.ep-baseurl .ep-baseurl-value { font-family: var(--mono); font-size: 14px; word-break: break-all; }
+
+/* Stats */
+.ep-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); margin-bottom: 30px; }
+.ep-stat { background: var(--paper); padding: 18px 22px; }
+.ep-stat-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-400); margin-bottom: 8px; }
+.ep-stat-value { font-family: var(--serif); font-size: 30px; color: var(--forest); font-weight: 500; line-height: 1; letter-spacing: -0.01em; }
+.ep-stat-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-400); margin-top: 6px; }
+.ep-stat-meta code { background: var(--cream-200); padding: 1px 5px; font-size: 9.5px; }
+
+/* Groups */
+.ep-group { background: var(--paper); border: 1px solid var(--line); margin-bottom: 18px; }
+.ep-group-header { padding: 14px 22px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-600); font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
+.ep-group-header .ep-group-count { font-family: var(--mono); font-size: 10px; color: var(--ink-400); background: var(--cream-200); padding: 2px 8px; }
+.ep-row { padding: 12px 22px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 70px 1.6fr 2fr 80px 64px; gap: 16px; align-items: center; transition: background 0.15s; }
+.ep-row:last-child { border-bottom: none; }
+.ep-row:hover { background: var(--cream-200); }
+.ep-method { display: inline-flex; padding: 3px 8px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em; justify-content: center; }
+.ep-method.get  { background: rgba(74, 107, 61, 0.14); color: var(--forest); }
+.ep-method.post { background: rgba(176, 112, 32, 0.14); color: var(--ochre-600); }
+.ep-method.csw  { background: rgba(61, 92, 102, 0.14); color: #3D5C66; }
+.ep-method.wms, .ep-method.wfs, .ep-method.wcs, .ep-method.wmts { background: var(--cocoa); color: var(--cream); }
+.ep-path { font-family: var(--mono); font-size: 12.5px; color: var(--ink); word-break: break-all; }
+.ep-desc { font-size: 12.5px; color: var(--ink-600); line-height: 1.4; }
+.ep-count { font-family: var(--mono); font-size: 12px; color: var(--forest); text-align: right; }
+.ep-count .ep-count-label { display: block; font-size: 9px; color: var(--ink-400); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.ep-count.empty { color: var(--ink-400); }
+.ep-action a { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; background: var(--cream); border: 1px solid var(--line-strong); color: var(--forest); text-decoration: none; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.15s; }
+.ep-action a:hover { border-color: var(--forest); background: var(--paper); }
+.ep-action .ep-action-id { color: var(--ink-400); font-family: var(--mono); font-size: 10px; }
+
+@media (max-width: 900px) {
+  .endpoint-section { padding: 40px 24px 80px; }
+  .endpoint-section .section-header { grid-template-columns: 1fr; gap: 24px; }
+  .ep-stats { grid-template-columns: 1fr 1fr; }
+  .ep-row { grid-template-columns: 70px 1fr 60px; grid-template-areas: "method path action" "desc desc desc" "count count count"; gap: 8px; }
+  .ep-row .ep-method { grid-area: method; }
+  .ep-row .ep-path { grid-area: path; }
+  .ep-row .ep-desc { grid-area: desc; }
+  .ep-row .ep-count { grid-area: count; text-align: left; }
+  .ep-row .ep-action { grid-area: action; }
+}
+@media (max-width: 600px) { .ep-stats { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="topo-bg"></div>
+<div class="grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="{% url 'dst:landing' %}" class="brand">
+      <div class="brand-mark">
+        {% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;background:var(--cream);padding:2px;">{% else %}L{% endif %}
+      </div>
+      <div class="brand-text">
+        <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+        <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+      </div>
+    </a>
+    <input type="checkbox" id="navToggle" class="nav-toggle-cb" hidden>
+    <label for="navToggle" class="nav-toggle" aria-label="Buka / tutup menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </label>
+    <ul class="nav-menu">
+      <li><a href="{% url 'dst:landing' %}#beranda">Beranda</a></li>
+      <li><a href="{% url 'dst:document_explore' %}">Dokumen Kebijakan</a></li>
+      <li><a href="{% url 'dst:dataset_explore' %}">Eksplorasi Dataset</a></li>
+      <li><a href="{% url 'dst:endpoint_explore' %}" style="color: var(--forest); font-weight: 500;">Endpoint API</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="endpoint-section" id="endpoint-api">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Distribusi &amp; Akses · API</div>
+      <h2 class="section-title">Endpoint<br><span class="italic">API &amp; OGC</span></h2>
+    </div>
+    <p class="section-desc">Daftar endpoint resmi GeoNode REST v2 dan OGC Services (WMS, WFS, WCS, WMTS, CSW) yang aktif pada {{ site.name|default:"(Nama Aplikasi)" }}. Gunakan untuk integrasi langsung ke QGIS/ArcGIS, sistem pemerintahan, atau aplikasi pihak ketiga. Hitungan resource diambil langsung dari katalog {{ nama_kabupaten }}.</p>
+  </div>
+
+  <!-- Base URL -->
+  <div class="ep-baseurl">
+    <span class="ep-baseurl-label">Base URL</span>
+    <span class="ep-baseurl-value">{{ base_url }}</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="ep-stats">
+    <div class="ep-stat">
+      <div class="ep-stat-label">Total Endpoint</div>
+      <div class="ep-stat-value">{{ stats.total_endpoints }}</div>
+      <div class="ep-stat-meta">REST &amp; OGC tercatat</div>
+    </div>
+    <div class="ep-stat">
+      <div class="ep-stat-label">Dataset</div>
+      <div class="ep-stat-value">{{ stats.datasets }}</div>
+      <div class="ep-stat-meta">via <code>/api/v2/datasets</code></div>
+    </div>
+    <div class="ep-stat">
+      <div class="ep-stat-label">Dokumen</div>
+      <div class="ep-stat-value">{{ stats.documents }}</div>
+      <div class="ep-stat-meta">via <code>/api/v2/documents</code></div>
+    </div>
+    <div class="ep-stat">
+      <div class="ep-stat-label">OGC Services</div>
+      <div class="ep-stat-value">{{ stats.ogc_services }}</div>
+      <div class="ep-stat-meta">{{ geoserver_url }}</div>
+    </div>
+  </div>
+
+  <!-- Endpoint groups -->
+  {% for g in groups %}
+  <div class="ep-group">
+    <div class="ep-group-header">
+      {{ g.title }}
+      <span class="ep-group-count">{{ g.items|length }}</span>
+    </div>
+    {% for method, path, desc, count in g.items %}
+    <div class="ep-row">
+      <span class="ep-method {{ method|lower }}">{{ method }}</span>
+      <span class="ep-path">{{ path }}</span>
+      <span class="ep-desc">{{ desc }}</span>
+      {% if count is not None %}
+        <span class="ep-count">{{ count }}<span class="ep-count-label">item</span></span>
+      {% else %}
+        <span class="ep-count empty">—</span>
+      {% endif %}
+      <span class="ep-action">
+        {% if "{" in path %}
+          <span class="ep-action-id">{id}</span>
+        {% elif path|slice:":4" == "http" %}
+          <a href="{{ path }}?service={{ method }}&amp;request=GetCapabilities" target="_blank" rel="noopener">GetCaps</a>
+        {% else %}
+          <a href="{{ path }}" target="_blank" rel="noopener">Buka</a>
+        {% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+
+<footer class="landing-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{% url 'dst:landing' %}" class="brand">
+          <div class="brand-mark">{% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;padding:2px;">{% else %}L{% endif %}</div>
+          <div class="brand-text">
+            <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+            <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+          </div>
+        </a>
+        <p>{{ site.name|default:"(Nama Aplikasi)" }} adalah inisiatif Pemerintah Daerah {{ nama_kabupaten }} di bawah Program FOLUR Indonesia, didukung UNDP dan GEF, untuk tata kelola zonasi spasial terpadu.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="{% url 'dst:landing' %}#beranda">Beranda</a></li>
+          <li><a href="{% url 'dst:document_explore' %}">Dokumen Kebijakan</a></li>
+          <li><a href="{% url 'dst:dataset_explore' %}">Eksplorasi Dataset</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">Endpoint API</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Akses Data</h4>
+        <ul>
+          <li><a href="/catalogue/csw" target="_blank" rel="noopener">Katalog CSW</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">WMS / WFS</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">REST API</a></li>
+          <li><a href="#">Lisensi &amp; Sitasi</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Kontak</h4>
+        <ul>
+          <li><a href="#">Bapelitbangda {{ nama_kabupaten }}</a></li>
+          <li><a href="#">Helpdesk Teknis</a></li>
+          <li><a href="#">FOLUR UNDP Indonesia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Pemerintah {{ nama_kabupaten }}</div>
+      <a href="{% url 'account_login' %}?next={% url 'dst_auth:dashboard' %}" class="btn-login">Login</a>
+    </div>
+  </div>
+</footer>
+{% endblock %}

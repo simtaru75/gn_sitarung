@@ -1,0 +1,53 @@
+/* Gaya overlay peta (legenda, basemap switcher, zoom tools, bar-scale) +
+   token sidebar untuk halaman dataset-spasial. Sebelumnya inline <style> di
+   DatasetSpasialClient; dipindah ke sini setelah map diekstrak ke MapComponent. */
+
+:root {
+  /* Skala warna tambahan yang dipakai sidebar/badge (selaras palet utama). */
+  --ink-900: #1a1a1a;
+  --ink-850: #2a2a2a;
+  --ink-500: #5a6760;
+  --ochre-800: #7a4a1e;
+  --sage-100: #e8ede4;
+  --sage-800: #3a4a32;
+  --cocoa-100: #ede0d4;
+  --cocoa-800: #3d2410;
+}
+
+.map-card { position:absolute; z-index:500; background:var(--paper-a95); backdrop-filter:blur(6px); border:1px solid var(--line-strong); box-shadow:var(--shadow-card); display:flex; flex-direction:column; }
+.map-card-head { display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; }
+.map-card-head svg.ic { width:13px; height:13px; color:var(--forest); }
+.map-card-title { font-family:var(--mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--forest); }
+.map-card-caret { margin-left:auto; transition:transform 0.2s; color:var(--ink-400); }
+.map-card.collapsed .map-card-caret { transform:rotate(-90deg); }
+.map-card.collapsed .map-card-body { display:none; }
+.map-card-body { padding:10px 12px; overflow-y:auto; }
+.legend { top:14px; left:14px; width:230px; max-height:46%; }
+.legend-img-wrap img, .legend-img { max-width:100%; display:block; margin-top:2px; }
+.legend-loading { font-family:var(--mono); font-size:10px; color:var(--ink-400); }
+.opacity-row { display:flex; align-items:center; gap:8px; padding:8px 12px; border-top:1px solid var(--line); }
+.opacity-row label { font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-400); }
+.opacity-row input { flex:1; accent-color:var(--forest); }
+.map-tools { position:absolute; top:14px; right:14px; z-index:500; display:flex; flex-direction:column; gap:6px; }
+.map-btn { width:36px; height:36px; display:grid; place-items:center; cursor:pointer; background:var(--paper-a95); border:1px solid var(--line-strong); color:var(--forest); transition:all 0.15s; box-shadow:var(--shadow-btn); }
+.map-btn:hover { background:var(--forest); color:var(--cream); border-color:var(--forest); }
+.map-btn svg { width:16px; height:16px; }
+.bg-control { bottom:26px; left:14px; width:200px; }
+.bg-list { padding:6px; }
+.bg-item { display:flex; align-items:center; gap:9px; padding:7px 8px; cursor:pointer; font-size:12px; color:var(--ink-600); transition:background 0.15s; }
+.bg-item:hover { background:var(--cream-200); }
+.bg-item.active { background:var(--forest); color:var(--cream); }
+.bg-swatch { width:26px; height:20px; flex-shrink:0; border:1px solid var(--line-strong); background-size:cover; background-position:center; }
+.bar-scale { position:absolute; right:14px; bottom:26px; z-index:500; pointer-events:none; }
+.bar-scale-bar { display:flex; height:8px; border:1px solid var(--ink); background:var(--cream); }
+.bar-scale-seg { height:100%; }
+.bar-scale-seg.dark { background:var(--ink); }
+.bar-scale-seg.light { background:var(--cream); }
+.bar-scale-labels { position:relative; height:14px; margin-top:2px; font-family:var(--mono); font-size:9px; color:var(--ink-600); }
+.bar-scale-labels span { position:absolute; transform:translateX(-50%); }
+.bar-scale-labels span:first-child { left:0; transform:none; }
+.bar-scale-labels span:last-child { right:0; left:auto; transform:none; }
+.leaflet-container { font-family:var(--sans) !important; background:var(--map-bg) !important; }
+.leaflet-control-zoom { display:none !important; }
+.leaflet-control-attribution { background:var(--paper-a92) !important; font-family:var(--mono) !important; font-size:9px !important; color:var(--ink-400) !important; padding:2px 8px !important; border:1px solid var(--line) !important; }
+.leaflet-control-attribution a { color:var(--ochre-600) !important; }

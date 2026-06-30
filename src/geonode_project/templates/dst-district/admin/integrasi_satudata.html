@@ -1,0 +1,485 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Integrasi Satu Data — {{ site.name|default:"DST Kabupaten" }}{% endblock %}
+{% block page_slug %}integrasi_satudata{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="integrasi_satudata"] .page-content { max-width: 1180px; margin: 0 auto; }
+
+  body[data-page="integrasi_satudata"] .page-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--line); gap: 32px; }
+  body[data-page="integrasi_satudata"] .page-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ochre-600); margin-bottom: 10px; }
+  body[data-page="integrasi_satudata"] .page-title { font-family: var(--serif); font-size: 40px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; color: var(--forest); font-variation-settings: "SOFT" 30, "opsz" 144; margin-bottom: 10px; }
+  body[data-page="integrasi_satudata"] .page-title .italic { font-style: italic; font-weight: 300; color: var(--cocoa); }
+  body[data-page="integrasi_satudata"] .page-desc { font-family: var(--serif); font-size: 15px; color: var(--ink-600); font-weight: 300; line-height: 1.5; max-width: 660px; font-variation-settings: "SOFT" 60; }
+
+  body[data-page="integrasi_satudata"] .settings-flash { margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--line); font-size: 13px; display: flex; align-items: center; gap: 10px; font-family: var(--sans); }
+  body[data-page="integrasi_satudata"] .settings-flash.success { background: rgba(74,107,61,0.08); color: var(--success); border-color: rgba(74,107,61,0.25); }
+  body[data-page="integrasi_satudata"] .settings-flash.error { background: rgba(139,58,42,0.08); color: var(--danger); border-color: rgba(139,58,42,0.25); }
+  body[data-page="integrasi_satudata"] .settings-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="integrasi_satudata"] .stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); margin-bottom: 28px; }
+  body[data-page="integrasi_satudata"] .stat-card { background: var(--paper); padding: 18px 22px; display: flex; flex-direction: column; gap: 4px; }
+  body[data-page="integrasi_satudata"] .stat-card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); }
+  body[data-page="integrasi_satudata"] .stat-card-value { font-family: var(--serif); font-size: 30px; color: var(--forest); line-height: 1; letter-spacing: -0.02em; font-variation-settings: "SOFT" 30; }
+  body[data-page="integrasi_satudata"] .stat-card-sub { font-size: 11px; color: var(--ink-400); font-family: var(--sans); }
+
+  body[data-page="integrasi_satudata"] .settings-section { margin-bottom: 40px; }
+  body[data-page="integrasi_satudata"] .settings-section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+  body[data-page="integrasi_satudata"] .ss-num { font-family: var(--serif); font-size: 20px; color: var(--ochre-600); }
+  body[data-page="integrasi_satudata"] .ss-title { font-family: var(--serif); font-size: 26px; color: var(--forest); font-weight: 400; letter-spacing: -0.015em; line-height: 1; }
+  body[data-page="integrasi_satudata"] .ss-title .italic { font-style: italic; font-weight: 300; color: var(--cocoa); }
+  body[data-page="integrasi_satudata"] .ss-sub { font-size: 13px; color: var(--ink-600); margin-top: 6px; max-width: 660px; }
+
+  body[data-page="integrasi_satudata"] .settings-panel { background: var(--paper); border: 1px solid var(--line); margin-bottom: 20px; }
+  body[data-page="integrasi_satudata"] .settings-panel-body { padding: 20px 26px 24px; }
+
+  body[data-page="integrasi_satudata"] .field { margin-bottom: 18px; }
+  body[data-page="integrasi_satudata"] .field:last-child { margin-bottom: 0; }
+  body[data-page="integrasi_satudata"] .field-label { font-size: 12px; color: var(--ink-600); margin-bottom: 7px; font-weight: 500; }
+  body[data-page="integrasi_satudata"] .field-input { width: 100%; padding: 9px 12px; background: var(--cream); border: 1px solid var(--line-strong); font-family: var(--sans); font-size: 13px; color: var(--ink); transition: all 0.15s; box-sizing: border-box; }
+  body[data-page="integrasi_satudata"] .field-input:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+  body[data-page="integrasi_satudata"] .field-help { font-size: 11px; color: var(--ink-400); margin-top: 6px; line-height: 1.5; }
+  body[data-page="integrasi_satudata"] .field-row { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; }
+
+  body[data-page="integrasi_satudata"] .harvest-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--ink-600); font-family: var(--sans); margin-top: 4px; }
+  body[data-page="integrasi_satudata"] .harvest-meta b { color: var(--forest); font-weight: 600; }
+  body[data-page="integrasi_satudata"] .src-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border: 1px solid var(--line-strong); color: var(--ink-600); }
+  body[data-page="integrasi_satudata"] .src-pill.ok { color: var(--success); border-color: rgba(74,107,61,0.3); }
+  body[data-page="integrasi_satudata"] .src-pill.error { color: var(--danger); border-color: rgba(139,58,42,0.3); }
+
+  body[data-page="integrasi_satudata"] .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+  body[data-page="integrasi_satudata"] .search-form { display: flex; gap: 8px; }
+  body[data-page="integrasi_satudata"] .search-form input { padding: 8px 12px; background: var(--cream); border: 1px solid var(--line-strong); font-family: var(--sans); font-size: 13px; min-width: 240px; }
+  body[data-page="integrasi_satudata"] .search-form input:focus { outline: none; border-color: var(--forest); }
+  body[data-page="integrasi_satudata"] .toolbar-count { font-family: var(--mono); font-size: 11px; color: var(--ink-400); }
+
+  body[data-page="integrasi_satudata"] .ds-table { width: 100%; border-collapse: collapse; }
+  body[data-page="integrasi_satudata"] .ds-table th, body[data-page="integrasi_satudata"] .ds-table td { padding: 11px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 13px; }
+  body[data-page="integrasi_satudata"] .ds-table th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); font-weight: 500; }
+  body[data-page="integrasi_satudata"] .ds-table tbody tr:last-child td { border-bottom: none; }
+  body[data-page="integrasi_satudata"] .ds-title { color: var(--forest); font-weight: 600; font-size: 13px; }
+  body[data-page="integrasi_satudata"] .ds-org { color: var(--ink-600); font-size: 12px; }
+  body[data-page="integrasi_satudata"] .ds-num { font-family: var(--mono); font-size: 11px; color: var(--ink-400); width: 36px; }
+  body[data-page="integrasi_satudata"] .ds-date { font-family: var(--mono); font-size: 11px; color: var(--ink-400); white-space: nowrap; }
+  body[data-page="integrasi_satudata"] .ds-actions { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+  body[data-page="integrasi_satudata"] .ds-empty { padding: 32px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px; }
+
+  body[data-page="integrasi_satudata"] .fmt-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+  body[data-page="integrasi_satudata"] .fmt-badge { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; background: var(--cream); border: 1px solid var(--line-strong); color: var(--cocoa); }
+  body[data-page="integrasi_satudata"] .catalog-pill { display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; padding: 2px 7px; background: rgba(74,107,61,0.1); border: 1px solid rgba(74,107,61,0.3); color: var(--success); text-decoration: none; white-space: nowrap; }
+  body[data-page="integrasi_satudata"] .catalog-pill:hover { background: rgba(74,107,61,0.18); }
+  body[data-page="integrasi_satudata"] .wali-pill { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; margin-top: 4px; background: rgba(176,124,42,0.1); border: 1px solid var(--ochre-600); color: var(--ochre-600); }
+  body[data-page="integrasi_satudata"] .wali-pill.none { background: none; border: 1px dashed var(--line-strong); color: var(--ink-400); }
+  body[data-page="integrasi_satudata"] .search-form select { padding: 8px 10px; background: var(--cream); border: 1px solid var(--line-strong); font-family: var(--sans); font-size: 13px; color: var(--ink); cursor: pointer; }
+  body[data-page="integrasi_satudata"] .search-form select:focus { outline: none; border-color: var(--forest); }
+
+  body[data-page="integrasi_satudata"] .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  body[data-page="integrasi_satudata"] .detail-notes { font-size: 13px; color: var(--ink); line-height: 1.6; margin: 14px 0; white-space: pre-wrap; }
+  body[data-page="integrasi_satudata"] .detail-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 24px; margin-bottom: 8px; }
+  body[data-page="integrasi_satudata"] .dm-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-400); }
+  body[data-page="integrasi_satudata"] .dm-value { font-size: 13px; color: var(--ink); margin-top: 2px; }
+  body[data-page="integrasi_satudata"] .tag-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  body[data-page="integrasi_satudata"] .tag-chip { font-size: 11px; padding: 2px 8px; background: var(--cream); border: 1px solid var(--line); color: var(--ink-600); }
+
+  body[data-page="integrasi_satudata"] .btn { padding: 9px 16px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; font-family: var(--sans); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: all 0.2s; }
+  body[data-page="integrasi_satudata"] .btn svg { width: 14px; height: 14px; }
+  body[data-page="integrasi_satudata"] .btn-primary { background: var(--forest); color: var(--cream); }
+  body[data-page="integrasi_satudata"] .btn-primary:hover { background: var(--ink); }
+  body[data-page="integrasi_satudata"] .btn-ghost { background: none; color: var(--forest); border: 1px solid var(--line-strong); }
+  body[data-page="integrasi_satudata"] .btn-ghost:hover { border-color: var(--forest); }
+  body[data-page="integrasi_satudata"] .btn-sm { padding: 6px 12px; font-size: 12px; }
+  body[data-page="integrasi_satudata"] .btn-mini { padding: 5px 10px; font-size: 11px; font-family: var(--sans); border: 1px solid var(--line-strong); background: var(--paper); color: var(--forest); text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+  body[data-page="integrasi_satudata"] .btn-mini:hover { border-color: var(--forest); }
+  body[data-page="integrasi_satudata"] .btn-mini.danger { color: var(--danger); border-color: rgba(139,58,42,0.3); }
+  body[data-page="integrasi_satudata"] .btn-mini.danger:hover { background: var(--danger); color: var(--cream); }
+
+  body[data-page="integrasi_satudata"] .cb-cell { width: 36px; padding: 11px 8px 11px 14px; vertical-align: middle; }
+  body[data-page="integrasi_satudata"] .cb-cell input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--forest); display: block; }
+  body[data-page="integrasi_satudata"] .cb-cell input[type="checkbox"]:disabled { cursor: default; opacity: 0.35; }
+  body[data-page="integrasi_satudata"] .ds-status-pill { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border: 1px solid; white-space: nowrap; }
+  body[data-page="integrasi_satudata"] .ds-status-pill.done { color: var(--success); border-color: rgba(74,107,61,0.3); background: rgba(74,107,61,0.08); }
+  body[data-page="integrasi_satudata"] .ds-status-pill.partial { color: var(--ochre-600); border-color: rgba(176,124,42,0.3); background: rgba(176,124,42,0.08); }
+  body[data-page="integrasi_satudata"] .ds-status-pill.none { color: var(--ink-400); border-color: var(--line-strong); background: none; }
+  body[data-page="integrasi_satudata"] .batch-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(74,107,61,0.06); border: 1px solid rgba(74,107,61,0.2); margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+  body[data-page="integrasi_satudata"] .batch-count { font-family: var(--mono); font-size: 11px; color: var(--forest); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  body[data-page="integrasi_satudata"] .ds-group-head td { background: var(--cream); border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); padding: 9px 14px; }
+  body[data-page="integrasi_satudata"] .ds-group-org { font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--forest); }
+  body[data-page="integrasi_satudata"] .ds-group-count { font-family: var(--mono); font-size: 10px; color: var(--ink-400); margin-left: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+  body[data-page="integrasi_satudata"] .ds-group-head .wali-pill { margin-left: 10px; vertical-align: middle; }
+
+  @media (max-width: 760px) {
+    body[data-page="integrasi_satudata"] .stats-cards { grid-template-columns: 1fr; }
+    body[data-page="integrasi_satudata"] .field-row { grid-template-columns: 1fr; }
+    body[data-page="integrasi_satudata"] .detail-meta { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Distribusi &amp; Akses · Portal CKAN</div>
+    <h1 class="page-title">Integrasi <span class="italic">Satu Data</span></h1>
+    <p class="page-desc">Tarik katalog dataset dari <strong>portal Satu Data Kabupaten</strong> (berbasis CKAN) ke basis data lokal. Tekan <strong>Harvest</strong> sekali untuk menyimpan seluruh dataset beserta filenya, lalu telusuri daftar dan detailnya di sini.</p>
+  </div>
+</header>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="settings-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="stats-cards">
+  <div class="stat-card">
+    <div class="stat-card-label">Total Dataset</div>
+    <div class="stat-card-value">{{ total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Total File</div>
+    <div class="stat-card-value">{{ total_resource }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Terakhir di-harvest</div>
+    <div class="stat-card-value" style="font-size:18px;">
+      {% if source.last_harvested %}{{ source.last_harvested|date:"d M Y, H:i" }}{% else %}—{% endif %}
+    </div>
+    {% if source.last_status %}<div class="stat-card-sub">Status: {{ source.last_status|upper }}</div>{% endif %}
+  </div>
+</div>
+
+<!-- §A Sumber data & Harvest -->
+<section class="settings-section">
+  <div class="settings-section-header">
+    <span class="ss-num">A</span>
+    <div class="ss-title-block">
+      <h2 class="ss-title">Sumber Data &amp; <span class="italic">Harvest</span></h2>
+      <p class="ss-sub">Masukkan basis URL portal Satu Data Kabupaten (CKAN), mis. <code>https://satudata.luwukab.go.id</code>. Proses harvest manual &amp; idempoten — menjalankan ulang akan memperbarui data yang sudah ada.</p>
+    </div>
+  </div>
+
+  <div class="settings-panel">
+    {% if request.user.is_superuser %}
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="harvest">
+      <div class="settings-panel-body">
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Basis URL CKAN *</label>
+            <input class="field-input" type="url" name="base_url" required value="{{ source.base_url|default:'' }}" placeholder="https://satudata.namakab.go.id">
+            <div class="field-help">Tanpa <code>/api/...</code> di akhir — cukup domain portal CKAN.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Filter Organisasi (opsional)</label>
+            <input class="field-input" type="text" name="organisasi" value="{{ source.organisasi_filter|default:'' }}" placeholder="Kosongkan untuk semua organisasi">
+            <div class="field-help">Slug/nama organisasi CKAN bila ingin membatasi.</div>
+          </div>
+        </div>
+        <div class="field" style="margin-top:16px;">
+          <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:13px;color:var(--ink);">
+            <input type="checkbox" name="abaikan_ssl" style="margin-top:2px;" {% if source and not source.verifikasi_ssl %}checked{% endif %}>
+            <span>Abaikan verifikasi sertifikat SSL
+              <span class="field-help" style="margin-top:3px;">Centang hanya bila harvest gagal dengan error <code>CERTIFICATE_VERIFY_FAILED</code> (portal memakai sertifikat yang tak terverifikasi). Koneksi tetap terenkripsi, namun keaslian server tidak diverifikasi.</span>
+            </span>
+          </label>
+        </div>
+        {% if source.last_pesan %}
+        <div class="harvest-meta">
+          <span class="src-pill {{ source.last_status }}">{{ source.last_status|default:"info"|upper }}</span>
+          <span>{{ source.last_pesan }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center;">
+        <span class="field-help" style="margin:0;">Proses dapat memakan waktu beberapa saat untuk portal besar.</span>
+        <div style="display:flex;gap:10px;">
+          {% if total %}
+          <button class="btn btn-ghost btn-sm" type="submit" name="form" value="hapus_semua" formnovalidate onclick="return confirm('Hapus semua {{ total }} dataset hasil harvest dari basis data lokal?');">Kosongkan</button>
+          {% endif %}
+          <button class="btn btn-primary btn-sm" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg>
+            Harvest sekarang
+          </button>
+        </div>
+      </div>
+    </form>
+    {% else %}
+    <div class="settings-panel-body">
+      <div class="harvest-meta">
+        <span class="src-pill {{ source.last_status }}">{{ source.last_status|default:"info"|upper }}</span>
+        <span>Sumber: <b>{{ source.base_url|default:"belum diatur" }}</b></span>
+        {% if source.last_pesan %}<span>{{ source.last_pesan }}</span>{% endif %}
+      </div>
+      <p class="field-help" style="margin-top:12px;">Aksi <strong>Harvest</strong> hanya dapat dijalankan oleh Super Admin. Anda tetap dapat menelusuri daftar &amp; detail di bawah.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- §B Pemetaan Organisasi → Walidata -->
+{% if org_maps and request.user.is_superuser %}
+<section class="settings-section">
+  <div class="settings-section-header">
+    <span class="ss-num">B</span>
+    <div class="ss-title-block">
+      <h2 class="ss-title">Pemetaan <span class="italic">Organisasi → Walidata</span></h2>
+      <p class="ss-sub">Tautkan tiap organisasi CKAN ke instansi <strong>Walidata</strong> (tabel master). Cukup set <strong>sekali per organisasi</strong> — seluruh datasetnya ikut tersinkron, termasuk hasil harvest berikutnya. Organisasi yang dibiarkan <strong>"— tidak dipetakan —"</strong> sengaja <strong>tidak</strong> didaftarkan ke Dokumen DST.{% if org_unmapped_count %} <strong>{{ org_unmapped_count }}</strong> organisasi belum dipetakan.{% endif %}</p>
+    </div>
+  </div>
+
+  <div class="settings-panel">
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="map_walidata">
+      <div class="settings-panel-body" style="padding:0;">
+        <table class="ds-table">
+          <thead>
+            <tr><th class="ds-num">#</th><th>Organisasi CKAN</th><th>Dataset</th><th>Walidata (Singkatan · Kepanjangan)</th></tr>
+          </thead>
+          <tbody>
+            {% for o in org_maps %}
+            <tr>
+              <td class="ds-num">{{ forloop.counter }}</td>
+              <td><div class="ds-title" style="font-weight:500;" title="{{ o.org_title }}">{{ o.org_title|default:"(tanpa organisasi)" }}</div></td>
+              <td class="ds-date">{{ o.count }}</td>
+              <td>
+                <input type="hidden" name="org" value="{{ o.org_title }}">
+                <select name="wal" class="field-input" style="padding:6px 10px;min-width:240px;{% if not o.walidata_id %}border-color:var(--ochre-600);{% endif %}">
+                  <option value="">— tidak dipetakan —</option>
+                  {% for w in walidata_master %}
+                    <option value="{{ w.pk }}" {% if o.walidata_id == w.pk %}selected{% endif %}>{{ w.nama }}{% if w.kepanjangan %} · {{ w.kepanjangan }}{% endif %}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center;">
+        <span class="field-help" style="margin:0;">Menyimpan akan langsung memperbarui Walidata seluruh dataset terkait.</span>
+        <button class="btn btn-primary btn-sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="20 6 9 17 4 12"/></svg>
+          Simpan &amp; sinkronkan
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+<!-- §C Detail dataset (saat ?ds=) -->
+{% if dataset_detail %}
+<section class="settings-section">
+  <div class="settings-section-header">
+    <span class="ss-num">C</span>
+    <div class="ss-title-block">
+      <h2 class="ss-title">Detail <span class="italic">Dataset</span></h2>
+      <p class="ss-sub">Metadata dan daftar file dari portal Satu Data Kabupaten.</p>
+    </div>
+  </div>
+
+  <div class="settings-panel">
+    <div class="settings-panel-body">
+      <div class="detail-head">
+        <h3 style="font-family:var(--serif);font-size:22px;color:var(--forest);font-weight:400;line-height:1.2;margin:0;">{{ dataset_detail.title }}</h3>
+        <a class="btn-mini" href="{% url 'dst_auth:integrasi_satudata' %}{% if q %}?q={{ q|urlencode }}{% endif %}">← Daftar</a>
+      </div>
+      {% if dataset_detail.notes %}<div class="detail-notes">{{ dataset_detail.notes }}</div>{% endif %}
+      <div class="detail-meta">
+        <div><div class="dm-label">Organisasi</div><div class="dm-value">{{ dataset_detail.organisasi|default:"—" }}</div></div>
+        <div><div class="dm-label">Walidata</div><div class="dm-value">{% if dataset_detail.walidata %}<strong>{{ dataset_detail.walidata.nama }}</strong> · {{ dataset_detail.walidata.kepanjangan }}{% else %}<span style="color:var(--ink-400);">belum terpetakan</span>{% endif %}</div></div>
+        <div><div class="dm-label">Lisensi</div><div class="dm-value">{{ dataset_detail.lisensi|default:"—" }}</div></div>
+        <div><div class="dm-label">Diperbarui</div><div class="dm-value">{% if dataset_detail.metadata_modified %}{{ dataset_detail.metadata_modified|date:"d M Y, H:i" }}{% else %}—{% endif %}</div></div>
+        <div><div class="dm-label">Jumlah file</div><div class="dm-value">{{ dataset_detail.jumlah_resource }}</div></div>
+      </div>
+      {% if detail_tags %}
+      <div style="margin-top:8px;"><div class="dm-label">Tag</div>
+        <div class="tag-list">
+          {% for tag in detail_tags %}<span class="tag-chip">{{ tag }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        {% if dataset_detail.portal_url %}
+        <a class="btn btn-ghost btn-sm" href="{{ dataset_detail.portal_url }}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Buka di portal
+        </a>
+        {% endif %}
+        {% if request.user.is_superuser and detail_resources %}
+          {% if dataset_detail.walidata_id %}
+          <form method="post" action="" style="display:inline;" onsubmit="return confirm('Unduh &amp; daftarkan berkas dataset ini sebagai Dokumen (draf, perlu ditinjau)?');">
+            {% csrf_token %}
+            <input type="hidden" name="form" value="register_docs">
+            <input type="hidden" name="ds" value="{{ dataset_detail.pk }}">
+            <button type="submit" class="btn btn-primary btn-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Daftarkan ke Dokumen
+            </button>
+          </form>
+          {% else %}
+          <span class="field-help" style="margin:0;display:inline-flex;align-items:center;">Belum dipetakan ke Walidata — tetapkan dulu di panel <strong>&nbsp;Pemetaan Organisasi&nbsp;</strong> sebelum bisa didaftarkan.</span>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="settings-panel-body" style="border-top:1px solid var(--line);padding:0;">
+      <table class="ds-table">
+        <thead>
+          <tr><th class="ds-num">#</th><th>Nama File</th><th>Format</th><th>Ukuran</th><th>Katalog</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for r in detail_resources %}
+          <tr>
+            <td class="ds-num">{{ forloop.counter }}</td>
+            <td><div class="ds-title" style="font-weight:500;">{{ r.nama|default:"(tanpa nama)" }}</div>{% if r.deskripsi %}<div class="ds-org">{{ r.deskripsi|truncatechars:120 }}</div>{% endif %}</td>
+            <td>{% if r.format %}<span class="fmt-badge">{{ r.format|upper }}</span>{% else %}—{% endif %}</td>
+            <td class="ds-date">{% if r.ukuran %}{{ r.ukuran|filesizeformat }}{% else %}—{% endif %}</td>
+            <td>
+              {% if r.document_id %}
+              <a class="catalog-pill" href="{% url 'dst_auth:dokumen_detail' %}?id={{ r.document_id }}" title="Lihat dokumen di katalog">✓ Di katalog</a>
+              {% else %}
+              <span class="ds-org" style="font-family:var(--mono);font-size:10px;">— belum —</span>
+              {% endif %}
+            </td>
+            <td class="ds-actions">
+              {% if r.url %}
+              <a class="btn-mini" href="{{ r.url }}" target="_blank" rel="noopener">Unduh</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="ds-empty">Dataset ini tidak memiliki file.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- §C Daftar dataset -->
+<section class="settings-section">
+  <div class="settings-section-header">
+    <span class="ss-num">{% if dataset_detail %}D{% else %}C{% endif %}</span>
+    <div class="ss-title-block">
+      <h2 class="ss-title">Daftar <span class="italic">Dataset</span></h2>
+      <p class="ss-sub">Hasil harvest dari portal Satu Data Kabupaten. Klik <strong>Detail</strong> untuk melihat metadata &amp; file tiap dataset.</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <form class="search-form" method="get" action="">
+      <input type="text" name="q" value="{{ q }}" placeholder="Cari judul / organisasi / tag…">
+      <select name="walidata" onchange="this.form.submit()" title="Filter berdasarkan Walidata">
+        <option value="">Semua Walidata</option>
+        {% for w in walidata_list %}
+        <option value="{{ w.pk }}" {% if walidata_sel == w.pk|stringformat:'s' %}selected{% endif %}>{{ w.nama }} ({{ w.n }})</option>
+        {% endfor %}
+        {% if unmatched_count %}<option value="none" {% if walidata_sel == 'none' %}selected{% endif %}>— belum terpetakan ({{ unmatched_count }})</option>{% endif %}
+      </select>
+      <button class="btn btn-ghost btn-sm" type="submit">Cari</button>
+      {% if q or walidata_sel %}<a class="btn btn-ghost btn-sm" href="{% url 'dst_auth:integrasi_satudata' %}">Reset</a>{% endif %}
+    </form>
+    <span class="toolbar-count">{{ total_tampil }} dataset{% if q %} (filter aktif){% endif %} · {{ total_resource }} file</span>
+  </div>
+
+  {% if request.user.is_superuser %}
+  <form id="batchForm" method="post" action="">
+    {% csrf_token %}
+    <input type="hidden" name="form" value="register_batch">
+    <div class="batch-bar" id="batchBar" style="display:none;">
+      <span class="batch-count" id="batchCount">0 dataset dipilih</span>
+      <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Daftarkan dataset terpilih sebagai Dokumen (draf, perlu ditinjau)?');">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Daftarkan ke Dokumen
+      </button>
+    </div>
+  {% endif %}
+  <div class="settings-panel">
+    <div class="settings-panel-body" style="padding:0;">
+      <table class="ds-table">
+        <thead>
+          <tr>{% if request.user.is_superuser %}<th class="cb-cell"><input type="checkbox" id="cbAll" title="Pilih semua yang belum terdaftar"></th>{% endif %}<th class="ds-num">#</th><th>Judul</th><th>File</th><th>Format</th><th>Status</th><th>Diperbarui</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% if datasets %}
+          {% regroup datasets by organisasi as org_groups %}
+          {% for group in org_groups %}
+          <tr class="ds-group-head">
+            <td colspan="{% if request.user.is_superuser %}8{% else %}7{% endif %}">
+              <span class="ds-group-org">{{ group.grouper|default:"(tanpa organisasi)" }}</span>
+              <span class="ds-group-count">{{ group.list|length }} dataset</span>
+              {% with first=group.list.0 %}{% if first.walidata %}<span class="wali-pill" title="{{ first.walidata.kepanjangan }}">{{ first.walidata.nama }}</span>{% else %}<span class="wali-pill none">belum dipetakan</span>{% endif %}{% endwith %}
+            </td>
+          </tr>
+          {% for d in group.list %}
+          <tr>
+            {% if request.user.is_superuser %}<td class="cb-cell">{% if d.walidata_id and d.n_registerable > 0 and d.n_registered < d.n_registerable %}<input type="checkbox" name="ds" value="{{ d.pk }}" class="ds-cb">{% else %}<input type="checkbox" disabled {% if d.walidata_id and d.n_registerable > 0 and d.n_registered >= d.n_registerable %}checked{% endif %} title="{% if not d.walidata_id %}Belum dipetakan ke Walidata — tak didaftarkan ke Dokumen{% elif d.n_registerable == 0 %}Tidak ada berkas yang bisa didaftarkan{% else %}Semua berkas sudah terdaftar{% endif %}">{% endif %}</td>{% endif %}
+            <td class="ds-num">{{ forloop.counter }}</td>
+            <td><div class="ds-title" title="{{ d.title }}">{{ d.title }}</div></td>
+            <td class="ds-date">{{ d.jumlah_resource }}</td>
+            <td>
+              <div class="fmt-badges">
+                {% for f in d.format_list %}<span class="fmt-badge">{{ f }}</span>{% empty %}—{% endfor %}
+              </div>
+            </td>
+            <td>{% if d.n_registerable == 0 %}<span class="ds-status-pill none" style="opacity:0.4;" title="Tidak ada berkas berformat dokumen">—</span>{% elif d.n_registered >= d.n_registerable %}<span class="ds-status-pill done">Sudah terdaftar</span>{% elif d.n_registered > 0 %}<span class="ds-status-pill partial" title="{{ d.n_registered }} dari {{ d.n_registerable }} berkas terdaftar">{{ d.n_registered }}/{{ d.n_registerable }}</span>{% else %}<span class="ds-status-pill none">Belum terdaftar</span>{% endif %}</td>
+            <td class="ds-date">{% if d.metadata_modified %}{{ d.metadata_modified|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="ds-actions">
+                <a class="btn-mini" href="?ds={{ d.pk }}{% if q %}&q={{ q|urlencode }}{% endif %}">Detail</a>
+                {% if d.portal_url %}<a class="btn-mini" href="{{ d.portal_url }}" target="_blank" rel="noopener">Portal</a>{% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+          {% else %}
+          <tr><td colspan="{% if request.user.is_superuser %}8{% else %}7{% endif %}" class="ds-empty">
+            {% if q %}Tidak ada dataset cocok dengan pencarian "{{ q }}".{% else %}Belum ada data — tekan <strong>Harvest sekarang</strong> di atas untuk menarik dataset dari portal.{% endif %}
+          </td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if request.user.is_superuser %}
+  </form>
+  {% endif %}
+</section>
+<script>
+{% if request.user.is_superuser %}
+(function() {
+  const cbAll = document.getElementById('cbAll');
+  const batchBar = document.getElementById('batchBar');
+  const batchCount = document.getElementById('batchCount');
+  function updateBatch() {
+    const checked = document.querySelectorAll('.ds-cb:checked');
+    const all = document.querySelectorAll('.ds-cb');
+    batchBar.style.display = checked.length > 0 ? 'flex' : 'none';
+    batchCount.textContent = checked.length + ' dataset dipilih';
+    if (cbAll) {
+      cbAll.indeterminate = checked.length > 0 && checked.length < all.length;
+      cbAll.checked = all.length > 0 && checked.length === all.length;
+    }
+  }
+  if (cbAll) {
+    cbAll.addEventListener('change', () => {
+      document.querySelectorAll('.ds-cb').forEach(cb => { cb.checked = cbAll.checked; });
+      updateBatch();
+    });
+  }
+  document.querySelectorAll('.ds-cb').forEach(cb => cb.addEventListener('change', updateBatch));
+})();
+{% endif %}
+</script>
+{% endblock %}

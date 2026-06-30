@@ -1,0 +1,229 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Akses DST Nasional — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}akses_nasional{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="akses_nasional"] .consumer-row {
+    grid-template-columns: 56px 1.4fr 1.2fr 0.9fr 0.8fr;
+    cursor: default;
+  }
+  body[data-page="akses_nasional"] .consumer-row:hover { background: var(--cream-200); }
+  body[data-page="akses_nasional"] .consumer-key { font-size: 12px; }
+  body[data-page="akses_nasional"] .consumer-key .mask { letter-spacing: 0.1em; }
+
+  body[data-page="akses_nasional"] .activity-row {
+    grid-template-columns: 90px 56px 1.4fr 1fr 110px;
+    padding: 12px 22px; align-items: center;
+  }
+  body[data-page="akses_nasional"] .activity-row .activity-time {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-600);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  body[data-page="akses_nasional"] .activity-row .activity-time .date {
+    display: block; font-size: 9.5px; color: var(--ink-400); margin-top: 2px;
+  }
+  body[data-page="akses_nasional"] .activity-row .activity-endpoint {
+    font-family: var(--mono); font-size: 12px; color: var(--ink); word-break: break-all;
+  }
+  body[data-page="akses_nasional"] .activity-row .activity-consumer {
+    font-size: 12px; color: var(--ink-600);
+  }
+  body[data-page="akses_nasional"] .activity-row .activity-status {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 2px 8px; justify-self: end;
+    background: rgba(74, 107, 61, 0.1); color: var(--success);
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Distribusi &amp; Akses</div>
+    <h1 class="page-title">Akses <span class="italic">Nasional</span></h1>
+    <p class="page-desc">Daftar konsumen API yang berhak memanen data Kabupaten. {{ site.name|default:"DST Kabupaten Abc" }} berperan sebagai <strong style="color: var(--forest);">data provider pasif</strong> — DST Nasional yang aktif menarik data via endpoint OGC &amp; REST yang kita ekspos.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'dst_auth:endpoint_api' %}" class="btn btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Daftar endpoint API
+    </a>
+  </div>
+</header>
+
+<!-- ARAH DATA HERO -->
+<section class="direction-hero">
+  <div class="direction-text-block">
+    <div class="direction-eyebrow">Arah Aliran Data · Pull-based Harvesting</div>
+    <h2 class="direction-title">
+      DST Nasional <span class="italic">memanen</span><br>
+      data dari kabupaten — <span class="underline">tidak sebaliknya</span>
+    </h2>
+    <p class="direction-text">
+      {{ site.name|default:"DST Kabupaten Abc" }} memegang kontrol penuh sebagai walidata. DST Nasional terdaftar sebagai konsumen API dengan kredensial OAuth tertentu, lalu menarik metadata, layer spasial, dan dokumen melalui endpoint standar yang kita publikasikan.
+    </p>
+  </div>
+  <div class="direction-diagram">
+    <div class="dd-node us">
+      <div class="dd-node-icon">L</div>
+      <div class="dd-node-info">
+        <div class="dd-node-label">Provider · Kami</div>
+        <div class="dd-node-name">{{ site.name|default:"DST Kabupaten Abc" }}</div>
+      </div>
+    </div>
+    <div class="dd-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      HARVEST
+      <span class="protocols">· CSW · WMS · WFS · REST</span>
+    </div>
+    <div class="dd-node">
+      <div class="dd-node-icon">N</div>
+      <div class="dd-node-info">
+        <div class="dd-node-label">Consumer · Eksternal</div>
+        <div class="dd-node-name">DST Nasional</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-card-label">Konsumen Terdaftar</div>
+    <div class="stat-card-value">{{ stats.consumers }}</div>
+    <div class="stat-card-meta">OAuth2 Application</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Endpoint Aktif</div>
+    <div class="stat-card-value">{{ stats.endpoints_active }}<span class="unit">/{{ stats.endpoints_total }}</span></div>
+    <div class="stat-card-meta">CSW · WMS · WFS · WCS · REST</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Resource Ter-ekspos</div>
+    <div class="stat-card-value">{{ stats.published_total }}</div>
+    <div class="stat-card-meta"><strong>{{ stats.published_datasets }} layer</strong> · {{ stats.published_docs }} dokumen · {{ stats.published_maps }} peta</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Aktivitas 30 Hari</div>
+    <div class="stat-card-value">{{ stats.actions_30d }}</div>
+    <div class="stat-card-meta">Action stream · {{ stats.active_tokens_30d }} token baru</div>
+  </div>
+</div>
+
+<!-- SECTION 1: CONSUMERS -->
+<div class="section-header">
+  <div class="section-header-left">
+    <span class="section-num">01</span>
+    <div>
+      <h2 class="section-title">Konsumen <span class="italic">terdaftar</span></h2>
+      <p class="section-sub">Aplikasi OAuth2 yang terdaftar di tabel <code>oauth2_provider_application</code>. Tiap konsumen memiliki <code>client_id</code> &amp; tipe grant.</p>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title-row">Konsumen <span class="count">{{ stats.consumers }}</span></div>
+  </div>
+  <div class="consumers-list">
+    {% for c in consumers %}
+    <div class="consumer-row">
+      <div class="consumer-avatar">{{ c.initials }}</div>
+      <div class="consumer-name-block">
+        <div class="consumer-name">{{ c.name }}</div>
+        <div class="consumer-id">
+          client_id: <span class="mono">{{ c.client_id_masked }}</span>
+          <span class="tag">{{ c.client_type }}</span>
+        </div>
+      </div>
+      <div class="consumer-creds">
+        <div class="consumer-creds-label">Grant Type · Owner</div>
+        <div class="consumer-key">
+          <span class="mono">{{ c.grant_type }}</span><br>
+          <span style="font-size: 11px; color: var(--ink-400);">user: {{ c.owner }}</span>
+        </div>
+      </div>
+      <div class="consumer-iplist">
+        <div class="iplist-label">Token aktif</div>
+        <span style="font-family: var(--mono); font-size: 14px; color: var(--forest);">{{ c.active_tokens }}</span>
+        {% if c.last_token %}<br><span style="font-size: 10px;">terakhir {{ c.last_token|timesince }} lalu</span>{% endif %}
+      </div>
+      <div>
+        {% if c.skip_auth %}<span class="consumer-status">Trusted</span>{% else %}<span class="consumer-status warn">Prompt</span>{% endif %}
+        <div class="consumer-status-meta">Dibuat {{ c.created|date:"d M Y" }}</div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="padding: 36px 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+      Belum ada konsumen OAuth2 yang terdaftar.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- SECTION 2: ENDPOINT CARDS -->
+<div class="section-header section-spacer">
+  <div class="section-header-left">
+    <span class="section-num">02</span>
+    <div>
+      <h2 class="section-title">Endpoint yang <span class="italic">diekspos</span></h2>
+      <p class="section-sub">Layanan OGC dan REST yang aktif di instalasi ini. Konfigurasi diambil dari <code>OGC_SERVER</code> + URL conf.</p>
+    </div>
+  </div>
+  <a href="{% url 'dst_auth:endpoint_api' %}" class="btn btn-ghost btn-sm">Lihat semua endpoint →</a>
+</div>
+
+<div class="endpoint-grid">
+  {% for e in endpoints %}
+  <div class="endpoint-card {% if not e.active %}disabled{% endif %}">
+    <div class="endpoint-toggle {% if e.active %}on{% endif %}"></div>
+    <div class="endpoint-icon {{ e.code }}">{{ e.label }}</div>
+    <div>
+      <div class="endpoint-name">{{ e.name }}</div>
+      <div class="endpoint-purpose">{{ e.purpose }}</div>
+    </div>
+    <div class="endpoint-url-mini">{{ e.url }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- SECTION 3: INBOUND ACTIVITY -->
+<div class="section-header section-spacer">
+  <div class="section-header-left">
+    <span class="section-num">03</span>
+    <div>
+      <h2 class="section-title">Aktivitas <span class="italic">terbaru</span></h2>
+      <p class="section-sub">8 entri terakhir dari <code>actstream.Action</code> — sumber yang sama dengan halaman Audit Log.</p>
+    </div>
+  </div>
+  <a href="{% url 'dst_auth:audit_log' %}" class="btn btn-ghost btn-sm">Audit log lengkap →</a>
+</div>
+
+<div class="panel">
+  <div class="activity-list">
+    {% for row in activity_rows %}
+    <div class="activity-row">
+      <div class="activity-time">
+        {{ row.timestamp|date:"H:i" }}
+        <span class="date">{{ row.timestamp|date:"d M" }}</span>
+      </div>
+      <div><span class="method-badge get">ACT</span></div>
+      <div class="activity-endpoint">
+        <strong>{{ row.actor }}</strong> {{ row.verb }}
+        {% if row.target %} <em style="font-style: normal; background: var(--cream-200); padding: 1px 5px;">{{ row.target }}</em>{% endif %}
+        {% if row.target_type %}<span style="color: var(--ink-400); font-size: 10px;"> · {{ row.target_type }}</span>{% endif %}
+      </div>
+      <div class="activity-consumer">{{ row.actor }}</div>
+      <div class="activity-status ok">OK</div>
+    </div>
+    {% empty %}
+    <div style="padding: 36px 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+      Belum ada aktivitas tercatat.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

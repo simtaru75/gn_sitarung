@@ -1,0 +1,455 @@
+{% load dst_theme %}<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ document.title }} — {{ site_name }}</title>
+{% if theme_logo_url %}<link rel="icon" href="{{ theme_logo_url }}">{% else %}<link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  {% include "dst-district/partials/_theme_vars.html" %}
+  :root {
+    --forest: #1F3A2E; --forest-700: #2A4D3D; --forest-500: #3D6657;
+    --cream: #F4EFE6; --cream-200: #E8DFCE; --cream-300: #D9CEB8; --paper: #FAF7F0;
+    --ink: #1A1A1A; --ink-600: #4A4A4A; --ink-400: #7A7A7A;
+    --ochre: #C77D3E; --ochre-600: #A66830; --ochre-100: #F5E6D3;
+    --sage: #8B9D83; --cocoa: #5D3A1F;
+    --line: rgba(31, 58, 46, 0.1); --line-strong: rgba(31, 58, 46, 0.2);
+    --danger: #8B3A2A;
+    --serif: 'Fraunces', 'Times New Roman', serif;
+    --sans: 'Geist', system-ui, sans-serif;
+    --mono: 'Geist Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: var(--sans); background: var(--cream); color: var(--ink); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* HEADER */
+  .ds-header { flex-shrink: 0; display: flex; align-items: center; gap: 18px; padding: 12px 24px; background: var(--forest); color: var(--cream); z-index: 600; }
+  .ds-back { display: inline-flex; align-items: center; gap: 8px; color: var(--cream-300); text-decoration: none; font-size: 13px; padding: 7px 14px; border: 1px solid rgba(244,239,230,0.25); transition: all 0.15s; }
+  .ds-back:hover { background: rgba(244,239,230,0.1); color: var(--cream); }
+  .ds-back svg { width: 14px; height: 14px; }
+  .ds-header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ds-header-mark { width: 30px; height: 30px; background: var(--cream); color: var(--forest); display: grid; place-items: center; font-family: var(--serif); font-weight: 600; flex-shrink: 0; overflow: hidden; }
+  .ds-header-mark img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+  .ds-header-eyebrow { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ochre); }
+  .ds-header-title { font-family: var(--serif); font-size: 17px; font-weight: 500; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48vw; }
+  .ds-header-spacer { flex: 1; }
+
+  /* BODY */
+  /* grid-template-rows minmax(0,1fr): kunci tinggi baris ke kontainer agar
+     kolom (viewer & sidebar) bisa scroll internal, bukan tumbuh ikut konten. */
+  .ds-body { flex: 1; display: grid; grid-template-columns: 1fr 360px; grid-template-rows: minmax(0, 1fr); min-height: 0; }
+
+  /* VIEWER */
+  .viewer-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: #2b2b2b; }
+  .viewer-toolbar {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+    background: #1f1f1f; color: #e8e8e8; border-bottom: 1px solid #000;
+  }
+  .vt-group { display: flex; align-items: center; gap: 4px; }
+  .vt-sep { width: 1px; height: 20px; background: #444; margin: 0 6px; }
+  .vt-btn {
+    width: 30px; height: 30px; display: grid; place-items: center; cursor: pointer;
+    background: transparent; border: 1px solid transparent; color: #d8d8d8; border-radius: 3px; transition: all 0.12s;
+  }
+  .vt-btn:hover { background: #383838; color: #fff; }
+  .vt-btn:disabled { opacity: 0.35; cursor: default; }
+  .vt-btn svg { width: 17px; height: 17px; }
+  .vt-page { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; color: #d8d8d8; }
+  .vt-page input { width: 42px; text-align: center; background: #2b2b2b; border: 1px solid #444; color: #fff; padding: 4px 2px; font-family: var(--mono); font-size: 12px; border-radius: 3px; }
+  .vt-zoom { font-family: var(--mono); font-size: 12px; color: #d8d8d8; min-width: 46px; text-align: center; }
+  .vt-title { font-family: var(--mono); font-size: 11px; color: #9a9a9a; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vt-spacer { flex: 1; }
+  .vt-btn.accent { color: var(--cream); background: var(--forest-500); }
+  .vt-btn.accent:hover { background: var(--ochre); color: var(--forest); }
+  .vt-readonly { font-family: var(--mono); font-size: 10px; color: #c9a06a; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; }
+
+  .viewer-canvas-area { flex: 1; min-height: 0; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: safe center; }
+  #pdfPages { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .pdf-page { background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.5); line-height: 0; flex: 0 0 auto; }
+  .pdf-page canvas { display: block; }
+  .viewer-img { max-width: 100%; height: auto; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  .viewer-msg { color: #bbb; font-family: var(--mono); font-size: 12px; text-align: center; margin: auto; max-width: 360px; line-height: 1.7; }
+  .viewer-msg svg { width: 46px; height: 46px; opacity: 0.4; margin-bottom: 14px; }
+  .viewer-loading { color: #999; font-family: var(--mono); font-size: 12px; margin: auto; }
+  .viewer-dl-btn { display: inline-block; margin-top: 16px; padding: 10px 20px; background: var(--forest-500); color: var(--cream); text-decoration: none; font-size: 12px; font-family: var(--mono); letter-spacing: 0.06em; }
+  .viewer-dl-btn:hover { background: var(--ochre); color: var(--forest); }
+
+  /* SIDEBAR (reuse from dataset detail) */
+  .ds-side { background: var(--paper); border-left: 1px solid var(--line-strong); overflow-y: auto; padding: 24px 22px 40px; }
+  .ds-side-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ochre-600); margin-bottom: 8px; }
+  .ds-side-title { font-family: var(--serif); font-size: 24px; font-weight: 500; line-height: 1.2; color: var(--forest); letter-spacing: -0.01em; margin-bottom: 14px; word-break: break-word; }
+  .ds-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .ds-badge { font-family: var(--mono); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 9px; background: var(--forest); color: var(--cream); }
+  .ds-badge.ochre { background: var(--ochre); color: var(--forest); }
+  .ds-badge.outline { background: transparent; color: var(--forest); border: 1px solid var(--line-strong); }
+  .ds-badge.dl-on { background: var(--sage); color: var(--forest); }
+  .ds-badge.dl-off { background: var(--danger); color: var(--cream); }
+  .ds-section { margin-bottom: 26px; }
+  .ds-section-h { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .ds-abstract { font-family: var(--serif); font-size: 15px; line-height: 1.6; color: var(--ink-600); font-weight: 300; }
+  .ds-abstract.empty { font-style: italic; color: var(--ink-400); font-family: var(--sans); font-size: 13px; }
+  .ds-meta { display: grid; grid-template-columns: 1fr; }
+  .ds-meta-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .ds-meta-row:last-child { border-bottom: none; }
+  .ds-meta-k { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-400); padding-top: 2px; }
+  .ds-meta-v { color: var(--ink); }
+  .ds-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ds-chip { font-size: 11px; color: var(--forest); background: var(--cream-200); border: 1px solid var(--line); padding: 3px 9px; }
+
+  @media (max-width: 980px) {
+    html, body { overflow: auto; }
+    .app { height: auto; overflow: visible; }
+    .ds-body { grid-template-columns: 1fr; }
+    .viewer-wrap { height: 72vh; min-height: 420px; }
+    .ds-header-title { max-width: 60vw; }
+  }
+</style>
+</head>
+<body data-theme="{% dst_active_theme %}">
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="ds-header">
+    <a href="{% url 'dst:document_explore' %}" class="ds-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Dokumen
+    </a>
+    <div class="ds-header-brand">
+      <div class="ds-header-mark">{% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo">{% else %}L{% endif %}</div>
+      <div>
+        <div class="ds-header-eyebrow">Dokumen Kebijakan · {{ nama_kabupaten }}</div>
+        <div class="ds-header-title">{{ document.title }}</div>
+      </div>
+    </div>
+    <div class="ds-header-spacer"></div>
+  </header>
+
+  <!-- BODY -->
+  <div class="ds-body">
+
+    <!-- VIEWER -->
+    <div class="viewer-wrap" id="viewerWrap">
+      {% if can_download and has_file and is_pdf %}
+      <div class="viewer-toolbar">
+        <div class="vt-group vt-page">
+          <button class="vt-btn" id="prevPage" title="Halaman sebelumnya">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <input type="number" id="pageNum" value="1" min="1"> / <span id="pageCount">…</span>
+          <button class="vt-btn" id="nextPage" title="Halaman berikutnya">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="vt-sep"></div>
+        <div class="vt-group">
+          <button class="vt-btn" id="zoomOut" title="Perkecil">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="vt-zoom" id="zoomLabel">120%</span>
+          <button class="vt-btn" id="zoomIn" title="Perbesar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="vt-btn" id="fitWidth" title="Sesuaikan lebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 3H3v18h18z"/><path d="M8 12h8M8 12l3-3M8 12l3 3M16 12l-3-3M16 12l-3 3"/></svg>
+          </button>
+        </div>
+        <div class="vt-spacer"></div>
+        <div class="vt-group">
+          <button class="vt-btn accent" id="printBtn" title="Cetak">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </button>
+          <a class="vt-btn accent" id="downloadBtn" href="{{ file_url }}?dl=1" title="Unduh" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="viewer-canvas-area" id="canvasArea">
+        <div id="pdfPages"></div>
+        <div class="viewer-loading" id="viewerLoading">Memuat dokumen…</div>
+      </div>
+
+      {% elif can_download and has_file and is_image %}
+      <div class="viewer-toolbar">
+        <span class="vt-title">{{ filename }}</span>
+        <div class="vt-spacer"></div>
+        <a class="vt-btn accent" href="{{ file_url }}?dl=1" title="Unduh" download>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        </a>
+      </div>
+      <div class="viewer-canvas-area">
+        <img class="viewer-img" src="{{ file_url }}" alt="{{ document.title }}">
+      </div>
+
+      {% elif can_download and has_file %}
+      <div class="viewer-canvas-area">
+        <div class="viewer-msg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <div>Pratinjau tidak tersedia untuk jenis berkas{% if extension %} <strong>.{{ extension }}</strong>{% endif %} ini.</div>
+          <a class="viewer-dl-btn" href="{{ file_url }}?dl=1" download>Unduh berkas</a>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="viewer-canvas-area">
+        <div class="viewer-msg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          {% if not can_download %}
+          <div><strong>Hanya metadata.</strong><br>Pratinjau &amp; unduhan dokumen ini dibatasi sesuai izin akses. Metadata di sebelah kanan tetap dapat dilihat.</div>
+          {% if not is_authenticated %}
+          <a class="viewer-dl-btn" href="{% url 'account_login' %}?next={{ request.path }}">Masuk untuk mengakses</a>
+          {% endif %}
+          {% else %}
+          <div>Berkas dokumen tidak tersedia di server.</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="ds-side">
+      <div class="ds-side-eyebrow">Metadata Dokumen</div>
+      <h1 class="ds-side-title">{{ document.title }}</h1>
+
+      <div class="ds-badges">
+        {% if doc_type %}<span class="ds-badge ochre">{{ doc_type }}</span>{% endif %}
+        {% if extension %}<span class="ds-badge outline">.{{ extension }}</span>{% endif %}
+        {% if can_download %}
+        <span class="ds-badge dl-on">Dapat diunduh</span>
+        {% else %}
+        <span class="ds-badge dl-off">Hanya metadata</span>
+        {% endif %}
+      </div>
+
+      <div class="ds-section">
+        <div class="ds-section-h">Ringkasan</div>
+        {% if has_real_abstract %}
+        <p class="ds-abstract">{{ abstract_text }}</p>
+        {% else %}
+        <p class="ds-abstract empty">Belum ada abstrak metadata untuk dokumen ini.</p>
+        {% endif %}
+      </div>
+
+      <div class="ds-section">
+        <div class="ds-section-h">Informasi</div>
+        <div class="ds-meta">
+          <div class="ds-meta-row"><div class="ds-meta-k">Jenis</div><div class="ds-meta-v">{% firstof doc_type "Dokumen" %}</div></div>
+          <div class="ds-meta-row"><div class="ds-meta-k">Pengelola</div><div class="ds-meta-v">{% firstof pengelola "—" %}</div></div>
+          <div class="ds-meta-row"><div class="ds-meta-k">Walidata</div><div class="ds-meta-v">{% firstof walidata "—" %}</div></div>
+          <div class="ds-meta-row"><div class="ds-meta-k">Kategori</div><div class="ds-meta-v">{% firstof kategori "—" %}</div></div>
+          <div class="ds-meta-row"><div class="ds-meta-k">Tahun</div><div class="ds-meta-v">{% firstof year "—" %}</div></div>
+          {% if language %}<div class="ds-meta-row"><div class="ds-meta-k">Bahasa</div><div class="ds-meta-v">{{ language }}</div></div>{% endif %}
+          {% if license_name %}<div class="ds-meta-row"><div class="ds-meta-k">Lisensi</div><div class="ds-meta-v">{{ license_name }}</div></div>{% endif %}
+          {% if attribution %}<div class="ds-meta-row"><div class="ds-meta-k">Atribusi</div><div class="ds-meta-v">{{ attribution }}</div></div>{% endif %}
+          <div class="ds-meta-row"><div class="ds-meta-k">Diakses</div><div class="ds-meta-v">{{ views_count }}×</div></div>
+        </div>
+      </div>
+
+      {% if supplemental %}
+      <div class="ds-section">
+        <div class="ds-section-h">Informasi Tambahan</div>
+        <p class="ds-abstract" style="font-size:13px;">{{ supplemental|linebreaksbr }}</p>
+      </div>
+      {% endif %}
+
+      {% if regions_list %}
+      <div class="ds-section">
+        <div class="ds-section-h">Wilayah</div>
+        <div class="ds-chips">{% for r in regions_list %}<span class="ds-chip">{{ r }}</span>{% endfor %}</div>
+      </div>
+      {% endif %}
+
+      {% if keywords_list %}
+      <div class="ds-section">
+        <div class="ds-section-h">Kata Kunci</div>
+        <div class="ds-chips">{% for k in keywords_list %}<span class="ds-chip">{{ k }}</span>{% endfor %}</div>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+
+{% if can_download and has_file and is_pdf %}
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js" crossorigin=""></script>
+<script>
+(function () {
+  var FILE_URL = "{{ file_url|escapejs }}";
+
+  if (typeof pdfjsLib === 'undefined') {
+    document.getElementById('viewerLoading').textContent = 'Gagal memuat pustaka PDF.';
+    return;
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  var area = document.getElementById('canvasArea');
+  var pagesEl = document.getElementById('pdfPages');
+  var loading = document.getElementById('viewerLoading');
+  var pageNumInput = document.getElementById('pageNum');
+  var pageCountEl = document.getElementById('pageCount');
+  var zoomLabel = document.getElementById('zoomLabel');
+
+  var pdfDoc = null, numPages = 0, scale = 1.2, current = 1;
+  var baseSizes = {}, divs = {}, canvases = {}, tasks = {}, rendered = {};
+  var io = null;
+
+  function setZoom() { zoomLabel.textContent = Math.round(scale * 100) + '%'; }
+
+  function sizeDiv(num) {
+    var s = baseSizes[num]; if (!s) return;
+    divs[num].style.width = Math.floor(s.width * scale) + 'px';
+    divs[num].style.height = Math.floor(s.height * scale) + 'px';
+  }
+
+  function clearPage(num) {
+    if (tasks[num]) { try { tasks[num].cancel(); } catch (e) {} tasks[num] = null; }
+    var c = canvases[num];
+    if (c) { c.width = 0; c.height = 0; }
+    rendered[num] = false;
+  }
+
+  function renderPage(num) {
+    if (rendered[num] || !pdfDoc) return;
+    rendered[num] = true;
+    pdfDoc.getPage(num).then(function (page) {
+      if (!rendered[num]) return;  // dibatalkan saat menunggu
+      var ratio = window.devicePixelRatio || 1;
+      var vp = page.getViewport({ scale: scale });
+      var c = canvases[num];
+      c.width = Math.floor(vp.width * ratio);
+      c.height = Math.floor(vp.height * ratio);
+      c.style.width = Math.floor(vp.width) + 'px';
+      c.style.height = Math.floor(vp.height) + 'px';
+      var task = page.render({
+        canvasContext: c.getContext('2d'),
+        viewport: vp,
+        transform: ratio !== 1 ? [ratio, 0, 0, ratio, 0, 0] : null
+      });
+      tasks[num] = task;
+      task.promise.then(function () { tasks[num] = null; }, function () {});
+    });
+  }
+
+  function buildPages() {
+    pagesEl.innerHTML = '';
+    for (var i = 1; i <= numPages; i++) {
+      var d = document.createElement('div');
+      d.className = 'pdf-page';
+      d.setAttribute('data-page', i);
+      var c = document.createElement('canvas');
+      d.appendChild(c);
+      pagesEl.appendChild(d);
+      divs[i] = d; canvases[i] = c; rendered[i] = false;
+      sizeDiv(i);
+    }
+    if (io) io.disconnect();
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var num = parseInt(e.target.getAttribute('data-page'), 10);
+        if (e.isIntersecting) renderPage(num); else clearPage(num);
+      });
+    }, { root: area, rootMargin: '500px 0px', threshold: 0.01 });
+    for (var j = 1; j <= numPages; j++) io.observe(divs[j]);
+  }
+
+  function renderVisible() {
+    var top = area.scrollTop - 500, bottom = area.scrollTop + area.clientHeight + 500;
+    for (var i = 1; i <= numPages; i++) {
+      var d = divs[i]; if (!d) continue;
+      var dtop = d.offsetTop, dbot = dtop + d.offsetHeight;
+      if (dbot >= top && dtop <= bottom) renderPage(i);
+    }
+  }
+
+  function rerenderAll() {
+    for (var i = 1; i <= numPages; i++) { clearPage(i); sizeDiv(i); }
+    renderVisible();
+  }
+
+  function goTo(num) {
+    num = Math.min(Math.max(1, num), numPages);
+    current = num;
+    if (divs[num]) area.scrollTo({ top: divs[num].offsetTop - 12, behavior: 'smooth' });
+    pageNumInput.value = num;
+  }
+
+  var ticking = false;
+  area.addEventListener('scroll', function () {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var mid = area.scrollTop + area.clientHeight / 2, best = 1;
+      for (var i = 1; i <= numPages; i++) {
+        if (divs[i] && divs[i].offsetTop <= mid) best = i; else break;
+      }
+      if (best !== current) { current = best; pageNumInput.value = best; }
+    });
+  });
+
+  pdfjsLib.getDocument({ url: FILE_URL, disableRange: true, disableStream: true }).promise
+    .then(function (pdf) {
+      pdfDoc = pdf; numPages = pdf.numPages;
+      pageCountEl.textContent = numPages;
+      pageNumInput.max = numPages;
+      var jobs = [];
+      for (var i = 1; i <= numPages; i++) {
+        (function (n) {
+          jobs.push(pdf.getPage(n).then(function (p) {
+            var v = p.getViewport({ scale: 1 });
+            baseSizes[n] = { width: v.width, height: v.height };
+          }));
+        })(i);
+      }
+      return Promise.all(jobs);
+    })
+    .then(function () {
+      var s = baseSizes[1], avail = area.clientWidth - 48;
+      // Default 100%; hanya diperkecil mengikuti lebar bila halaman lebih lebar
+      // dari area (layar sempit/mobile) agar tidak meluber horizontal.
+      if (s && s.width > 0 && avail > 0) {
+        var fit = avail / s.width;
+        scale = fit < 1 ? Math.max(fit, 0.3) : 1.0;
+      } else {
+        scale = 1.0;
+      }
+      setZoom();
+      if (loading) loading.style.display = 'none';
+      buildPages();
+      renderVisible();
+    })
+    .catch(function () { if (loading) loading.textContent = 'Gagal memuat dokumen PDF.'; });
+
+  document.getElementById('prevPage').addEventListener('click', function () { goTo(current - 1); });
+  document.getElementById('nextPage').addEventListener('click', function () { goTo(current + 1); });
+  pageNumInput.addEventListener('change', function () { goTo(parseInt(this.value, 10) || 1); });
+  document.getElementById('zoomIn').addEventListener('click', function () { scale = Math.min(scale + 0.2, 4); setZoom(); rerenderAll(); });
+  document.getElementById('zoomOut').addEventListener('click', function () { scale = Math.max(scale - 0.2, 0.3); setZoom(); rerenderAll(); });
+  document.getElementById('fitWidth').addEventListener('click', function () {
+    var s = baseSizes[1], avail = area.clientWidth - 48;
+    if (s && avail > 0) { scale = Math.min(Math.max(avail / s.width, 0.3), 3); setZoom(); rerenderAll(); }
+  });
+
+  // Cetak — pakai iframe tersembunyi (PDF asli). Hanya ada bila punya izin unduh.
+  var printBtn = document.getElementById('printBtn');
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      var ifr = document.createElement('iframe');
+      ifr.style.position = 'fixed'; ifr.style.right = '0'; ifr.style.bottom = '0';
+      ifr.style.width = '0'; ifr.style.height = '0'; ifr.style.border = '0';
+      ifr.src = FILE_URL;
+      ifr.onload = function () {
+        try { ifr.contentWindow.focus(); ifr.contentWindow.print(); }
+        catch (e) { window.open(FILE_URL, '_blank'); }
+      };
+      document.body.appendChild(ifr);
+    });
+  }
+})();
+</script>
+{% endif %}
+</body>
+</html>

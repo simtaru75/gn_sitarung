@@ -1,0 +1,11 @@
+{% extends "geonode-mapstore-client/snippets/head.html" %}
+{% load static dst_theme %}
+
+{% block favicon %}
+{% dst_theme_logo_url as logo_url %}
+{% if logo_url %}
+    <link rel="icon" href="{{ logo_url }}">
+{% else %}
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+{% endif %}
+{% endblock favicon %}

@@ -1,0 +1,278 @@
+{% extends "dst-district/base.html" %}
+{% load static humanize %}
+
+{% block title %}Capaian Program FOLUR — Sitroom{% endblock %}
+{% block page_slug %}capaian{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'dst-district/css/capaian.css' %}?v=20260604b">
+{% endblock %}
+
+{% block body %}
+<div class="cap-root cap-sitroom">
+
+  {# ===================== HEADER ===================== #}
+  <header class="cap-head">
+    <div class="cap-head__left">
+      <div class="cap-head__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 14c4-6 8-6 9-2 1-5 5-7 9-4"/>
+        </svg>
+      </div>
+      <div class="cap-head__titles">
+        <span class="cap-head__eyebrow">DST LUWU · SITROOM</span>
+        <h1 class="cap-head__title">Capaian Program FOLUR</h1>
+      </div>
+    </div>
+    <div class="cap-head__right">
+      <span class="cap-chip cap-chip--mono">{{ folur_auto.kode_kab|default:"73.17" }} · {{ folur_auto.provinsi_singkat|default:"SUL-SEL" }}</span>
+      {% if folur_years and folur_years|length > 1 %}
+      <form method="get" class="cap-chip cap-chip--accent" style="padding:0;display:inline-flex;align-items:center;">
+        <label style="padding:0 4px 0 10px;">Periode</label>
+        <select name="tahun" onchange="this.form.submit()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;padding:6px 10px 6px 2px;">
+          {% for y in folur_years %}<option value="{{ y }}" {% if y == folur_periode %}selected{% endif %}>{{ y }}</option>{% endfor %}
+        </select>
+      </form>
+      {% else %}
+      <span class="cap-chip cap-chip--accent">Periode {{ folur_periode|default:2024 }}</span>
+      {% endif %}
+      <span class="cap-head__progress">
+        <strong>{{ folur_terisi|default:5 }}/{{ folur_total|default:8 }}</strong> indikator terisi
+      </span>
+    </div>
+  </header>
+
+  {# ===================== KONTEKS AUTO (landscape strip) ===================== #}
+  <section class="cap-auto" aria-label="Konteks bentang lahan">
+    <div class="cap-auto__label">
+      <span class="cap-tag cap-tag--auto">AUTO</span>
+      Konteks bentang lahan — dihitung dari data sistem
+    </div>
+    <div class="cap-auto__grid">
+      <div class="cap-auto__item">
+        <span class="cap-auto__k">Luas bentang lahan</span>
+        <span class="cap-auto__v cap-mono">{{ folur_auto.luas_ha|default:"300.025"|intcomma }}<small>ha</small></span>
+      </div>
+      <div class="cap-auto__item">
+        <span class="cap-auto__k">Kecamatan</span>
+        <span class="cap-auto__v cap-mono">{{ folur_auto.jml_kec|default:21 }}</span>
+      </div>
+      <div class="cap-auto__item">
+        <span class="cap-auto__k">Desa</span>
+        <span class="cap-auto__v cap-mono">{{ folur_auto.jml_desa|default:207 }}<small>+ {{ folur_auto.jml_kel|default:20 }} kel.</small></span>
+      </div>
+      <div class="cap-auto__item">
+        <span class="cap-auto__k">Desa Mandiri+Maju</span>
+        <span class="cap-auto__v cap-mono">{{ folur_auto.persen_desa_maju|default:38 }}<small>%</small></span>
+      </div>
+      <div class="cap-auto__item">
+        <span class="cap-auto__k">Rata-rata skor IDM</span>
+        <span class="cap-auto__v cap-mono">{{ folur_auto.idm_avg|default:"0.684" }}<small>({{ folur_periode|default:2024 }})</small></span>
+      </div>
+      <div class="cap-auto__item">
+        <span class="cap-auto__k">Komoditas fokus</span>
+        <span class="cap-auto__v" style="display:flex;flex-wrap:wrap;gap:4px;">
+          {% for k in folur_komoditas %}<span class="cap-komchip" style="display:inline-block;padding:2px 9px;background:rgba(199,125,62,0.12);color:var(--cocoa);border:1px solid rgba(199,125,62,0.25);border-radius:20px;font-size:11px;line-height:1.5;">{{ k }}</span>{% empty %}<span style="color:var(--ink-400);">{{ folur_auto.komoditas|default:"—" }}</span>{% endfor %}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  {# ===================== BODY: framework + sidebar ===================== #}
+  <div class="cap-body">
+
+    <main class="cap-main">
+      <h2 class="cap-section-title">RESULTS FRAMEWORK</h2>
+      <p class="cap-section-lead">
+        Kerangka indikator FOLUR (GEF Core Indicators) sebagai bingkai pemersatu.
+        Sebagian terisi otomatis dari data sistem; sisanya menanti sumber data — ditandai
+        badge <span class="cap-badge cap-badge--need">perlu data</span> sebagai roadmap, bukan ruang kosong.
+      </p>
+
+      {# ----- Pilar filter (statis; di-toggle via JS opsional) ----- #}
+      <nav class="cap-pillars" aria-label="Filter pilar">
+        <button class="cap-pill cap-pill--active" data-pillar="all">Semua pilar <span>{{ folur_terisi|default:5 }}/{{ folur_total|default:8 }}</span></button>
+        {% for p in folur_pilar_filter %}
+          <button class="cap-pill" data-pillar="{{ p.slug }}">{{ p.nama }} <span>{{ p.terisi }}/{{ p.total }}</span></button>
+        {% empty %}
+          <button class="cap-pill" data-pillar="kawasan_lindung">Kawasan Lindung <span>1/1</span></button>
+          <button class="cap-pill" data-pillar="restorasi">Restorasi Lahan <span>1/1</span></button>
+          <button class="cap-pill" data-pillar="praktik_lestari">Praktik Lestari <span>1/1</span></button>
+          <button class="cap-pill" data-pillar="grk">Mitigasi GRK <span>0/1</span></button>
+          <button class="cap-pill" data-pillar="penerima_manfaat">Penerima Manfaat <span>1/1</span></button>
+          <button class="cap-pill" data-pillar="value_chain">Rantai Nilai Komoditas <span>0/2</span></button>
+          <button class="cap-pill" data-pillar="tata_kelola">Tata Kelola Bentang Lahan <span>1/1</span></button>
+        {% endfor %}
+      </nav>
+
+      {# ----- KPI cards ----- #}
+      <div class="cap-cards">
+        {% for kpi in folur_capaian %}
+          <article class="cap-card{% if not kpi.ada_data %} cap-card--need{% endif %}" data-pillar="{{ kpi.pilar }}">
+            <div class="cap-card__top">
+              <span class="cap-code{% if kpi.sumber_auto %} cap-code--auto{% endif %}">{{ kpi.kode }}</span>
+              <span class="cap-code__label">{{ kpi.pilar_nama }}</span>
+              {% if kpi.sumber_auto %}<span class="cap-tag cap-tag--auto cap-tag--sm">AUTO</span>{% endif %}
+            </div>
+
+            <h3 class="cap-card__title">{{ kpi.nama }}</h3>
+
+            {% if kpi.ada_data %}
+              <div class="cap-card__value cap-mono">
+                {{ kpi.nilai|intcomma }}<small>{{ kpi.satuan }}</small>
+                {% if kpi.spark %}<span class="cap-spark" aria-hidden="true">{{ kpi.spark|safe }}</span>{% endif %}
+              </div>
+              {% if kpi.target %}
+                <div class="cap-bar"><span style="width: {{ kpi.persen }}%"></span></div>
+                <div class="cap-card__foot">
+                  <span class="cap-mono cap-card__pct">{{ kpi.persen }}%</span>
+                  <span class="cap-card__target">target {{ kpi.target|intcomma }} {{ kpi.satuan }}</span>
+                </div>
+              {% else %}
+                <p class="cap-card__notarget"><em>Target belum ditetapkan</em></p>
+              {% endif %}
+              {% if kpi.kum_nilai is not None and kpi.kum_years|length > 1 %}
+                <p class="cap-mono" title="Akumulasi realisasi tahunan: {{ kpi.kum_years|join:' + ' }}" style="font-size:11.5px;color:var(--ink-600);margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);">Σ Realisasi kumulatif s.d. {{ folur_periode }}: <strong style="color:var(--forest);">{{ kpi.kum_nilai|intcomma }} {{ kpi.satuan }}</strong></p>
+              {% endif %}
+              {% if kpi.extra %}<span class="cap-badge cap-badge--info">{{ kpi.extra }}</span>{% endif %}
+            {% else %}
+              <span class="cap-badge cap-badge--need">perlu data</span>
+              <p class="cap-card__desc">{{ kpi.deskripsi }}</p>
+              {% if kpi.target %}
+                <p class="cap-card__target-mono cap-mono">target {{ kpi.target|intcomma }} {{ kpi.satuan }}</p>
+              {% endif %}
+            {% endif %}
+          </article>
+        {% empty %}
+          {# ---- contoh statis sesuai mockup (fallback bila context kosong) ---- #}
+          <article class="cap-card" data-pillar="kawasan_lindung">
+            <div class="cap-card__top"><span class="cap-code">CI1</span><span class="cap-code__label">Kawasan Lindung</span></div>
+            <h3 class="cap-card__title">Kawasan lindung terkelola efektif</h3>
+            <div class="cap-card__value cap-mono">8.420<small>ha</small></div>
+            <div class="cap-bar"><span style="width:51%"></span></div>
+            <div class="cap-card__foot"><span class="cap-mono cap-card__pct">51%</span><span class="cap-card__target">target 12.500 ha</span></div>
+          </article>
+          <article class="cap-card" data-pillar="restorasi">
+            <div class="cap-card__top"><span class="cap-code">CI3</span><span class="cap-code__label">Restorasi Lahan</span></div>
+            <h3 class="cap-card__title">Lahan terestorasi</h3>
+            <div class="cap-card__value cap-mono">540<small>ha</small></div>
+            <div class="cap-bar"><span style="width:45%"></span></div>
+            <div class="cap-card__foot"><span class="cap-mono cap-card__pct">45%</span><span class="cap-card__target">target 1.200 ha</span></div>
+          </article>
+          <article class="cap-card" data-pillar="praktik_lestari">
+            <div class="cap-card__top"><span class="cap-code">CI4</span><span class="cap-code__label">Praktik Lestari</span></div>
+            <h3 class="cap-card__title">Bentang lahan praktik produksi lestari</h3>
+            <div class="cap-card__value cap-mono">3.150<small>ha</small></div>
+            <div class="cap-bar"><span style="width:30%"></span></div>
+            <div class="cap-card__foot"><span class="cap-mono cap-card__pct">30%</span><span class="cap-card__target">target 9.000 ha</span></div>
+          </article>
+          <article class="cap-card cap-card--need" data-pillar="grk">
+            <div class="cap-card__top"><span class="cap-code">CI6</span><span class="cap-code__label">Mitigasi GRK</span></div>
+            <h3 class="cap-card__title">Mitigasi emisi gas rumah kaca</h3>
+            <span class="cap-badge cap-badge--need">perlu data</span>
+            <p class="cap-card__desc">Estimasi emisi GRK yang dimitigasi/dihindari dari restorasi dan praktik lestari. Memerlukan integrasi data karbon (KLHK/BMKG).</p>
+            <p class="cap-card__target-mono cap-mono">target 85.000 tCO₂e</p>
+          </article>
+          <article class="cap-card" data-pillar="penerima_manfaat">
+            <div class="cap-card__top"><span class="cap-code">CI11</span><span class="cap-code__label">Penerima Manfaat</span></div>
+            <h3 class="cap-card__title">Penerima manfaat (petani)</h3>
+            <div class="cap-card__value cap-mono">2.840<small>orang</small></div>
+            <div class="cap-bar"><span style="width:44%"></span></div>
+            <div class="cap-card__foot"><span class="cap-mono cap-card__pct">44%</span><span class="cap-card__target">target 6.500 orang</span></div>
+            <span class="cap-badge cap-badge--info">40% perempuan</span>
+          </article>
+          <article class="cap-card cap-card--need" data-pillar="value_chain">
+            <div class="cap-card__top"><span class="cap-code">VC-KEL</span><span class="cap-code__label">Rantai Nilai Komoditas</span></div>
+            <h3 class="cap-card__title">Kelompok tani &amp; koperasi tersertifikasi</h3>
+            <span class="cap-badge cap-badge--need">perlu data</span>
+            <p class="cap-card__desc">Kelompok tani / koperasi dengan sertifikasi keberlanjutan (mis. UTZ/RA). Memerlukan data proyek FOLUR / Pemda.</p>
+            <p class="cap-card__target-mono cap-mono">target 120 kelompok</p>
+          </article>
+          <article class="cap-card cap-card--need" data-pillar="value_chain">
+            <div class="cap-card__top"><span class="cap-code">VC-PRD</span><span class="cap-code__label">Rantai Nilai Komoditas</span></div>
+            <h3 class="cap-card__title">Produksi kakao</h3>
+            <span class="cap-badge cap-badge--need">perlu data</span>
+            <p class="cap-card__desc">Produksi &amp; produktivitas kakao per kecamatan. Memerlukan data Disbun/Distan &amp; BPS (e-stat).</p>
+          </article>
+          <article class="cap-card" data-pillar="tata_kelola">
+            <div class="cap-card__top"><span class="cap-code">TK-MITRA</span><span class="cap-code__label">Tata Kelola Bentang Lahan</span><span class="cap-tag cap-tag--auto cap-tag--sm">AUTO</span></div>
+            <h3 class="cap-card__title">Mitra pelaksana aktif</h3>
+            <div class="cap-card__value cap-mono">8<small>mitra</small></div>
+            <p class="cap-card__notarget"><em>Target belum ditetapkan</em></p>
+          </article>
+        {% endfor %}
+      </div>
+    </main>
+
+    {# ===================== SIDEBAR ===================== #}
+    <aside class="cap-aside">
+
+      {# ---- Distribusi status IDM ---- #}
+      <section class="cap-panel">
+        <header class="cap-panel__head">
+          <h3>Distribusi status IDM</h3>
+          <span class="cap-badge cap-badge--ok"><i></i> data tersedia</span>
+        </header>
+        <p class="cap-panel__sub">{{ folur_auto.jml_desa|default:207 }} desa · {{ folur_periode|default:2024 }}</p>
+
+        <div class="cap-idmbar" role="img" aria-label="Distribusi status IDM">
+          {% for s in folur_idm %}
+            <span class="cap-idmbar__seg cap-idm--{{ s.slug }}" style="flex: {{ s.jumlah }}"></span>
+          {% empty %}
+            <span class="cap-idmbar__seg cap-idm--mandiri" style="flex:9"></span>
+            <span class="cap-idmbar__seg cap-idm--maju" style="flex:70"></span>
+            <span class="cap-idmbar__seg cap-idm--berkembang" style="flex:104"></span>
+            <span class="cap-idmbar__seg cap-idm--tertinggal" style="flex:22"></span>
+            <span class="cap-idmbar__seg cap-idm--sangat" style="flex:2"></span>
+          {% endfor %}
+        </div>
+
+        <ul class="cap-legend">
+          {% for s in folur_idm %}
+            <li><span class="cap-dot cap-idm--{{ s.slug }}"></span>{{ s.nama }}<b class="cap-mono">{{ s.jumlah }}</b></li>
+          {% empty %}
+            <li><span class="cap-dot cap-idm--mandiri"></span>Mandiri<b class="cap-mono">9</b></li>
+            <li><span class="cap-dot cap-idm--maju"></span>Maju<b class="cap-mono">70</b></li>
+            <li><span class="cap-dot cap-idm--berkembang"></span>Berkembang<b class="cap-mono">104</b></li>
+            <li><span class="cap-dot cap-idm--tertinggal"></span>Tertinggal<b class="cap-mono">22</b></li>
+            <li><span class="cap-dot cap-idm--sangat"></span>Sangat Tertinggal<b class="cap-mono">2</b></li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      {# ---- Roadmap data ---- #}
+      <section class="cap-panel">
+        <h3 class="cap-panel__head cap-panel__head--solo">Roadmap data</h3>
+        <div class="cap-roadmap__big cap-mono">{{ folur_terisi|default:5 }}<small>/ {{ folur_total|default:8 }}</small></div>
+        <div class="cap-bar cap-bar--lg"><span style="width: {% widthratio folur_terisi|default:5 folur_total|default:8 100 %}%"></span></div>
+        <p class="cap-roadmap__note">
+          {{ folur_gap_count|default:3 }} indikator menunggu integrasi sumber data
+          (tutupan lahan, deforestasi, produksi komoditas, karbon).
+        </p>
+        <ul class="cap-roadmap__legend">
+          <li><span class="cap-dot cap-dot--ok"></span>Terisi dari data sistem &amp; entri manual</li>
+          <li><span class="cap-dot cap-dot--need"></span>Perlu data — sumber ditentukan</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+// Filter pilar (progressive enhancement — aman tanpa JS)
+(function () {
+  const pills = document.querySelectorAll('.cap-pill');
+  const cards = document.querySelectorAll('.cap-card');
+  pills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      pills.forEach(p => p.classList.remove('cap-pill--active'));
+      pill.classList.add('cap-pill--active');
+      const f = pill.dataset.pillar;
+      cards.forEach(function (c) {
+        c.style.display = (f === 'all' || c.dataset.pillar === f) ? '' : 'none';
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

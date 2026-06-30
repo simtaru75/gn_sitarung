@@ -1,0 +1,303 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Dataset Spasial — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}data_spasial{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="data_spasial"] .ds-table { width:100%; border-collapse:collapse; border:1px solid var(--line); background:var(--paper); }
+  body[data-page="data_spasial"] .ds-table th { text-align:left; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-400); padding:11px 14px; border-bottom:1px solid var(--line); background:var(--cream); }
+  body[data-page="data_spasial"] .ds-table td { padding:11px 14px; border-bottom:1px solid var(--line); font-size:13px; color:var(--ink); vertical-align:middle; }
+  body[data-page="data_spasial"] .ds-table tr:last-child td { border-bottom:none; }
+  body[data-page="data_spasial"] .ds-table .mono { font-family:var(--mono); }
+  body[data-page="data_spasial"] .ds-tlink { color:var(--forest); text-decoration:none; font-weight:500; }
+  body[data-page="data_spasial"] .ds-tlink:hover { color:var(--ochre); }
+  body[data-page="data_spasial"] .ds-tact { color:var(--ochre); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; margin-right:10px; }
+  body[data-page="data_spasial"] .ds-tact:hover { color:var(--forest); }
+  body[data-page="data_spasial"] .ds-tbadge { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; padding:2px 8px; }
+  body[data-page="data_spasial"] .ds-tbadge.ok { background:rgba(74,107,61,0.12); color:var(--success); }
+  body[data-page="data_spasial"] .ds-tbadge.review { background:rgba(176,112,32,0.14); color:var(--warning); }
+  body[data-page="data_spasial"] .ds-tbadge.draft { background:rgba(120,120,120,0.14); color:var(--ink-400); }
+  body[data-page="data_spasial"] .ds-table .muted { color:var(--ink-400); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+        <div>
+          <div class="page-eyebrow">Pengelolaan Data · 02</div>
+          <h1 class="page-title">Dataset <span class="italic">spasial</span></h1>
+          <p class="page-desc">Kelola layer vektor (Shapefile, GeoPackage, GeoJSON) dan raster (GeoTIFF) Kabupaten/Kota. Setiap layer ter-publish otomatis sebagai layanan OGC (WMS, WFS, WCS) dan dapat dipanen oleh DST Nasional.</p>
+        </div>
+        <div class="page-actions">
+          <a href="?export=xml&type={{ filter_type }}&q={{ search|urlencode }}" class="btn btn-ghost btn-export" title="Unduh metadata dataset (sesuai filter & pencarian) sebagai Dublin Core XML">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Ekspor metadata XML
+          </a>
+          <a href="{% url 'dst_auth:layer_baru' %}" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Unggah layer baru</a>
+        </div>
+      </header>
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-label">Total Layer</div>
+          <div class="stat-card-value">{{ stats.total }}</div>
+          <div class="mini-bar">
+            <div class="mini-bar-seg" style="flex: {{ stats.vector|default:0 }}"></div>
+            <div class="mini-bar-seg alt" style="flex: {{ stats.raster|default:0 }}"></div>
+            <div class="mini-bar-seg empty" style="flex: {{ stats.draft|default:0 }}"></div>
+          </div>
+          <div class="stat-card-meta"><strong>{{ stats.vector }} vektor</strong> · {{ stats.raster }} raster · {{ stats.draft }} draft</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Metadata Valid</div>
+          <div class="stat-card-value">{{ stats.metadata_pct }}<span class="unit">%</span></div>
+          <div class="stat-card-meta"><strong>{{ stats.metadata_complete }} dari {{ stats.total }}</strong> layer punya abstrak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Layanan OGC Aktif</div>
+          <div class="stat-card-value">{{ stats.published }}</div>
+          <div class="stat-card-meta">WMS · WFS · WCS · WMTS (published &amp; approved)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Ter-harvest DST Nasional</div>
+          <div class="stat-card-value">{{ stats.published }}</div>
+          <div class="stat-card-meta">Berdasarkan layer <strong>published &amp; approved</strong></div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters-bar">
+        <span class="filter-label">Filter</span>
+        <a href="?type=all&q={{ search|urlencode }}" class="filter-chip {% if filter_type == 'all' %}active{% endif %}">Semua tipe</a>
+        <a href="?type=vector&q={{ search|urlencode }}" class="filter-chip {% if filter_type == 'vector' %}active{% endif %}">Vektor</a>
+        <a href="?type=raster&q={{ search|urlencode }}" class="filter-chip {% if filter_type == 'raster' %}active{% endif %}">Raster</a>
+        <form method="get" class="ds-search" style="display:flex; align-items:center; margin-left:12px;">
+          <input type="hidden" name="type" value="{{ filter_type }}">
+          <input type="text" name="q" value="{{ search }}" placeholder="Cari judul, abstrak, keyword…"
+                 style="padding:7px 12px; border:1px solid var(--line-strong); border-right:none; background:var(--cream); font-family:var(--sans); font-size:13px; color:var(--ink); width:230px; outline:none;">
+          <button type="submit" title="Cari" style="padding:7px 13px; border:1px solid var(--forest); background:var(--forest); color:var(--cream); cursor:pointer; display:inline-flex; align-items:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          {% if search %}<a href="?type={{ filter_type }}" title="Bersihkan pencarian" style="margin-left:8px; color:var(--ink-400); text-decoration:none; font-size:20px; line-height:1;">&times;</a>{% endif %}
+        </form>
+        <div class="filter-spacer"></div>
+        <span class="filter-label">Tampilan</span>
+        <div class="view-toggle" id="dsViewToggle">
+          <button type="button" data-view="grid" title="Grid" class="active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button type="button" data-view="table" title="Tabel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <button type="button" data-view="map" title="Peta — buka WebGIS" data-href="{% url 'dst:webgis' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- DATASET GRID -->
+      <div class="dataset-grid">
+        {% for dataset in datasets %}
+        {% with is_raster=dataset.is_raster published=dataset.is_published %}
+        <article class="ds-card" onclick="if(!event.target.closest('.ogc-services') && !event.target.closest('.ds-sync') && !event.target.closest('.ds-edit-btn')) window.location.href='{% url 'dst_auth:layer_edit' %}?id={{ dataset.id }}'" style="cursor: pointer;">
+          <div class="ds-thumb">
+            {% if dataset.thumbnail_url %}
+              <img src="{{ dataset.thumbnail_url }}" alt="{{ dataset.title|default:dataset.name }}" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+            {% else %}
+              <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice">
+                {% if is_raster %}
+                <rect width="320" height="180" fill="#1F3A2E"/>
+                <g opacity="0.85">
+                  <rect x="0" y="0" width="40" height="40" fill="#3D6657" opacity="0.5"/>
+                  <rect x="40" y="0" width="40" height="40" fill="#3D6657" opacity="0.7"/>
+                  <rect x="80" y="0" width="40" height="40" fill="#3D6657" opacity="0.9"/>
+                  <rect x="120" y="0" width="40" height="40" fill="#3D6657" opacity="0.6"/>
+                  <rect x="0" y="40" width="40" height="40" fill="#3D6657" opacity="0.6"/>
+                  <rect x="40" y="40" width="40" height="40" fill="#3D6657" opacity="0.85"/>
+                  <rect x="80" y="40" width="40" height="40" fill="#3D6657" opacity="0.95"/>
+                  <rect x="120" y="40" width="40" height="40" fill="#3D6657" opacity="0.8"/>
+                  <rect x="160" y="40" width="40" height="40" fill="#3D6657" opacity="0.5"/>
+                  <rect x="40" y="80" width="40" height="40" fill="#3D6657" opacity="0.7"/>
+                  <rect x="80" y="80" width="40" height="40" fill="#3D6657" opacity="0.85"/>
+                  <rect x="120" y="80" width="40" height="40" fill="#3D6657" opacity="0.65"/>
+                  <rect x="160" y="80" width="40" height="40" fill="#3D6657" opacity="0.45"/>
+                  <rect x="200" y="80" width="40" height="40" fill="#3D6657" opacity="0.3"/>
+                  <rect x="240" y="80" width="40" height="40" fill="#3D6657" opacity="0.5"/>
+                </g>
+                {% else %}
+                <rect width="320" height="180" fill="#2A4D3D"/>
+                <g opacity="0.85">
+                  <path d="M30,50 L120,40 L180,70 L240,55 L290,90 L290,140 L30,140 Z" fill="#8B9D83" opacity="0.65" stroke="#F4EFE6" stroke-width="0.4"/>
+                  <path d="M40,140 L100,160 L160,150 L200,170 L260,150 L260,170 L40,170 Z" fill="#5D3A1F" opacity="0.7" stroke="#F4EFE6" stroke-width="0.4"/>
+                </g>
+                {% endif %}
+              </svg>
+            {% endif %}
+            <div class="ds-type-badge">
+              {% if is_raster %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                Raster · {{ dataset.subtype|default:"raster"|title }}
+              {% else %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="3 11 11 3 21 8 19 18 8 21 3 11"/></svg>
+                Vektor · {% if dataset.feature_label and dataset.feature_label != "Vektor" %}{{ dataset.feature_label }}{% else %}{{ dataset.subtype|default:"vector"|title }}{% endif %}
+              {% endif %}
+            </div>
+            {% if published and dataset.is_approved %}
+              <div class="ds-status-badge published">Published</div>
+            {% elif published %}
+              <div class="ds-status-badge review">Review</div>
+            {% else %}
+              <div class="ds-status-badge draft">Draft</div>
+            {% endif %}
+          </div>
+          <div class="ds-body">
+            <div class="ds-category">
+              {% if dataset.category %}{{ dataset.category.gn_description|default:dataset.category.identifier }}{% else %}Tanpa kategori{% endif %}
+            </div>
+            <h3 class="ds-title" style="display: flex; justify-content: space-between; gap: 8px; align-items: flex-start;">
+              <a href="{% url 'dst_auth:layer_edit' %}?id={{ dataset.id }}" class="ds-title-link" style="flex: 1; min-width: 0;">{{ dataset.title|default:dataset.name }}</a>
+              {% if request.user.is_superuser or request.user.pk == dataset.owner_id %}
+              <a href="{% url 'dst_auth:layer_edit' %}?id={{ dataset.id }}" class="ds-edit-btn" title="Edit metadata layer" style="flex-shrink: 0; padding: 4px 6px; border: 1px solid var(--line); color: var(--ink-400); display: inline-flex; text-decoration: none; transition: all 0.15s;" onmouseover="this.style.borderColor='var(--forest)'; this.style.color='var(--forest)';" onmouseout="this.style.borderColor='var(--line)'; this.style.color='var(--ink-400)';">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px; height:13px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </a>
+              {% endif %}
+            </h3>
+            <div class="ds-walidata" style="display:flex; align-items:center; gap:8px; margin:10px 0 12px;">
+              <span style="font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-400);">Walidata</span>
+              {% if dataset.walidata_label %}<span style="font-size:12.5px; color:var(--forest); font-weight:600;">{{ dataset.walidata_label }}</span>{% else %}<span style="font-size:12px; color:var(--ink-400); font-style:italic;">— belum dipetakan —</span>{% endif %}
+            </div>
+            <div class="ds-meta-row">
+              <span>EPSG <strong>{{ dataset.srid|cut:"EPSG:"|default:"-" }}</strong></span>
+              <span>{% if dataset.workspace %}{{ dataset.workspace }}:{% endif %}{% with name=dataset.name|default:"-" %}<strong>{{ name|slice:":25" }}{% if name|length > 25 %}…{% endif %}</strong>{% endwith %}</span>
+              <span>{{ dataset.last_updated|date:"d M Y" }}</span>
+            </div>
+          </div>
+          <div class="ds-footer">
+            <div class="ogc-services">
+              <span class="ogc-chip {% if not published %}disabled{% endif %}">WMS</span>
+              <span class="ogc-chip {% if is_raster or not published %}disabled{% endif %}">WFS</span>
+              <span class="ogc-chip {% if not is_raster or not published %}disabled{% endif %}">WCS</span>
+              <span class="ogc-chip {% if not published %}disabled{% endif %}">WMTS</span>
+            </div>
+            {% if published and dataset.is_approved %}
+            <div class="ds-sync ok">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              {{ dataset.last_updated|timesince }} lalu
+            </div>
+            {% else %}
+            <div class="ds-sync">— Belum dipublish</div>
+            {% endif %}
+          </div>
+        </article>
+        {% endwith %}
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 48px 24px; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+          {% if search %}
+            Tidak ada layer yang cocok dengan pencarian “<strong style="color: var(--forest);">{{ search }}</strong>”. <a href="?type={{ filter_type }}" style="color: var(--forest);">Bersihkan pencarian →</a>
+          {% else %}
+            Belum ada layer di database. <a href="{% url 'dst_auth:layer_baru' %}" style="color: var(--forest);">Unggah layer pertama →</a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- DATASET TABLE (alternatif tampilan, di-toggle via .view-toggle) -->
+      <div class="ds-table-wrap" id="dsTableWrap" style="display:none;">
+        <table class="ds-table">
+          <thead>
+            <tr><th>Judul</th><th>Kategori</th><th>Tipe</th><th>Status</th><th>EPSG</th><th>Diperbarui</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>
+            {% for dataset in datasets %}
+            {% with is_raster=dataset.is_raster published=dataset.is_published %}
+            <tr>
+              <td><a href="{% url 'dst_auth:layer_detail' %}?id={{ dataset.id }}" class="ds-tlink">{{ dataset.title|default:dataset.name }}</a></td>
+              <td>{% if dataset.category %}{{ dataset.category.gn_description|default:dataset.category.identifier }}{% else %}<span class="muted">—</span>{% endif %}</td>
+              <td>{% if is_raster %}Raster{% else %}Vektor{% endif %}</td>
+              <td>{% if published and dataset.is_approved %}<span class="ds-tbadge ok">Publish</span>{% elif published %}<span class="ds-tbadge review">Review</span>{% else %}<span class="ds-tbadge draft">Draft</span>{% endif %}</td>
+              <td class="mono">{{ dataset.srid|cut:"EPSG:"|default:"-" }}</td>
+              <td class="mono">{{ dataset.last_updated|date:"d M Y" }}</td>
+              <td>
+                <a class="ds-tact" href="{% url 'dst_auth:layer_detail' %}?id={{ dataset.id }}">Detail</a>
+                {% if request.user.is_superuser or request.user.pk == dataset.owner_id %}<a class="ds-tact" href="{% url 'dst_auth:layer_edit' %}?id={{ dataset.id }}">Edit</a>{% endif %}
+              </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr><td colspan="7" style="text-align:center;color:var(--ink-400);padding:24px;">Tidak ada layer.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page_obj and page_obj.paginator.count %}
+      <div class="pagination">
+        <div class="pagination-info">
+          Menampilkan <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> dari <strong>{{ page_obj.paginator.count }}</strong> layer
+        </div>
+        <div class="pagination-controls">
+          {% if page_obj.has_previous %}
+            <a class="page-btn" href="?type={{ filter_type }}&q={{ search|urlencode }}&page={{ page_obj.previous_page_number }}">←</a>
+          {% else %}
+            <button class="page-btn disabled">←</button>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <button class="page-btn active">{{ num }}</button>
+            {% elif num == 1 or num == page_obj.paginator.num_pages or num|add:"-2" <= page_obj.number and num|add:"2" >= page_obj.number %}
+              <a class="page-btn" href="?type={{ filter_type }}&q={{ search|urlencode }}&page={{ num }}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <a class="page-btn" href="?type={{ filter_type }}&q={{ search|urlencode }}&page={{ page_obj.next_page_number }}">→</a>
+          {% else %}
+            <button class="page-btn disabled">→</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+<script>
+// View-toggle Dataset Spasial: Grid ↔ Tabel (client-side, persist), Peta → WebGIS.
+(function () {
+  var toggle = document.getElementById('dsViewToggle');
+  if (!toggle) return;
+  var grid = document.querySelector('.dataset-grid');
+  var table = document.getElementById('dsTableWrap');
+  var btns = toggle.querySelectorAll('button[data-view]');
+  var KEY = 'ds_view';
+
+  function apply(view) {
+    if (view === 'table') {
+      if (grid) grid.style.display = 'none';
+      if (table) table.style.display = 'block';
+    } else {
+      view = 'grid';
+      if (grid) grid.style.display = '';
+      if (table) table.style.display = 'none';
+    }
+    btns.forEach(function (b) {
+      if (b.dataset.view !== 'map') b.classList.toggle('active', b.dataset.view === view);
+    });
+  }
+
+  apply(localStorage.getItem(KEY) === 'table' ? 'table' : 'grid');
+
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.dataset.view;
+      if (v === 'map') {
+        var href = b.getAttribute('data-href');
+        if (href) window.open(href, '_blank', 'noopener');
+        return;
+      }
+      localStorage.setItem(KEY, v);
+      apply(v);
+    });
+  });
+})();
+</script>
+{% endblock %}

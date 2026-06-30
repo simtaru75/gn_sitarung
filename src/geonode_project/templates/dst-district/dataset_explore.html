@@ -1,0 +1,341 @@
+{% extends 'dst-district/landing/base.html' %}
+{% load static %}
+
+{% block title %}Eksplorasi Dataset — {{ site.name|default:"(Nama Aplikasi)" }}{% endblock %}
+{% block page_slug %}dataset-explore{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* === Eksplorasi Dataset (halaman penuh, paginasi server-side) ====== */
+.dataset-section { max-width: 1320px; margin: 0 auto; padding: 56px 40px 120px; }
+.dataset-section .section-header {
+  display: grid; grid-template-columns: 1fr 2fr; gap: 80px;
+  margin-bottom: 36px; padding-bottom: 28px; border-bottom: 1px solid var(--line); align-items: end;
+}
+.dataset-layout { display: grid; grid-template-columns: 260px 1fr; gap: 36px; align-items: start; }
+
+/* Sidebar filter */
+.dataset-sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 90px; }
+.filter-card { background: var(--cream); border: 1px solid var(--line); }
+.filter-card-header { background: var(--forest); color: var(--cream); padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+.filter-card-header svg { width: 14px; height: 14px; opacity: 0.85; }
+.filter-card-title { font-family: var(--mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; }
+.filter-card-body { padding: 12px 16px 14px; max-height: 230px; overflow-y: auto; }
+.filter-option { display: flex; align-items: center; gap: 9px; padding: 6px 0; font-size: 13px; color: var(--ink); cursor: pointer; line-height: 1.4; transition: color 0.15s; user-select: none; }
+.filter-option:hover { color: var(--forest); }
+.filter-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.filter-checkbox { width: 15px; height: 15px; border: 1.5px solid var(--line-strong); background: var(--paper); display: grid; place-items: center; flex-shrink: 0; transition: all 0.15s; }
+.filter-option input:checked + .filter-checkbox { background: var(--forest); border-color: var(--forest); }
+.filter-option input:checked + .filter-checkbox::after { content: ''; width: 4px; height: 7px; border: solid var(--cream); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); margin-top: -1px; }
+.filter-count { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--ink-400); letter-spacing: 0.04em; }
+.filter-empty { font-size: 12px; color: var(--ink-400); font-style: italic; padding: 4px 0; }
+.filter-reset { display: block; text-align: center; margin: 4px 0 0; padding: 9px 0; width: 100%; background: transparent; border: 1px solid var(--line-strong); color: var(--ochre-600); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.filter-reset:hover { background: var(--ochre); border-color: var(--ochre); color: var(--forest); }
+
+/* Toolbar */
+.dataset-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.dataset-count { font-family: var(--mono); font-size: 11px; color: var(--ink-600); text-transform: uppercase; letter-spacing: 0.1em; }
+.dataset-count strong { color: var(--forest); }
+.dataset-sort { padding: 6px 12px; background: var(--paper); border: 1px solid var(--line-strong); font-family: var(--mono); font-size: 11px; color: var(--ink-600); text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; outline: none; }
+.dataset-sort:focus { border-color: var(--forest); }
+
+/* Search bar teks bebas (q) */
+.explore-searchbar { display: flex; align-items: center; gap: 10px; background: var(--cream); border: 1px solid var(--line-strong); padding: 4px 4px 4px 14px; margin-bottom: 18px; transition: border-color 0.15s; }
+.explore-searchbar:focus-within { border-color: var(--forest); }
+.explore-searchbar .esb-icon { width: 16px; height: 16px; color: var(--ochre-600); flex-shrink: 0; }
+.esb-input { flex: 1; border: none; background: transparent; outline: none; font-family: var(--sans); font-size: 14px; color: var(--ink); padding: 10px 0; min-width: 0; }
+.esb-input::placeholder { color: var(--ink-400); }
+.esb-btn { padding: 10px 22px; background: var(--forest); color: var(--cream); border: none; cursor: pointer; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: background 0.15s; flex-shrink: 0; }
+.esb-btn:hover { background: var(--ochre); color: var(--forest); }
+.esb-clear { background: none; border: none; color: var(--ink-400); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 8px; flex-shrink: 0; transition: color 0.15s; }
+.esb-clear:hover { color: var(--ochre-600); }
+
+/* Grid kartu */
+.dataset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.dataset-card { background: var(--paper); border: 1px solid var(--line); display: flex; flex-direction: column; transition: all 0.2s; overflow: hidden; text-decoration: none; color: inherit; }
+.dataset-card:hover { border-color: var(--forest); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(31, 58, 46, 0.08); }
+.dataset-thumb { aspect-ratio: 16 / 11; background: #d9d2c0; position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.dataset-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dataset-thumb svg { width: 100%; height: 100%; display: block; }
+.dataset-thumb-badge { position: absolute; top: 8px; left: 8px; background: rgba(31, 58, 46, 0.92); color: var(--cream); padding: 3px 8px; font-family: var(--mono); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+.dataset-thumb-badge.cocoa { background: var(--cocoa); }
+.dataset-thumb-badge.ochre { background: var(--ochre); color: var(--forest); }
+.dataset-thumb-badge.sage { background: var(--sage); color: var(--forest); }
+.dataset-body { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
+.dataset-title { font-family: var(--serif); font-size: 16px; color: var(--forest); font-weight: 500; letter-spacing: -0.005em; line-height: 1.25; margin-bottom: 10px; }
+.dataset-meta { display: flex; flex-direction: column; gap: 5px; font-size: 11.5px; color: var(--ink-600); line-height: 1.4; flex: 1; }
+.dataset-meta-row { display: flex; align-items: flex-start; gap: 6px; }
+.dataset-meta-row svg { width: 10px; height: 10px; color: var(--ochre-600); opacity: 0.7; margin-top: 3px; flex-shrink: 0; }
+.dataset-meta-key { font-weight: 600; color: var(--ink); margin-right: 2px; }
+.dataset-card-footer { padding: 2px 16px; border-top: 1px solid var(--line); background: var(--cream-200); display: flex; justify-content: flex-end; }
+.dataset-detail-link { font-family: var(--serif); font-size: 13px; color: var(--forest); font-style: italic; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
+.dataset-detail-link:hover { color: var(--ochre-600); }
+.dataset-detail-link svg { width: 11px; height: 11px; transition: transform 0.15s; }
+.dataset-detail-link:hover svg { transform: translateX(3px); }
+.dataset-empty { grid-column: 1 / -1; padding: 48px 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px; }
+
+/* Pagination server-side */
+.dataset-pagination { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
+.ds-page-btn { min-width: 32px; height: 32px; padding: 0 10px; background: var(--paper); border: 1px solid var(--line); color: var(--ink-600); display: grid; place-items: center; cursor: pointer; font-family: var(--mono); font-size: 11px; transition: all 0.15s; text-decoration: none; }
+.ds-page-btn:hover { border-color: var(--forest); color: var(--forest); }
+.ds-page-btn.current { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+.ds-page-btn.disabled { opacity: 0.35; pointer-events: none; }
+.ds-page-btn svg { width: 12px; height: 12px; }
+.ds-page-gap { font-family: var(--mono); font-size: 11px; color: var(--ink-400); padding: 0 4px; }
+
+@media (max-width: 1100px) { .dataset-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) {
+  .dataset-section { padding: 40px 24px 80px; }
+  .dataset-section .section-header { grid-template-columns: 1fr; gap: 24px; }
+  .dataset-layout { grid-template-columns: 1fr; gap: 24px; }
+  .dataset-sidebar { position: static; flex-direction: row; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+  .filter-card { flex-shrink: 0; min-width: 200px; }
+  .dataset-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) { .dataset-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="topo-bg"></div>
+<div class="grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="{% url 'dst:landing' %}" class="brand">
+      <div class="brand-mark">
+        {% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;background:var(--cream);padding:2px;">{% else %}L{% endif %}
+      </div>
+      <div class="brand-text">
+        <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+        <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+      </div>
+    </a>
+    <input type="checkbox" id="navToggle" class="nav-toggle-cb" hidden>
+    <label for="navToggle" class="nav-toggle" aria-label="Buka / tutup menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </label>
+    <ul class="nav-menu">
+      <li><a href="{% url 'dst:landing' %}#beranda">Beranda</a></li>
+      <li><a href="{% url 'dst:landing' %}#dokumen">Dokumen Kebijakan</a></li>
+      <li><a href="{% url 'dst:landing' %}#katalog-data">Katalog Data</a></li>
+      <li><a href="{% url 'dst:dataset_explore' %}" style="color: var(--forest); font-weight: 500;">Eksplorasi Dataset</a></li>
+    </ul>
+  </div>
+</nav>
+
+<form method="get" id="exploreForm">
+<section class="dataset-section" id="eksplorasi-dataset">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Repositori · 03</div>
+      <h2 class="section-title">Eksplorasi<br><span class="italic">Dataset</span></h2>
+    </div>
+    <p class="section-desc">Telusuri seluruh dataset spasial {{ nama_kabupaten }} yang ter-publish. Filter berdasarkan walidata, kategori, jenis fitur, dan wilayah untuk menemukan data yang relevan dengan kebutuhan analisis Anda.</p>
+  </div>
+
+  <div class="dataset-layout">
+
+    {# ===== SIDEBAR FILTER (GET, auto-submit) ===== #}
+    <aside class="dataset-sidebar">
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div class="filter-card-title">Walidata</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_walidata %}
+          <label class="filter-option">
+            <input type="checkbox" name="walidata" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.walidata %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada metadata walidata.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+          <div class="filter-card-title">Kategori</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_kategori %}
+          <label class="filter-option">
+            <input type="checkbox" name="kategori" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.kategori %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada kategori.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
+          <div class="filter-card-title">Feature</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_feature %}
+          <label class="filter-option">
+            <input type="checkbox" name="feature" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.feature %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada tipe fitur.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="filter-card-title">Wilayah</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_wilayah %}
+          <label class="filter-option">
+            <input type="checkbox" name="wilayah" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.wilayah %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada metadata wilayah.</div>{% endfor %}
+        </div>
+      </div>
+
+      {% if has_active_filter or sort != 'recent' %}
+      <a href="{% url 'dst:dataset_explore' %}" class="filter-reset">Reset Filter</a>
+      {% endif %}
+    </aside>
+
+    {# ===== MAIN ===== #}
+    <div class="dataset-main">
+      <div class="explore-searchbar">
+        <svg class="esb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="esb-input" type="text" name="q" value="{{ q }}" placeholder="Cari dataset — judul, abstrak, atau kata kunci…">
+        <button class="esb-btn" type="submit">Cari</button>
+        {% if q %}<button class="esb-clear" type="button" onclick="this.form.q.value=''; this.form.submit();" title="Bersihkan pencarian">&times;</button>{% endif %}
+      </div>
+      <div class="dataset-toolbar">
+        <div class="dataset-count">
+          {% if total %}Menampilkan <strong>{{ shown_from }}–{{ shown_to }}</strong> dari <strong>{{ total }}</strong> dataset{% if q %} untuk “{{ q }}”{% endif %}{% else %}Tidak ada dataset{% if q %} untuk “{{ q }}”{% endif %}{% endif %}
+        </div>
+        <select class="dataset-sort" name="sort" onchange="this.form.submit()">
+          <option value="recent" {% if sort == 'recent' %}selected{% endif %}>Terbaru</option>
+          <option value="views" {% if sort == 'views' %}selected{% endif %}>Paling diakses</option>
+          <option value="az" {% if sort == 'az' %}selected{% endif %}>Nama A–Z</option>
+          <option value="year" {% if sort == 'year' %}selected{% endif %}>Tahun ↓</option>
+        </select>
+      </div>
+
+      <div class="dataset-grid">
+        {% for ds in datasets %}
+        <a href="{% url 'dst:dataset_detail' ds.id %}" class="dataset-card">
+          <div class="dataset-thumb">
+            {% if ds.thumbnail_url %}
+              <img src="{{ ds.thumbnail_url }}" alt="{{ ds.title }}" loading="lazy">
+            {% elif ds.is_raster %}
+              <svg viewBox="0 0 200 138" preserveAspectRatio="xMidYMid slice"><rect width="200" height="138" fill="#1F3A2E"/><g opacity="0.85"><rect x="0" y="0" width="50" height="46" fill="#3D6657" opacity="0.5"/><rect x="50" y="0" width="50" height="46" fill="#3D6657" opacity="0.8"/><rect x="100" y="0" width="50" height="46" fill="#3D6657" opacity="0.6"/><rect x="150" y="0" width="50" height="46" fill="#3D6657" opacity="0.9"/><rect x="0" y="46" width="50" height="46" fill="#3D6657" opacity="0.7"/><rect x="50" y="46" width="50" height="46" fill="#3D6657" opacity="0.55"/><rect x="100" y="46" width="50" height="46" fill="#3D6657" opacity="0.85"/><rect x="150" y="46" width="50" height="46" fill="#3D6657" opacity="0.6"/><rect x="0" y="92" width="50" height="46" fill="#3D6657" opacity="0.6"/><rect x="50" y="92" width="50" height="46" fill="#3D6657" opacity="0.8"/><rect x="100" y="92" width="50" height="46" fill="#3D6657" opacity="0.5"/><rect x="150" y="92" width="50" height="46" fill="#3D6657" opacity="0.75"/></g></svg>
+            {% else %}
+              <svg viewBox="0 0 200 138" preserveAspectRatio="xMidYMid slice"><rect width="200" height="138" fill="#8B9D83"/><path d="M20,50 L80,30 L120,60 L160,40 L200,70 L200,138 L20,138 Z" fill="#1F3A2E" opacity="0.6"/><path d="M0,90 Q60,75 120,90 T200,85 L200,138 L0,138 Z" fill="#5D3A1F" opacity="0.5"/><g stroke="#F4EFE6" stroke-width="0.5" fill="none" opacity="0.35"><path d="M0,40 L200,40"/><path d="M0,80 L200,80"/><path d="M0,120 L200,120"/></g></svg>
+            {% endif %}
+            <div class="dataset-thumb-badge{% if ds.is_raster %} cocoa{% elif ds.feature == 'Polygon' %} ochre{% elif ds.feature == 'Line' or ds.feature == 'Point' %} sage{% endif %}">{% firstof ds.feature "Dataset" %}</div>
+          </div>
+          <div class="dataset-body">
+            <div class="dataset-title">{{ ds.title }}</div>
+            <div class="dataset-meta">
+              <div class="dataset-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><div><span class="dataset-meta-key">Walidata:</span>{% firstof ds.walidata "—" %}</div></div>
+              <div class="dataset-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h18"/></svg><div><span class="dataset-meta-key">Kategori:</span>{% firstof ds.category "—" %}</div></div>
+              <div class="dataset-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg><div><span class="dataset-meta-key">Feature:</span>{% firstof ds.feature "—" %}</div></div>
+              <div class="dataset-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><div><span class="dataset-meta-key">Wilayah:</span>{% firstof ds.regions "—" %}</div></div>
+            </div>
+          </div>
+          <div class="dataset-card-footer">
+            <span class="dataset-detail-link">Detail <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          </div>
+        </a>
+        {% empty %}
+        <div class="dataset-empty">Tidak ada dataset yang cocok dengan filter yang dipilih.</div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+      <div class="dataset-pagination">
+        {% if page_obj.has_previous %}
+        <a class="ds-page-btn" href="?{% if qs_no_page %}{{ qs_no_page }}&{% endif %}page={{ page_obj.previous_page_number }}" title="Sebelumnya">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        {% else %}
+        <span class="ds-page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></span>
+        {% endif %}
+
+        {% for p in page_list %}
+          {% if p %}
+            {% if p == page_obj.number %}
+            <span class="ds-page-btn current">{{ p }}</span>
+            {% else %}
+            <a class="ds-page-btn" href="?{% if qs_no_page %}{{ qs_no_page }}&{% endif %}page={{ p }}">{{ p }}</a>
+            {% endif %}
+          {% else %}
+            <span class="ds-page-gap">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a class="ds-page-btn" href="?{% if qs_no_page %}{{ qs_no_page }}&{% endif %}page={{ page_obj.next_page_number }}" title="Berikutnya">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        {% else %}
+        <span class="ds-page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+</form>
+
+<footer class="landing-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{% url 'dst:landing' %}" class="brand">
+          <div class="brand-mark">{% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;padding:2px;">{% else %}L{% endif %}</div>
+          <div class="brand-text">
+            <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+            <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+          </div>
+        </a>
+        <p>{{ site.name|default:"(Nama Aplikasi)" }} adalah inisiatif Pemerintah Daerah {{ nama_kabupaten }} di bawah Program FOLUR Indonesia, didukung UNDP dan GEF, untuk tata kelola zonasi spasial terpadu.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="{% url 'dst:landing' %}#beranda">Beranda</a></li>
+          <li><a href="{% url 'dst:landing' %}#dokumen">Dokumen Kebijakan</a></li>
+          <li><a href="{% url 'dst:landing' %}#katalog-data">Katalog Data</a></li>
+          <li><a href="{% url 'dst:dataset_explore' %}">Eksplorasi Dataset</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Akses Data</h4>
+        <ul>
+          <li><a href="/catalogue/csw" target="_blank" rel="noopener">Katalog CSW</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">WMS / WFS</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">REST API</a></li>
+          <li><a href="#">Lisensi & Sitasi</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Kontak</h4>
+        <ul>
+          <li><a href="#">Bapelitbangda {{ nama_kabupaten }}</a></li>
+          <li><a href="#">Helpdesk Teknis</a></li>
+          <li><a href="#">FOLUR UNDP Indonesia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Pemerintah {{ nama_kabupaten }}</div>
+      <a href="{% url 'account_login' %}?next={% url 'dst_auth:dashboard' %}" class="btn-login">Login</a>
+    </div>
+  </div>
+</footer>
+{% endblock %}

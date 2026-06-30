@@ -1,0 +1,948 @@
+{% load dst_theme %}<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoring Capaian FOLUR — {{ site_name }}</title>
+{% if theme_logo_url %}<link rel="icon" href="{{ theme_logo_url }}">{% else %}<link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<style>
+  {% include "dst-district/partials/_theme_vars.html" %}
+  :root {
+    --forest: #1F3A2E; --forest-700: #2A4D3D; --forest-500: #3D6657;
+    --cream: #F4EFE6; --cream-200: #E8DFCE; --cream-300: #D9CEB8; --paper: #FAF7F0;
+    --ink: #1A1A1A; --ink-600: #4A4A4A; --ink-400: #7A7A7A;
+    --ochre: #C77D3E; --ochre-600: #A66830; --ochre-100: #F5E6D3;
+    --sage: #8B9D83; --cocoa: #5D3A1F;
+    --line: rgba(31, 58, 46, 0.1); --line-strong: rgba(31, 58, 46, 0.2);
+    --serif: 'Fraunces', 'Times New Roman', serif;
+    --sans: 'Geist', system-ui, sans-serif;
+    --mono: 'Geist Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: var(--sans); background: var(--cream); color: var(--ink); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* === HEADER === */
+  .ds-header { flex-shrink: 0; display: flex; align-items: center; gap: 18px; padding: 12px 24px; background: var(--forest); color: var(--cream); border-bottom: 1px solid rgba(0,0,0,0.2); z-index: 600; }
+  .ds-back { display: inline-flex; align-items: center; gap: 8px; color: var(--cream-300); text-decoration: none; font-size: 13px; padding: 7px 14px; border: 1px solid rgba(244,239,230,0.25); transition: all 0.15s; }
+  .ds-back:hover { background: rgba(244,239,230,0.1); color: var(--cream); }
+  .ds-back svg { width: 14px; height: 14px; }
+  .ds-header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ds-header-mark { width: 30px; height: 30px; background: var(--cream); color: var(--forest); display: grid; place-items: center; font-family: var(--serif); font-weight: 600; flex-shrink: 0; overflow: hidden; }
+  .ds-header-mark img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+  .ds-header-titles { min-width: 0; }
+  .ds-header-eyebrow { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ochre); }
+  .ds-header-title { font-family: var(--serif); font-size: 17px; font-weight: 500; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ds-header-spacer { flex: 1; }
+  .ds-header-meta { font-family: var(--mono); font-size: 10px; color: var(--cream-300); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+
+  /* === BODY === */
+  .ds-body { flex: 1; display: grid; grid-template-columns: 1fr 400px; min-height: 0; }
+
+  /* === MAP === */
+  .ds-map-wrap { position: relative; overflow: hidden; }
+  #map { position: absolute; inset: 0; width: 100%; height: 100%; background: #c9d8c8; z-index: 0; }
+  .leaflet-container { font-family: var(--sans); background: #c9d8c8 !important; }
+  .leaflet-control-zoom { display: none !important; }
+  .leaflet-control-attribution { background: rgba(250,247,240,0.92) !important; font-family: var(--mono) !important; font-size: 9px !important; color: var(--ink-400) !important; padding: 2px 8px !important; border: 1px solid var(--line) !important; }
+  .leaflet-control-attribution a { color: var(--ochre-600) !important; }
+  .leaflet-tooltip.wg-tip { background: var(--forest); color: var(--cream); border: none; box-shadow: 0 2px 8px rgba(31,58,46,0.3); font-family: var(--mono); font-size: 11px; padding: 4px 8px; }
+  .leaflet-tooltip.wg-tip::before { display: none; }
+
+  .map-card { position: absolute; z-index: 500; background: rgba(250,247,240,0.96); backdrop-filter: blur(6px); border: 1px solid var(--line-strong); box-shadow: 0 4px 16px rgba(31,58,46,0.12); }
+  .map-card-head { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; }
+  .map-card-head svg.ic { width: 13px; height: 13px; color: var(--forest); }
+  .map-card-title { font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--forest); }
+  .map-card-caret { margin-left: auto; transition: transform 0.2s; color: var(--ink-400); }
+  .map-card.collapsed .map-card-caret { transform: rotate(-90deg); }
+  .map-card.collapsed .map-card-body { display: none; }
+
+  .legend { top: 14px; left: 14px; width: 230px; max-height: 60%; display: flex; flex-direction: column; }
+  .legend-body { padding: 10px 12px; overflow-y: auto; }
+  .wg-legend-cap { font-size: 12px; color: var(--ink-600); margin-bottom: 8px; line-height: 1.35; }
+  .wg-legend-cap strong { color: var(--forest); }
+  .wg-legend-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 11.5px; color: var(--ink); }
+  .wg-legend-sw { width: 18px; height: 12px; flex-shrink: 0; border: 1px solid rgba(31,58,46,0.18); }
+  .wg-legend-row .nd { background: repeating-linear-gradient(45deg, #e9e3d6, #e9e3d6 3px, #ddd4c2 3px, #ddd4c2 6px); }
+
+  .map-tools { position: absolute; top: 14px; right: 14px; z-index: 500; display: flex; flex-direction: column; gap: 6px; }
+  .map-btn { width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; background: rgba(250,247,240,0.95); border: 1px solid var(--line-strong); color: var(--forest); transition: all 0.15s; box-shadow: 0 2px 8px rgba(31,58,46,0.1); }
+  .map-btn:hover { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+  .map-btn svg { width: 16px; height: 16px; }
+
+  /* Background selector (gaya MapStore2): tombol thumbnail + flyout */
+  .bg-control { position: absolute; right: 14px; bottom: 26px; z-index: 550; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .bg-toggle { display: flex; cursor: pointer; padding: 2px; background: var(--paper); border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: 0 4px 16px rgba(31,58,46,0.16); transition: border-color 0.15s, box-shadow 0.15s; }
+  .bg-toggle:hover, .bg-control.open .bg-toggle { border-color: var(--forest); box-shadow: 0 6px 20px rgba(31,58,46,0.22); }
+  .bg-toggle-thumb { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 4px; background: #c9d8c8; background-size: cover; background-position: center; }
+  .bg-toggle-thumb.empty { background: repeating-conic-gradient(var(--cream-300) 0% 25%, var(--paper) 0% 50%) 0 0 / 12px 12px; }
+  .bg-selector { display: none; width: 250px; max-width: calc(100vw - 36px); background: var(--paper); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 8px 26px rgba(31,58,46,0.20); padding: 8px; }
+  .bg-control.open .bg-selector { display: block; }
+  .bg-selector-title { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); padding: 4px 6px 8px; }
+  .bg-items { display: flex; flex-direction: column; gap: 2px; max-height: 280px; overflow-y: auto; }
+  .bg-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; cursor: pointer; border: none; border-radius: 7px; background: none; text-align: left; transition: background 0.12s; }
+  .bg-item:hover { background: var(--cream-200); }
+  .bg-item.active { background: rgba(61,102,87,0.14); }
+  .bg-thumb { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 6px; display: block; object-fit: cover; background: #c9d8c8; border: 1px solid var(--line); }
+  .bg-item.empty .bg-thumb { background: repeating-conic-gradient(var(--cream-300) 0% 25%, var(--paper) 0% 50%) 0 0 / 12px 12px; }
+  .bg-label { flex: 1; min-width: 0; font-family: var(--sans); font-size: 12.5px; color: var(--ink); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bg-item.active .bg-label { color: var(--forest); font-weight: 600; }
+
+  .bar-scale { position: absolute; right: 72px; bottom: 30px; z-index: 500; pointer-events: none; }
+  .bar-scale-bar { display: flex; height: 8px; border: 1px solid var(--ink); background: var(--cream); }
+  .bar-scale-seg { height: 100%; }
+  .bar-scale-seg.dark { background: var(--ink); }
+  .bar-scale-seg.light { background: var(--cream); }
+  .bar-scale-labels { position: relative; height: 14px; margin-top: 2px; font-family: var(--mono); font-size: 9px; color: var(--ink-600); }
+  .bar-scale-labels span { position: absolute; transform: translateX(-50%); }
+  .bar-scale-labels span:first-child { left: 0; transform: none; }
+  .bar-scale-labels span:last-child { right: 0; left: auto; transform: none; }
+
+  .no-preview { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; text-align: center; padding: 40px; color: var(--ink-400); font-family: var(--mono); font-size: 12px; z-index: 400; }
+  .no-preview svg { width: 40px; height: 40px; opacity: 0.4; }
+
+  /* === SIDEBAR === */
+  .ds-side { background: var(--paper); border-left: 1px solid var(--line-strong); overflow-y: auto; padding: 22px 22px 44px; }
+  .ds-side-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ochre-600); margin-bottom: 7px; }
+  .ds-side-title { font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.18; color: var(--forest); letter-spacing: -0.01em; margin-bottom: 4px; }
+  .ds-side-sub { font-size: 12.5px; color: var(--ink-400); margin-bottom: 16px; }
+
+  .ds-section { margin-bottom: 22px; }
+  .ds-section-h { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+
+  /* Indicator pills */
+  .wg-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .wg-pill { flex: 1 1 auto; min-width: 0; text-align: left; background: var(--cream); border: 1px solid var(--line-strong); cursor: pointer; padding: 8px 10px; transition: all 0.15s; }
+  .wg-pill:hover { border-color: var(--forest); }
+  .wg-pill.active { background: var(--forest); border-color: var(--forest); }
+  .wg-pill-kode { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--ink-400); text-transform: uppercase; }
+  .wg-pill.active .wg-pill-kode { color: var(--ochre); }
+  .wg-pill-nama { font-size: 11.5px; line-height: 1.25; color: var(--ink); margin-top: 2px; }
+  .wg-pill.active .wg-pill-nama { color: var(--cream); }
+
+  /* Hero metric */
+  .wg-hero { background: var(--cream); border: 1px solid var(--line); padding: 16px 18px; margin-bottom: 14px; }
+  .wg-hero-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .wg-hero-val { font-family: var(--serif); font-size: 34px; line-height: 1; color: var(--forest); font-variation-settings: "SOFT" 30; letter-spacing: -0.01em; }
+  .wg-hero-val .unit { font-family: var(--mono); font-size: 13px; color: var(--ink-400); margin-left: 5px; }
+  .wg-hero-pct { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--ochre-600); }
+  .wg-hero-target { font-size: 12px; color: var(--ink-400); margin-top: 6px; }
+  .wg-hero-target strong { color: var(--ink-600); font-weight: 500; }
+  .wg-hero-cum { font-size: 12px; color: var(--ink-600); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .wg-hero-cum strong { color: var(--forest); font-weight: 600; }
+  .wg-hero-cum .yrs { color: var(--ink-400); font-family: var(--mono); font-size: 11px; }
+  .wg-progress { height: 6px; background: var(--cream-200); margin-top: 12px; position: relative; overflow: hidden; }
+  .wg-progress-fill { height: 100%; background: var(--forest); width: 0; transition: width 0.5s; }
+  .wg-progress-fill.over { background: var(--ochre); }
+
+  .wg-statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .wg-stat { background: var(--paper); padding: 11px 13px; }
+  .wg-stat-k { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-400); }
+  .wg-stat-v { font-family: var(--serif); font-size: 19px; color: var(--forest); margin-top: 2px; }
+  .wg-stat-v small { font-family: var(--mono); font-size: 11px; color: var(--ink-400); }
+
+  .wg-note { font-size: 11.5px; line-height: 1.5; color: var(--ink-400); background: var(--ochre-100); border: 1px solid var(--line); padding: 9px 11px; margin-top: 12px; }
+  .wg-note strong { color: var(--cocoa); }
+
+  /* Ranking */
+  .wg-rank { display: flex; flex-direction: column; gap: 9px; }
+  .wg-rank-row { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 10px; }
+  .wg-rank-no { font-family: var(--mono); font-size: 10px; color: var(--ink-400); text-align: right; }
+  .wg-rank-main { min-width: 0; }
+  .wg-rank-nama { font-size: 12.5px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .wg-rank-nama:hover { color: var(--ochre-600); }
+  .wg-rank-bar { height: 4px; background: var(--cream-200); margin-top: 4px; }
+  .wg-rank-bar-fill { height: 100%; background: var(--forest-500); }
+  .wg-rank-val { font-family: var(--mono); font-size: 11.5px; color: var(--forest); font-weight: 500; white-space: nowrap; }
+  .wg-rank-empty { font-size: 12px; color: var(--ink-400); font-style: italic; }
+
+  /* Selected desa */
+  .wg-sel { border: 1px solid var(--forest-500); background: var(--cream); }
+  .wg-sel-head { background: var(--forest); color: var(--cream); padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .wg-sel-nama { font-family: var(--serif); font-size: 15px; }
+  .wg-sel-kec { font-family: var(--mono); font-size: 9.5px; color: var(--cream-300); text-transform: uppercase; letter-spacing: 0.06em; }
+  .wg-sel-close { background: none; border: none; color: var(--cream-300); cursor: pointer; font-size: 16px; line-height: 1; }
+  .wg-sel-close:hover { color: var(--cream); }
+  .wg-sel-body { padding: 6px 13px 12px; }
+  .wg-sel-row { display: flex; flex-direction: column; gap: 3px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .wg-sel-row:last-child { border-bottom: none; }
+  .wg-sel-rmain { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .wg-sel-row.active { font-weight: 500; }
+  .wg-sel-row.active .wg-sel-rn { color: var(--ochre-600); }
+  .wg-sel-rn { font-size: 12px; color: var(--ink-600); }
+  .wg-sel-rv { font-family: var(--mono); font-size: 12px; color: var(--forest); white-space: nowrap; }
+  .wg-sel-rv.na { color: var(--ink-200, #b8b8b8); }
+  .wg-sel-keg { font-size: 11px; font-weight: 400; color: var(--ink-400); line-height: 1.35; padding-left: 12px; position: relative; }
+  .wg-sel-keg::before { content: "↳"; position: absolute; left: 0; color: var(--forest); opacity: 0.6; }
+  .wg-yearbar { display: flex; align-items: center; gap: 8px; margin: 12px 0 2px; }
+  .wg-yearbar-l { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-400); }
+  .wg-yearsel { font-family: var(--mono); font-size: 13px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 5px 9px; cursor: pointer; }
+  .wg-aggbadge { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--forest); background: rgba(31,58,46,0.08); border-radius: 20px; padding: 4px 10px; }
+  .wg-leveltabs { display: flex; align-items: center; margin: 12px 0 0; }
+  .wg-leveltabs .wg-yearbar-l { margin-right: 10px; }
+  .wg-leveltab { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 14px; background: #fff; border: 1px solid var(--line); cursor: pointer; color: var(--ink-400); }
+  .wg-leveltab:first-of-type { border-radius: 7px 0 0 7px; }
+  .wg-leveltab:last-of-type { border-radius: 0 7px 7px 0; border-left: none; }
+  .wg-leveltab:hover { background: var(--cream); }
+  .wg-leveltab.active { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+  .wg-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; font-size: 11.5px; }
+  .wg-bc-seg { background: none; border: none; padding: 0; font: inherit; color: var(--forest); cursor: pointer; }
+  .wg-bc-seg:hover { text-decoration: underline; }
+  .wg-bc-cur { color: var(--ink-600); font-weight: 500; }
+  .wg-bc-cur2 { color: var(--ink-400); }
+  .wg-bc-sep { color: var(--ink-200); }
+  .wg-drill-btn { margin-top: 10px; width: 100%; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px; background: var(--forest); color: var(--cream); border: none; border-radius: 7px; cursor: pointer; }
+  .wg-drill-btn:hover { background: var(--ink); }
+  .wg-komfokus { display: flex; flex-wrap: wrap; gap: 6px; }
+  .wg-komchip { display: inline-block; padding: 4px 11px; background: rgba(199,125,62,0.1); color: var(--cocoa, #7a4a1e); border: 1px solid rgba(199,125,62,0.22); border-radius: 20px; font-size: 12px; }
+  .wg-sel-kom { display: inline-block; padding: 1px 8px; background: rgba(199,125,62,0.12); color: var(--cocoa, #7a4a1e); border-radius: 12px; font-size: 10.5px; font-weight: 500; }
+  .wg-komtoggle { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 11.5px; color: var(--ink-600); cursor: pointer; }
+  .wg-kom-divicon { background: none; border: none; }
+  .wg-kom-badge { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.45); background: var(--forest, #1F3A2E); box-sizing: border-box; }
+  .wg-kom-badge img { width: 22px; height: 22px; object-fit: contain; display: block; filter: brightness(0) invert(1); }
+  .wg-legend-komh { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-400); margin: 8px 0 5px; padding-top: 7px; border-top: 1px dashed var(--line); }
+  .wg-legend-kombadge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--forest, #1F3A2E); box-shadow: 0 0 0 1px rgba(0,0,0,0.14); flex-shrink: 0; }
+  .wg-legend-kombadge img { width: 11px; height: 11px; object-fit: contain; display: block; filter: brightness(0) invert(1); }
+  .wg-sel-hist { margin-top: 2px; padding: 0 13px 14px; }
+  .wg-hist-h { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-400); margin-bottom: 5px; }
+  .wg-hist-row { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-top: 1px dashed var(--line); }
+  .wg-hist-row:first-of-type { border-top: none; }
+  .wg-hist-th { font-family: var(--mono); font-size: 12px; color: var(--ochre-600); min-width: 38px; }
+  .wg-hist-v { font-family: var(--mono); font-size: 12px; color: var(--forest); white-space: nowrap; }
+  .wg-hist-keg { font-size: 11px; color: var(--ink-400); flex: 1; line-height: 1.3; }
+  .wg-hist-empty { font-size: 11.5px; color: var(--ink-400); font-style: italic; }
+  .wg-hist-total { border-top: 1.5px solid var(--forest-500, var(--line)); margin-top: 2px; padding-top: 6px; font-weight: 600; }
+  .wg-hist-total .wg-hist-th, .wg-hist-total .wg-hist-v { color: var(--forest); }
+  .wg-hist-total .wg-hist-keg { font-style: italic; font-weight: 400; }
+
+  .wg-desc { font-size: 12.5px; line-height: 1.6; color: var(--ink-600); }
+
+  @media (max-width: 980px) {
+    html, body { overflow: auto; }
+    .app { height: auto; overflow: visible; }
+    .ds-body { grid-template-columns: 1fr; }
+    .ds-map-wrap { height: 56vh; min-height: 340px; }
+    .ds-side { max-height: none; }
+  }
+</style>
+</head>
+<body data-theme="{% dst_active_theme %}">
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="ds-header">
+    <a href="{% url 'dst:landing' %}" class="ds-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Beranda
+    </a>
+    <div class="ds-header-brand">
+      <div class="ds-header-mark">
+        {% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo">{% else %}L{% endif %}
+      </div>
+      <div class="ds-header-titles">
+        <div class="ds-header-eyebrow">Monitoring Spasial · {{ nama_kabupaten }}</div>
+        <div class="ds-header-title">Capaian Program FOLUR per Wilayah</div>
+      </div>
+    </div>
+    <div class="ds-header-spacer"></div>
+    <div class="ds-header-meta" id="headerMeta">Tahun {{ tahun }} · {{ config.nKec }} Kecamatan · {{ config.nDesa }} Desa</div>
+  </header>
+
+  <!-- BODY -->
+  <div class="ds-body">
+
+    <!-- MAP -->
+    <div class="ds-map-wrap">
+      <div id="map"></div>
+
+      <!-- Legend -->
+      <div class="map-card legend" id="legendCard">
+        <div class="map-card-head" onclick="this.parentElement.classList.toggle('collapsed')">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          <span class="map-card-title">Legenda</span>
+          <span class="map-card-caret">▾</span>
+        </div>
+        <div class="map-card-body">
+          <div class="legend-body" id="legendBody">
+            <div class="wg-legend-cap">Memuat…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <div class="map-tools">
+        <div class="map-btn" id="zoomToLayer" title="Zoom ke cakupan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4"/></svg>
+        </div>
+        <div class="map-btn" id="zoomHome" title="Tampilan awal (area semula)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>
+        </div>
+        <div class="map-btn" id="zoomIn" title="Perbesar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div class="map-btn" id="zoomOut" title="Perkecil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+
+      <!-- Background selector (gaya MapStore2): tombol thumbnail + flyout -->
+      <div class="bg-control" id="bgControl">
+        <div class="bg-selector" id="bgSelector">
+          <div class="bg-selector-title">Peta Dasar</div>
+          <div class="bg-items">
+            <button type="button" class="bg-item active" data-basemap="osm" title="OpenStreetMap">
+              <img class="bg-thumb" src="https://a.tile.openstreetmap.org/8/213/130.png" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+              <span class="bg-label">OpenStreetMap</span>
+            </button>
+            <button type="button" class="bg-item" data-basemap="topo" title="OpenTopoMap">
+              <img class="bg-thumb" src="https://a.tile.opentopomap.org/8/213/130.png" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+              <span class="bg-label">OpenTopoMap</span>
+            </button>
+            <button type="button" class="bg-item" data-basemap="s2" title="Citra Sentinel-2 cloudless">
+              <img class="bg-thumb" src="https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/8/130/213.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+              <span class="bg-label">Citra Sentinel-2</span>
+            </button>
+            <button type="button" class="bg-item empty" data-basemap="none" title="Tanpa Peta Dasar">
+              <span class="bg-thumb"></span>
+              <span class="bg-label">Tanpa Peta Dasar</span>
+            </button>
+          </div>
+        </div>
+        <button class="bg-toggle" id="bgToggle" title="Pilih peta dasar" aria-expanded="false">
+          <span class="bg-toggle-thumb" id="bgToggleThumb"></span>
+        </button>
+      </div>
+
+      <div class="no-preview" id="noPreview" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M9 20l-5.5 3V6L9 3l6 3 5.5-3v17L15 23l-6-3z"/><path d="M9 3v17M15 6v17"/></svg>
+        Geometri wilayah belum tersedia. Restore data wilayah cakupan terlebih dahulu.
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="ds-side">
+      <div class="ds-side-eyebrow">Indikator Capaian</div>
+      <h1 class="ds-side-title" id="indTitle">—</h1>
+      <div class="ds-side-sub" id="indPilar">FOLUR · GEF Core Indicators</div>
+
+      <!-- Indicator selector -->
+      <div class="wg-pills" id="indPills">
+        {% for m in indikator_meta %}
+        <button class="wg-pill{% if forloop.first %} active{% endif %}" data-kode="{{ m.kode }}">
+          <div class="wg-pill-kode">{{ m.kode }}</div>
+          <div class="wg-pill-nama">{{ m.nama }}</div>
+        </button>
+        {% endfor %}
+      </div>
+
+      <!-- Breadcrumb hierarki yurisdiksi: Kabupaten ▸ Kecamatan ▸ Desa -->
+      <div class="wg-breadcrumb" id="breadcrumb"></div>
+
+      <!-- Pengalih Yurisdiksi (jenjang): Desa | Kecamatan -->
+      {% if config.levels|length > 1 %}
+      <div class="wg-leveltabs" id="levelTabs">
+        <span class="wg-yearbar-l" style="align-self:center;">Yurisdiksi</span>
+        <button type="button" class="wg-leveltab active" data-level="desa">Desa</button>
+        <button type="button" class="wg-leveltab" data-level="kecamatan">Kecamatan</button>
+      </div>
+      {% endif %}
+
+      <!-- Pemilih TAHUN + badge agregasi indikator aktif -->
+      <div class="wg-yearbar">
+        <label for="yearSel" class="wg-yearbar-l">Tahun</label>
+        <select id="yearSel" class="wg-yearsel">
+          {% for y in config.years %}<option value="{{ y }}"{% if y == tahun %} selected{% endif %}>{{ y }}</option>{% endfor %}
+        </select>
+        <span class="wg-aggbadge" id="aggBadge"></span>
+      </div>
+
+      {% if config.komoditasIcons %}
+      <label class="wg-komtoggle"><input type="checkbox" id="komToggle" checked> Ikon komoditas di peta</label>
+      {% endif %}
+
+      <!-- Hero metric -->
+      <div class="wg-hero">
+        <div class="wg-hero-top">
+          <div class="wg-hero-val" id="heroVal">—<span class="unit" id="heroUnit"></span></div>
+          <div class="wg-hero-pct" id="heroPct"></div>
+        </div>
+        <div class="wg-hero-target" id="heroTarget"></div>
+        <div class="wg-progress"><div class="wg-progress-fill" id="heroBar"></div></div>
+        <div class="wg-hero-cum" id="heroCum" style="display:none;"></div>
+      </div>
+
+      <div class="wg-statgrid">
+        <div class="wg-stat"><div class="wg-stat-k" id="statCovLabel">Desa Terisi Data</div><div class="wg-stat-v" id="statCov">—</div></div>
+        <div class="wg-stat"><div class="wg-stat-k">Cakupan</div><div class="wg-stat-v" id="statPct">—</div></div>
+      </div>
+      <div class="wg-note" id="aggNote" style="display:none;"></div>
+
+      <!-- Selected desa -->
+      <div class="ds-section" id="selSection" style="display:none;">
+        <div class="ds-section-h">Wilayah Terpilih</div>
+        <div class="wg-sel">
+          <div class="wg-sel-head">
+            <div>
+              <div class="wg-sel-nama" id="selNama">—</div>
+              <div class="wg-sel-kec" id="selKec"></div>
+            </div>
+            <button class="wg-sel-close" id="selClose" title="Tutup">&times;</button>
+          </div>
+          <div class="wg-sel-body" id="selBody"></div>
+          <div class="wg-sel-hist" id="selHistory"></div>
+        </div>
+      </div>
+
+      <!-- Ranking -->
+      <div class="ds-section">
+        <div class="ds-section-h">Peringkat Wilayah <span id="rankUnit" style="text-transform:none;letter-spacing:0;color:var(--ink-200);"></span></div>
+        <div class="wg-rank" id="rankList"><div class="wg-rank-empty">Memuat…</div></div>
+      </div>
+
+      <!-- Komoditas Fokus (dari Pengaturan) -->
+      {% if config.komoditasFokus %}
+      <div class="ds-section">
+        <div class="ds-section-h">Komoditas Fokus</div>
+        <div class="wg-komfokus">
+          {% for k in config.komoditasFokus %}<span class="wg-komchip">{{ k }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Description -->
+      <div class="ds-section">
+        <div class="ds-section-h">Tentang Indikator</div>
+        <p class="wg-desc" id="indDesc">—</p>
+      </div>
+
+      <!-- Footnote -->
+      <div class="ds-section" style="margin-bottom:0;">
+        <div class="ds-section-h">Sumber &amp; Catatan</div>
+        <p class="wg-desc">
+          Batas wilayah: <strong>Badan Informasi Geospasial (BIG)</strong>. Nilai capaian per desa/kecamatan
+          dientri di <strong>Panel Admin → Data Capaian</strong>; halaman ini bersifat tinjauan publik (read-only).
+        </p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+{{ config|json_script:"wg2-config" }}
+<script>
+(function () {
+  var CFG = JSON.parse(document.getElementById('wg2-config').textContent);
+  var INDS = CFG.indikator || [];
+  // Palet bawaan (hijau). RAMP diset ulang per indikator aktif di render()
+  // dari meta.ramp (palet pilihan admin di Data Capaian).
+  var DEFAULT_RAMP = ['#dfe7d3', '#b9cda0', '#8caa6e', '#5a8048', '#1F3A2E'];
+  var RAMP = DEFAULT_RAMP;
+  var NODATA = '#e9e3d6';
+
+  var map = L.map('map', { center: CFG.center || [-3, 120.4], zoom: 10, zoomControl: false, attributionControl: true });
+  if (map.attributionControl) map.attributionControl.setPosition('bottomleft');
+
+  var basemaps = {
+    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap contributors' }),
+    topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'map data © OpenStreetMap · SRTM | © OpenTopoMap (CC-BY-SA)' }),
+    s2: L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg', { maxZoom: 16, attribution: 'Sentinel-2 cloudless 2020 — <a href="https://s2maps.eu">s2maps.eu</a>' })
+  };
+  var currentBasemap = basemaps.osm; currentBasemap.addTo(map);
+
+  if (CFG.bbox) {
+    var b = L.latLngBounds(CFG.bbox[0], CFG.bbox[1]);
+    if (b.isValid()) map.fitBounds(b, { padding: [6, 6] });
+  }
+
+  // ---------- helpers ----------
+  function fmt(n) { if (n == null || isNaN(n)) return '—'; return Number(n).toLocaleString('id-ID', { maximumFractionDigits: 1 }); }
+  function fmtInt(n) { return Number(n || 0).toLocaleString('id-ID'); }
+  function meta(kode) { for (var i = 0; i < INDS.length; i++) if (INDS[i].kode === kode) return INDS[i]; return {}; }
+  function valOf(props, kode) { var v = (props.nilai || {})[kode]; return (v == null || v === '') ? null : +v; }
+  function kegOf(props, kode) { var k = (props.kegiatan || {})[kode]; return k ? String(k) : ''; }
+  function komOf(props, kode) { var k = (props.komoditas || {})[kode]; return k ? String(k) : ''; }
+  // Teks tooltip hover: "Nama: nilai satuan · kegiatan" (indikator aktif).
+  function tipText(props, kode) {
+    var v = valOf(props, kode), keg = kegOf(props, kode);
+    var m = (INDS.filter(function (i) { return i.kode === kode; })[0] || {});
+    var t = esc(props.nama || props.kode_pum);
+    if (v != null) t += ': ' + fmt(v) + (m.satuan ? ' ' + esc(m.satuan) : '');
+    if (keg) t += ' · ' + esc(keg);
+    return t;
+  }
+  function esc(s) { var d = document.createElement('span'); d.textContent = (s == null ? '' : String(s)); return d.innerHTML; }
+
+  function classify(vals) {
+    vals = vals.filter(function (v) { return v != null; }).sort(function (a, b) { return a - b; });
+    if (!vals.length) return { th: [], colors: [], min: null, max: null };
+    var uniq = []; var seen = {};
+    vals.forEach(function (v) { if (!seen[v]) { seen[v] = 1; uniq.push(v); } });
+    var n = Math.min(5, uniq.length);
+    var th = [];
+    for (var i = 1; i < n; i++) th.push(vals[Math.floor(i * vals.length / n)]);
+    return { th: th, colors: RAMP.slice(0, n), min: vals[0], max: vals[vals.length - 1] };
+  }
+  function colorFor(v, cls) {
+    if (v == null) return NODATA;
+    var i = 0; while (i < cls.th.length && v >= cls.th[i]) i++;
+    return cls.colors[Math.min(i, cls.colors.length - 1)] || RAMP[0];
+  }
+
+  // ---------- state ----------
+  var state = { kode: INDS.length ? INDS[0].kode : null, tahun: CFG.tahun, level: CFG.level || 'desa', scopeKec: null, scopeKecNama: null, loadedLevel: null, geojson: null, layer: null, komLayer: null, showKom: true, cls: { th: [], colors: [] }, selected: null, selKode: null, history: null };
+
+  // ---------- render ----------
+  function styleFn(feature) {
+    var v = valOf(feature.properties, state.kode);
+    return { color: '#E11D2A', weight: 1, fillColor: colorFor(v, state.cls), fillOpacity: v == null ? 0.45 : 0.85 };
+  }
+
+  function renderLegend(cls, m) {
+    var el = document.getElementById('legendBody');
+    // Label "Tanpa data" disambungkan ke nama wilayah cakupan dari DB cakupan
+    // (RefWilayah*), fallback ke nama kabupaten situs bila kosong.
+    var cakNama = CFG.cakupanNama || CFG.namaKabupaten || '';
+    var ndLabel = 'Tanpa data' + (cakNama ? ' · ' + esc(cakNama) : '');
+    var ndRow = '<div class="wg-legend-row"><span class="wg-legend-sw nd"></span>' + ndLabel + '</div>';
+    if (!cls.colors.length) {
+      el.innerHTML = ndRow;
+      return;
+    }
+    var bounds = [cls.min].concat(cls.th).concat([cls.max]);
+    var html = '<div class="wg-legend-cap"><strong>' + esc(m.nama) + '</strong>' + (m.satuan ? ' (' + esc(m.satuan) + ')' : '') + '</div>';
+    for (var i = 0; i < cls.colors.length; i++) {
+      var lo = bounds[i], hi = bounds[i + 1];
+      var lbl = (cls.colors.length === 1) ? fmt(lo) : (fmt(lo) + ' – ' + fmt(hi));
+      html += '<div class="wg-legend-row"><span class="wg-legend-sw" style="background:' + cls.colors[i] + '"></span>' + lbl + '</div>';
+    }
+    html += ndRow;
+    // Keterangan SIMBOL KOMODITAS — ikon yang sedang tampil utk indikator ini.
+    if (state.showKom) {
+      var legIcons = CFG.komoditasIcons || {};
+      var present = {};
+      scopedFeatures().forEach(function (f) {
+        var kk = (f.properties.komoditas || {})[m.kode];
+        if (kk && legIcons[kk]) present[kk] = legIcons[kk];
+      });
+      var knames = Object.keys(present).sort();
+      if (knames.length) {
+        html += '<div class="wg-legend-komh">Simbol komoditas</div>';
+        knames.forEach(function (n) {
+          html += '<div class="wg-legend-row"><span class="wg-legend-kombadge"><img src="' + present[n] + '" alt=""></span>' + esc(n) + '</div>';
+        });
+      }
+    }
+    el.innerHTML = html;
+  }
+
+  function renderRanking(feats, kode, m) {
+    var rows = feats.map(function (f) { return { p: f.properties, v: valOf(f.properties, kode) }; })
+      .filter(function (r) { return r.v != null; })
+      .sort(function (a, b) { return b.v - a.v; }).slice(0, 8);
+    var el = document.getElementById('rankList');
+    document.getElementById('rankUnit').textContent = m.satuan ? '· ' + m.satuan : '';
+    if (!rows.length) { el.innerHTML = '<div class="wg-rank-empty">Belum ada data per wilayah.</div>'; return; }
+    var max = rows[0].v || 1;
+    el.innerHTML = rows.map(function (r, i) {
+      var w = Math.max(3, Math.round((r.v / max) * 100));
+      // Tooltip kegiatan (indikator aktif) di area nama+bar; kutip di-escape.
+      var keg = kegOf(r.p, kode);
+      var tip = keg ? ' title="' + esc(keg).replace(/"/g, '&quot;') + '"' : '';
+      return '<div class="wg-rank-row"><div class="wg-rank-no">' + (i + 1) + '</div>'
+        + '<div class="wg-rank-main"' + tip + '><div class="wg-rank-nama" data-kode="' + esc(r.p.kode_pum) + '">' + esc(r.p.nama) + '</div>'
+        + '<div class="wg-rank-bar"><div class="wg-rank-bar-fill" style="width:' + w + '%"></div></div></div>'
+        + '<div class="wg-rank-val">' + fmt(r.v) + '</div></div>';
+    }).join('');
+    el.querySelectorAll('.wg-rank-nama').forEach(function (n) {
+      n.addEventListener('click', function () { focusFeature(n.getAttribute('data-kode')); });
+    });
+  }
+
+  function renderHero(feats, kode, m) {
+    var vals = feats.map(function (f) { return valOf(f.properties, kode); });
+    var nonnull = vals.filter(function (v) { return v != null; });
+    var realisasi = nonnull.reduce(function (a, b) { return a + b; }, 0);
+    var total = feats.length, cov = nonnull.length;
+    var usedAgg = false;
+    if (cov === 0 && m.agg != null) { realisasi = +m.agg; usedAgg = true; }
+    document.getElementById('heroVal').innerHTML = fmt(realisasi) + '<span class="unit">' + esc(m.satuan || '') + '</span>';
+    var tgt = m.target;
+    var pct = (tgt && tgt > 0) ? (realisasi / tgt * 100) : null;
+    document.getElementById('heroPct').textContent = pct == null ? '' : (Math.round(pct) + '% target');
+    document.getElementById('heroTarget').innerHTML = tgt ? ('Target: <strong>' + fmt(tgt) + ' ' + esc(m.satuan || '') + '</strong>') : 'Target belum ditetapkan';
+    // Realisasi kumulatif tahunan: Σ realisasi semua desa, semua tahun <= terpilih.
+    var cumEl = document.getElementById('heroCum');
+    if (cumEl) {
+      var ser = (((m.aggSeries || {})[state.level]) || []).filter(function (s) { return s.tahun <= state.tahun && s.nilai != null; });
+      if (ser.length > 1) {
+        var cum = ser.reduce(function (a, s) { return a + (+s.nilai || 0); }, 0);
+        var yrs = ser.map(function (s) { return s.tahun; });
+        var yl = (yrs.length > 5) ? (yrs[0] + '–' + yrs[yrs.length - 1]) : yrs.join(' + ');
+        cumEl.innerHTML = 'Σ Realisasi kumulatif s.d. ' + state.tahun + ': <strong>' + fmt(cum) + ' ' + esc(m.satuan || '') + '</strong> <span class="yrs">(' + yl + ')</span>';
+        cumEl.style.display = 'block';
+      } else { cumEl.style.display = 'none'; }
+    }
+    var bar = document.getElementById('heroBar');
+    bar.style.width = (pct == null ? 0 : Math.min(100, pct)) + '%';
+    bar.classList.toggle('over', pct != null && pct >= 100);
+    var scl = document.getElementById('statCovLabel');
+    if (scl) scl.textContent = (state.level === 'kecamatan' ? 'Kecamatan' : 'Desa') + ' Terisi Data';
+    document.getElementById('statCov').innerHTML = fmtInt(cov) + ' <small>/ ' + fmtInt(total) + '</small>';
+    document.getElementById('statPct').textContent = total ? (Math.round(cov / total * 100) + '%') : '—';
+    var note = document.getElementById('aggNote');
+    if (usedAgg) {
+      note.style.display = 'block';
+      note.innerHTML = 'Angka di atas memakai <strong>agregat ' + (m.agg_tahun || '') + '</strong> karena rincian per desa belum dientri. Peta menampilkan pola "tanpa data".';
+    } else if (cov === 0) {
+      note.style.display = 'block';
+      note.innerHTML = 'Belum ada data capaian untuk indikator ini. Entri di <strong>Panel Admin → Data Capaian</strong>.';
+    } else { note.style.display = 'none'; }
+  }
+
+  function render() {
+    var kode = state.kode, m = meta(kode);
+    // Palet warna mengikuti indikator aktif (pilihan admin); fallback hijau.
+    RAMP = (m.ramp && m.ramp.length) ? m.ramp : DEFAULT_RAMP;
+    var ab = document.getElementById('aggBadge');
+    if (ab) ab.textContent = (m.agregasi === 'kumulatif')
+      ? ('Kumulatif s.d. ' + state.tahun) : ('Tahun ' + state.tahun);
+    document.getElementById('indTitle').textContent = m.nama || '—';
+    document.getElementById('indPilar').textContent = 'FOLUR · ' + (m.pilar_nama || 'GEF Core Indicators');
+    document.getElementById('indDesc').textContent = m.deskripsi || 'Tidak ada deskripsi.';
+    document.querySelectorAll('#indPills .wg-pill').forEach(function (p) {
+      p.classList.toggle('active', p.getAttribute('data-kode') === kode);
+    });
+    if (!state.geojson) return;
+    var feats = scopedFeatures();
+    state.cls = classify(feats.map(function (f) { return valOf(f.properties, kode); }));
+    if (state.layer) state.layer.setStyle(styleFn);
+    renderLegend(state.cls, m);
+    renderHero(feats, kode, m);
+    renderRanking(feats, kode, m);
+    renderKomMarkers();
+    if (state.selected) renderSelected(state.selected);
+  }
+
+  // ---------- selected feature ----------
+  function renderSelected(props) {
+    document.getElementById('selSection').style.display = 'block';
+    document.getElementById('selNama').textContent = props.nama || props.kode_pum;
+    document.getElementById('selKec').textContent = props.nama_kec ? ('Kec. ' + props.nama_kec) : props.kode_pum;
+    var body = document.getElementById('selBody');
+    body.innerHTML = INDS.map(function (ind) {
+      var v = valOf(props, ind.kode);
+      var keg = kegOf(props, ind.kode);
+      var kom = komOf(props, ind.kode);
+      var act = ind.kode === state.kode ? ' active' : '';
+      var vv = v == null ? '<span class="wg-sel-rv na">— belum ada</span>'
+        : '<span class="wg-sel-rv">' + fmt(v) + ' ' + esc(ind.satuan || '') + '</span>';
+      var sub = (keg || kom)
+        ? '<div class="wg-sel-keg">' + (keg ? esc(keg) : '')
+          + (kom ? ' <span class="wg-sel-kom">' + esc(kom) + '</span>' : '') + '</div>'
+        : '';
+      return '<div class="wg-sel-row' + act + '">'
+        + '<div class="wg-sel-rmain"><span class="wg-sel-rn">' + esc(ind.nama) + '</span>' + vv + '</div>'
+        + sub + '</div>';
+    }).join('');
+    // Di jenjang Kecamatan: tombol drill-down ke desa-desa di dalamnya.
+    if (state.level === 'kecamatan') {
+      body.innerHTML += '<button type="button" class="wg-drill-btn" id="drillBtn">Telusuri desa di ' + esc(props.nama || '') + ' →</button>';
+      var db = document.getElementById('drillBtn');
+      if (db) db.addEventListener('click', function () { drillTo(props.kode_pum, props.nama); });
+    }
+    state.selKode = props.kode_pum;
+    ensureHistory(props.kode_pum);
+  }
+
+  // Riwayat tahunan wilayah terpilih (semua indikator) — di-fetch sekali per klik.
+  function ensureHistory(kodePum) {
+    if (state.history && state.history.kode_pum === kodePum) { renderHistory(state.kode); return; }
+    state.history = null;
+    document.getElementById('selHistory').innerHTML = '<div class="wg-hist-empty">Memuat riwayat…</div>';
+    fetch(CFG.historyUrl + '?level=' + encodeURIComponent(state.level) + '&kode_pum=' + encodeURIComponent(kodePum), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (state.selKode !== kodePum) return; state.history = d; renderHistory(state.kode); })
+      .catch(function () { document.getElementById('selHistory').innerHTML = ''; });
+  }
+  function renderHistory(kode) {
+    var el = document.getElementById('selHistory'); if (!el) return;
+    var h = state.history, m = meta(kode);
+    if (!h || !h.series) { el.innerHTML = ''; return; }
+    var ser = h.series[kode] || [];
+    var head = '<div class="wg-hist-h">Riwayat tahunan · ' + esc(m.kode || kode) + (m.agregasi === 'kumulatif' ? ' (kumulatif)' : '') + '</div>';
+    if (!ser.length) { el.innerHTML = head + '<div class="wg-hist-empty">Belum ada entri tahunan.</div>'; return; }
+    var cum = m.agregasi === 'kumulatif', run = 0;
+    var rows = ser.map(function (s) {
+      run += (s.nilai || 0);
+      var shown = cum ? run : s.nilai;
+      var sub = (s.kegiatan || s.komoditas)
+        ? '<span class="wg-hist-keg">' + (s.kegiatan ? esc(s.kegiatan) : '')
+          + (s.komoditas ? ' <span class="wg-sel-kom">' + esc(s.komoditas) + '</span>' : '') + '</span>'
+        : '';
+      return '<div class="wg-hist-row"><span class="wg-hist-th">' + s.tahun + '</span>'
+        + '<span class="wg-hist-v">' + fmt(shown) + (m.satuan ? ' ' + esc(m.satuan) : '') + '</span>'
+        + sub + '</div>';
+    }).join('');
+    // Total kumulatif per wilayah ini = Σ nilai semua tahun.
+    var tot = ser.reduce(function (a, s) { return a + (+s.nilai || 0); }, 0);
+    var foot = '<div class="wg-hist-row wg-hist-total"><span class="wg-hist-th">Σ</span>'
+      + '<span class="wg-hist-v">' + fmt(tot) + (m.satuan ? ' ' + esc(m.satuan) : '') + '</span>'
+      + '<span class="wg-hist-keg">kumulatif ' + ser.length + ' tahun</span></div>';
+    el.innerHTML = head + rows + foot;
+  }
+  document.getElementById('selClose').addEventListener('click', function () {
+    state.selected = null; state.selKode = null; state.history = null;
+    document.getElementById('selSection').style.display = 'none';
+    document.getElementById('selHistory').innerHTML = '';
+    if (state.highlight) { state.layer.resetStyle(state.highlight); state.highlight = null; }
+  });
+
+  function focusFeature(kodePum) {
+    if (!state.layer) return;
+    state.layer.eachLayer(function (ly) {
+      if (ly.feature && ly.feature.properties.kode_pum === kodePum) {
+        if (state.highlight) state.layer.resetStyle(state.highlight);
+        ly.setStyle({ color: '#C77D3E', weight: 2.5 }); ly.bringToFront();
+        state.highlight = ly; state.selected = ly.feature.properties;
+        renderSelected(ly.feature.properties);
+        if (ly.getBounds) map.fitBounds(ly.getBounds(), { maxZoom: 13, padding: [40, 40] });
+      }
+    });
+  }
+
+  // ---------- breadcrumb hierarki yurisdiksi ----------
+  function renderBreadcrumb() {
+    var el = document.getElementById('breadcrumb'); if (!el) return;
+    var kab = CFG.cakupanNama || CFG.namaKabupaten || 'Kabupaten';
+    var html = '<button type="button" class="wg-bc-seg" id="bcKab">' + esc(kab) + '</button>';
+    if (state.scopeKec) {
+      html += '<span class="wg-bc-sep">▸</span><span class="wg-bc-cur">Kec. ' + esc(state.scopeKecNama || '') + '</span>'
+        + '<span class="wg-bc-sep">▸</span><span class="wg-bc-cur2">Desa</span>';
+    } else {
+      html += '<span class="wg-bc-sep">▸</span><span class="wg-bc-cur2">' + (state.level === 'kecamatan' ? 'Kecamatan' : 'Desa') + '</span>';
+    }
+    el.innerHTML = html;
+    var b = document.getElementById('bcKab');
+    if (b) b.addEventListener('click', function () { if (state.scopeKec) clearScope(); });
+  }
+  function syncLevelTabs() {
+    document.querySelectorAll('#levelTabs .wg-leveltab').forEach(function (x) {
+      x.classList.toggle('active', x.getAttribute('data-level') === state.level);
+    });
+  }
+
+  // ---------- fitur dalam scope aktif (filter desa ke kecamatan saat drill) ----------
+  function scopedFeatures() {
+    var fs = (state.geojson && state.geojson.features) || [];
+    if (state.level === 'desa' && state.scopeKec) {
+      return fs.filter(function (f) { return f.properties.kode_kec_pum === state.scopeKec; });
+    }
+    return fs;
+  }
+
+  // ---------- marker ikon komoditas (di centroid/ST_PointOnSurface wilayah) ----------
+  function komIcon(url) {
+    return L.divIcon({
+      className: 'wg-kom-divicon',
+      html: '<span class="wg-kom-badge"><img src="' + url + '" alt=""></span>',
+      iconSize: [30, 30], iconAnchor: [15, 15]
+    });
+  }
+  function renderKomMarkers() {
+    if (!state.komLayer) state.komLayer = L.layerGroup().addTo(map);
+    state.komLayer.clearLayers();
+    if (!state.showKom || !state.geojson) return;
+    var icons = CFG.komoditasIcons || {};
+    scopedFeatures().forEach(function (f) {
+      var p = f.properties;
+      var kom = (p.komoditas || {})[state.kode];
+      var url = kom ? icons[kom] : null;
+      if (!url || !p.point) return;
+      var mk = L.marker(p.point, { icon: komIcon(url), riseOnHover: true });
+      mk.bindTooltip(esc(p.nama) + ' · ' + esc(kom), { direction: 'top', className: 'wg-tip' });
+      mk.on('click', function () { focusFeature(p.kode_pum); });
+      state.komLayer.addLayer(mk);
+    });
+  }
+
+  // ---------- load geojson (per TAHUN/JENJANG) ----------
+  function updateHeaderMeta() {
+    var el = document.getElementById('headerMeta');
+    if (el) el.textContent = 'Tahun ' + state.tahun + ' · ' + (CFG.nKec || 0) + ' Kecamatan · ' + (CFG.nDesa || 0) + ' Desa';
+  }
+  function clearSelection() {
+    state.selected = null; state.highlight = null; state.selKode = null; state.history = null;
+    document.getElementById('selSection').style.display = 'none';
+    var sh = document.getElementById('selHistory'); if (sh) sh.innerHTML = '';
+  }
+  function buildLayer(fit) {
+    if (state.layer) { map.removeLayer(state.layer); state.layer = null; }
+    var feats = scopedFeatures();
+    document.getElementById('noPreview').style.display = feats.length ? 'none' : 'flex';
+    if (!feats.length) { render(); return; }
+    state.layer = L.geoJSON({ type: 'FeatureCollection', features: feats }, {
+      style: styleFn,
+      onEachFeature: function (feature, layer) {
+        var p = feature.properties;
+        layer.on('mouseover', function () { layer.setStyle({ weight: 1.6, color: '#2A4D3D' }); });
+        layer.on('mouseout', function () { if (state.highlight !== layer) state.layer.resetStyle(layer); });
+        layer.on('click', function () {
+          if (state.highlight && state.highlight !== layer) state.layer.resetStyle(state.highlight);
+          layer.setStyle({ color: '#C77D3E', weight: 2.5 }); layer.bringToFront();
+          state.highlight = layer; state.selected = p; renderSelected(p);
+        });
+        layer.bindTooltip(tipText(p, state.kode), { className: 'wg-tip', sticky: true });
+      }
+    }).addTo(map);
+    state.bounds = state.layer.getBounds();
+    if (fit && state.bounds.isValid()) map.fitBounds(state.bounds, { padding: [6, 6] });
+    render();
+  }
+  function loadData(fit) {
+    clearSelection();
+    renderBreadcrumb();
+    document.getElementById('noPreview').style.display = 'none';
+    fetch(CFG.geojsonUrl + '?level=' + encodeURIComponent(state.level) + '&tahun=' + encodeURIComponent(state.tahun), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (r) { return r.json(); })
+      .then(function (gj) {
+        state.geojson = gj; state.loadedLevel = state.level;
+        if (!gj.features || !gj.features.length) { if (state.layer) { map.removeLayer(state.layer); state.layer = null; } document.getElementById('noPreview').style.display = 'flex'; render(); return; }
+        buildLayer(fit);
+      })
+      .catch(function () { document.getElementById('noPreview').style.display = 'flex'; document.getElementById('noPreview').lastChild.textContent = ' Gagal memuat data spasial.'; });
+  }
+  // Drill: dari Kecamatan → desa-desa di dalamnya (scope), tanpa fetch ulang bila bisa.
+  function drillTo(kecKode, kecNama) {
+    state.scopeKec = kecKode; state.scopeKecNama = kecNama; state.level = 'desa';
+    syncLevelTabs(); clearSelection(); renderBreadcrumb();
+    if (state.loadedLevel === 'desa' && state.geojson) buildLayer(true);
+    else loadData(true);
+  }
+  function clearScope() {
+    if (!state.scopeKec) return;
+    state.scopeKec = null; state.scopeKecNama = null;
+    clearSelection(); renderBreadcrumb(); buildLayer(true);
+  }
+  loadData(true);
+
+  // ---------- pemilih TAHUN ----------
+  var yearSel = document.getElementById('yearSel');
+  if (yearSel) yearSel.addEventListener('change', function () {
+    state.tahun = parseInt(this.value, 10) || state.tahun;
+    updateHeaderMeta();
+    loadData(false);
+  });
+
+  // ---------- toggle ikon komoditas ----------
+  var komToggle = document.getElementById('komToggle');
+  if (komToggle) komToggle.addEventListener('change', function () {
+    state.showKom = this.checked;
+    render();  // perbarui marker peta + keterangan simbol di legenda
+  });
+
+  // ---------- pengalih Yurisdiksi (Desa <-> Kecamatan) ----------
+  document.querySelectorAll('#levelTabs .wg-leveltab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      if (t.classList.contains('active')) return;
+      state.level = t.getAttribute('data-level');
+      state.scopeKec = null; state.scopeKecNama = null;
+      document.querySelectorAll('#levelTabs .wg-leveltab').forEach(function (x) {
+        x.classList.toggle('active', x === t);
+      });
+      loadData(true);
+    });
+  });
+
+  // ---------- indicator pills ----------
+  document.querySelectorAll('#indPills .wg-pill').forEach(function (p) {
+    p.addEventListener('click', function () {
+      state.kode = p.getAttribute('data-kode');
+      // refresh tooltips for new indicator
+      if (state.layer) state.layer.eachLayer(function (ly) {
+        if (ly.getTooltip()) ly.setTooltipContent(tipText(ly.feature.properties, state.kode));
+      });
+      render();
+    });
+  });
+
+  // ---------- map tools ----------
+  // Kembali ke extent awal (area cakupan semula): batas poligon -> fallback bbox.
+  function fitHome() {
+    if (state.bounds && state.bounds.isValid()) map.fitBounds(state.bounds, { padding: [6, 6] });
+    else if (CFG.bbox) map.fitBounds(L.latLngBounds(CFG.bbox[0], CFG.bbox[1]), { padding: [6, 6] });
+  }
+  document.getElementById('zoomIn').addEventListener('click', function () { map.zoomIn(); });
+  document.getElementById('zoomOut').addEventListener('click', function () { map.zoomOut(); });
+  document.getElementById('zoomToLayer').addEventListener('click', fitHome);
+  document.getElementById('zoomHome').addEventListener('click', fitHome);
+
+  // ---------- basemap switch (gaya MapStore2: toggle thumbnail + flyout) ----------
+  var bgControl = document.getElementById('bgControl');
+  var bgToggle = document.getElementById('bgToggle');
+  var bgToggleThumb = document.getElementById('bgToggleThumb');
+  function syncBgToggle(item) {
+    if (!item || !bgToggleThumb) return;
+    var img = item.querySelector('img.bg-thumb');
+    if (item.classList.contains('empty') || !img) {
+      bgToggleThumb.classList.add('empty'); bgToggleThumb.style.backgroundImage = '';
+    } else {
+      bgToggleThumb.classList.remove('empty'); bgToggleThumb.style.backgroundImage = 'url("' + img.src + '")';
+    }
+  }
+  function closeBg() { if (bgControl) bgControl.classList.remove('open'); if (bgToggle) bgToggle.setAttribute('aria-expanded', 'false'); }
+  if (bgToggle) bgToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = bgControl.classList.toggle('open');
+    bgToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function (e) {
+    if (bgControl && bgControl.classList.contains('open') && !bgControl.contains(e.target)) closeBg();
+  });
+  document.querySelectorAll('#bgControl .bg-item').forEach(function (item) {
+    item.addEventListener('click', function () {
+      document.querySelectorAll('#bgControl .bg-item').forEach(function (i) { i.classList.remove('active'); });
+      item.classList.add('active');
+      if (currentBasemap) { map.removeLayer(currentBasemap); currentBasemap = null; }
+      var key = item.getAttribute('data-basemap');
+      if (key !== 'none') { currentBasemap = basemaps[key] || null; if (currentBasemap) { currentBasemap.addTo(map); currentBasemap.bringToBack(); } }
+      syncBgToggle(item);
+      closeBg();
+    });
+  });
+  syncBgToggle(document.querySelector('#bgControl .bg-item.active'));
+
+  // ---------- bar scale ----------
+  var BarScale = L.Control.extend({
+    options: { position: 'bottomright', maxWidth: 130, segments: 4 },
+    onAdd: function (m) {
+      this._map = m; this._container = L.DomUtil.create('div', 'bar-scale');
+      L.DomEvent.disableClickPropagation(this._container);
+      m.on('move zoom zoomend moveend resize', this._update, this); this._update(); return this._container;
+    },
+    _update: function () {
+      var m = this._map, y = Math.round(m.getSize().y / 2);
+      var maxMeters = m.distance(m.containerPointToLatLng([0, y]), m.containerPointToLatLng([this.options.maxWidth, y]));
+      if (!isFinite(maxMeters) || maxMeters <= 0) return;
+      var pow10 = Math.pow(10, Math.floor(Math.log10(maxMeters))), d = maxMeters / pow10;
+      var dist = (d >= 5 ? 5 : d >= 2 ? 2 : 1) * pow10;
+      var width = Math.round(this.options.maxWidth * (dist / maxMeters));
+      var seg = this.options.segments, segW = width / seg, bars = '';
+      for (var i = 0; i < seg; i++) bars += '<span class="bar-scale-seg ' + (i % 2 ? 'dark' : 'light') + '" style="width:' + segW + 'px"></span>';
+      var lab = function (m2) { return m2 >= 1000 ? (Math.round((m2 / 1000) * 100) / 100) + ' km' : Math.round(m2) + ' m'; };
+      this._container.innerHTML = '<div class="bar-scale-bar" style="width:' + width + 'px">' + bars + '</div>'
+        + '<div class="bar-scale-labels" style="width:' + width + 'px"><span>0</span><span style="left:50%">' + lab(dist / 2) + '</span><span>' + lab(dist) + '</span></div>';
+    }
+  });
+  new BarScale().addTo(map);
+
+  // initial sidebar paint (before geojson arrives)
+  render();
+})();
+</script>
+</body>
+</html>

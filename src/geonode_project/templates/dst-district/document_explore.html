@@ -1,0 +1,390 @@
+{% extends 'dst-district/landing/base.html' %}
+{% load static %}
+
+{% block title %}Jelajah Dokumen Kebijakan — {{ site.name|default:"(Nama Aplikasi)" }}{% endblock %}
+{% block page_slug %}document-explore{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* =========================================================================
+   Jelajah Dokumen Kebijakan — adaptasi desain "Pusat Data / SDI" (.pd-*).
+   Sidebar Produsen Data (Walidata) + pencarian + daftar kartu + paginasi.
+   ========================================================================= */
+.pd-root {
+  --pd-green-700: #2f5233;
+  --pd-green-600: #3a6b3e;
+  --pd-green-500: #4f8a52;
+  --pd-green-100: #e3efe2;
+  --pd-amber:     #f0a830;
+  --pd-ink:       #2b3a33;
+  --pd-muted:     #8a9389;
+  --pd-meta:      #9aa39a;
+  --pd-line:      #e7eae3;
+  --pd-card:      #ffffff;
+  --pd-bg:        #f1f3ee;
+  --pd-mono: var(--mono, "IBM Plex Mono", ui-monospace, Menlo, monospace);
+  --pd-sans: var(--sans, "Inter", system-ui, -apple-system, "Segoe UI", sans-serif);
+  position: relative; z-index: 1;
+  background: var(--pd-bg); font-family: var(--pd-sans); color: var(--pd-ink);
+  padding: 40px 0 80px; -webkit-font-smoothing: antialiased;
+}
+
+/* header ringkas */
+.pd-head { max-width: 1320px; margin: 0 auto 22px; padding: 0 36px; }
+.pd-head__eyebrow { font: 600 11px/1 var(--pd-mono); text-transform: uppercase; letter-spacing: .14em; color: var(--pd-green-600); }
+.pd-head__title { font-size: 34px; font-weight: 700; letter-spacing: -.02em; margin: 12px 0 6px; color: var(--pd-green-700); }
+.pd-head__desc { font-size: 15px; color: var(--pd-muted); max-width: 740px; line-height: 1.55; margin: 0; }
+
+.pd-wrap {
+  max-width: 1320px; margin: 0 auto; padding: 0 36px;
+  display: grid; grid-template-columns: 340px 1fr; gap: 32px; align-items: start;
+}
+
+/* ============ SIDEBAR: filter facet (opsi seperti desain sebelumnya) ============ */
+.pd-aside { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 100px; }
+.filter-card { background: var(--pd-card); border-radius: 10px; border: 1px solid var(--pd-line); overflow: hidden; }
+.filter-card-header { background: var(--pd-green-700); color: #fff; padding: 13px 18px; display: flex; align-items: center; gap: 10px; }
+.filter-card-header svg { width: 15px; height: 15px; opacity: .9; }
+.filter-card-title { font: 600 12px/1 var(--pd-mono); text-transform: uppercase; letter-spacing: .1em; }
+.filter-card-body { padding: 12px 18px 16px; max-height: 240px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #b9c1b5 transparent; }
+.filter-card-body::-webkit-scrollbar { width: 7px; }
+.filter-card-body::-webkit-scrollbar-thumb { background: #c2cabe; border-radius: 7px; }
+.filter-option { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 14px; color: var(--pd-ink); cursor: pointer; line-height: 1.35; user-select: none; transition: color .14s; }
+.filter-option:hover { color: var(--pd-green-700); }
+.filter-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.filter-checkbox { width: 17px; height: 17px; border: 1.5px solid #cfd6cb; border-radius: 5px; background: #fff; display: grid; place-items: center; flex-shrink: 0; transition: all .14s; }
+.filter-option input:checked + .filter-checkbox { background: var(--pd-green-600); border-color: var(--pd-green-600); }
+.filter-option input:checked + .filter-checkbox::after { content: ''; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-top: -2px; }
+.filter-count { margin-left: auto; font: 600 11px/1 var(--pd-mono); color: var(--pd-muted); }
+.filter-empty { font-size: 13px; color: var(--pd-muted); font-style: italic; padding: 4px 0; }
+.filter-reset { display: block; text-align: center; padding: 11px 0; background: var(--pd-card); border-radius: 10px; border: 1px solid var(--pd-line); color: var(--pd-amber); font: 600 11px/1 var(--pd-mono); text-transform: uppercase; letter-spacing: .1em; text-decoration: none; transition: .15s; }
+.filter-reset:hover { background: var(--pd-green-100); border-color: #8fbf91; color: var(--pd-green-700); }
+
+/* ============ MAIN ============ */
+.pd-main { display: flex; flex-direction: column; gap: 18px; }
+
+.pd-search {
+  background: var(--pd-card); border-radius: 10px; border: 1px solid var(--pd-line);
+  padding: 16px 22px; display: flex; align-items: center; gap: 14px;
+}
+.pd-search input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  font-size: 19px; font-family: var(--pd-sans); color: var(--pd-ink); padding: 8px 0;
+}
+.pd-search input::placeholder { color: #b3bcb1; }
+.pd-search button {
+  border: 0; background: transparent; color: var(--pd-muted); cursor: pointer;
+  display: grid; place-items: center; padding: 6px; border-radius: 10px; transition: .14s;
+}
+.pd-search button:hover { color: var(--pd-green-700); background: var(--pd-green-100); }
+
+.pd-count { font: 600 12px/1 var(--pd-mono); text-transform: uppercase; letter-spacing: .1em; color: var(--pd-muted); margin: 2px 4px; }
+.pd-count strong { color: var(--pd-green-700); }
+
+.pd-thead {
+  background: var(--pd-card); border-radius: 10px; border: 1px solid var(--pd-line);
+  padding: 22px 32px;
+  display: grid; grid-template-columns: 1.55fr 1fr 1fr; gap: 28px;
+}
+.pd-thead__col { font-size: 17px; font-weight: 700; }
+
+.pd-list { display: flex; flex-direction: column; gap: 18px; }
+.pd-card {
+  background: var(--pd-card); border-radius: 10px; border: 1px solid var(--pd-line);
+  padding: 28px 32px;
+  display: grid; grid-template-columns: 1.55fr 1fr 1fr; gap: 28px;
+  align-items: start; transition: border-color .16s;
+}
+.pd-card:hover { border-color: #8fbf91; }
+.pd-card__title { font-size: 19px; font-weight: 700; line-height: 1.32; margin: 0 0 12px; }
+.pd-card__title a { color: var(--pd-green-500); text-decoration: none; }
+.pd-card__title a:hover { color: var(--pd-green-700); text-decoration: underline; }
+.pd-card__meta {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 14.5px; line-height: 1.45; color: var(--pd-meta); margin: 0 0 8px;
+}
+.pd-ico { flex-shrink: 0; margin-top: 2px; color: #b6beb3; }
+.pd-detail {
+  display: inline-flex; align-items: center; gap: 9px;
+  margin-top: 8px; padding: 9px 16px 9px 18px;
+  background: #5c6660; color: #fff; border-radius: 22px;
+  font: 700 12px/1 var(--pd-sans); letter-spacing: .06em; text-decoration: none; transition: background .15s;
+}
+.pd-detail:hover { background: var(--pd-green-700); }
+.pd-detail__arr { display: grid; place-items: center; width: 18px; height: 18px; background: rgba(255,255,255,.22); border-radius: 50%; }
+
+.pd-field__label { display: block; font-size: 15px; font-weight: 700; color: var(--pd-ink); }
+.pd-field__label--mt { margin-top: 22px; }
+.pd-field__value { display: block; font-size: 17px; color: var(--pd-ink); margin-top: 6px; line-height: 1.4; }
+.pd-col--kategori .pd-field__value { font-size: 17px; line-height: 1.5; }
+
+.pd-empty { background: var(--pd-card); border-radius: 10px; border: 1px solid var(--pd-line); padding: 48px 32px; text-align: center; color: var(--pd-muted); font-size: 15px; }
+
+.pd-pager { display: flex; justify-content: center; gap: 14px; margin-top: 24px; }
+.pd-pager__btn {
+  background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: 10px;
+  padding: 13px 26px; font-size: 16px; font-weight: 500;
+  color: var(--pd-green-600); text-decoration: none; transition: .15s;
+}
+.pd-pager__btn:hover { border-color: #8fbf91; background: var(--pd-green-100); }
+.pd-pager__btn--disabled { color: #c3cbc0; pointer-events: none; }
+
+@media (max-width: 1080px) {
+  .pd-wrap { grid-template-columns: 1fr; }
+  .pd-aside { position: static; }
+}
+@media (max-width: 720px) {
+  .pd-root { padding: 24px 0 56px; }
+  .pd-head, .pd-wrap { padding: 0 16px; }
+  .pd-wrap { gap: 20px; }
+  .pd-head__title { font-size: 27px; }
+  .pd-thead { display: none; }
+  .pd-card { grid-template-columns: 1fr; gap: 18px; padding: 22px; }
+  .pd-search input { font-size: 16px; }
+}
+
+/* Hapus semua sudut membulat di halaman ini (termasuk tombol & kontrol). */
+.pd-root, .pd-root *, .pd-root *::before, .pd-root *::after { border-radius: 0 !important; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="topo-bg"></div>
+<div class="grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="{% url 'dst:landing' %}" class="brand">
+      <div class="brand-mark">
+        {% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;background:var(--cream);padding:2px;">{% else %}L{% endif %}
+      </div>
+      <div class="brand-text">
+        <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+        <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+      </div>
+    </a>
+    <input type="checkbox" id="navToggle" class="nav-toggle-cb" hidden>
+    <label for="navToggle" class="nav-toggle" aria-label="Buka / tutup menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </label>
+    <ul class="nav-menu">
+      <li><a href="{% url 'dst:landing' %}#beranda">Beranda</a></li>
+      <li><a href="{% url 'dst:document_explore' %}" style="color: var(--forest); font-weight: 500;">Dokumen Kebijakan</a></li>
+      <li><a href="{% url 'dst:landing' %}#katalog-data">Katalog Data</a></li>
+      <li><a href="{% url 'dst:dataset_explore' %}">Eksplorasi Dataset</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="pd-root">
+  <div class="pd-head">
+    <div class="pd-head__eyebrow">Satu Data Indonesia · {{ nama_kabupaten }}</div>
+    <h1 class="pd-head__title">Jelajah Dokumen Kebijakan</h1>
+    <p class="pd-head__desc">Telusuri dokumen kebijakan & perencanaan yang terbuka untuk publik — disaring berdasarkan <strong>Produsen Data</strong> (Walidata) atau kata kunci.</p>
+  </div>
+
+  <form class="pd-wrap" method="get" id="docForm">
+
+    {# ============ SIDEBAR: FILTER FACET (opsi seperti desain sebelumnya) ============ #}
+    <aside class="pd-aside" aria-label="Filter dokumen">
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div class="filter-card-title">Produsen / Walidata</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_walidata %}
+          <label class="filter-option">
+            <input type="checkbox" name="walidata" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.walidata %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada produsen.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+          <div class="filter-card-title">Kategori</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_kategori %}
+          <label class="filter-option">
+            <input type="checkbox" name="kategori" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.kategori %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada kategori.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <div class="filter-card-title">Tahun</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_tahun %}
+          <label class="filter-option">
+            <input type="checkbox" name="tahun" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.tahun %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada tahun.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <div class="filter-card-title">Format</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_format %}
+          <label class="filter-option">
+            <input type="checkbox" name="format" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.format %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada format.</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="filter-card-title">Wilayah</div>
+        </div>
+        <div class="filter-card-body">
+          {% for item in filter_wilayah %}
+          <label class="filter-option">
+            <input type="checkbox" name="wilayah" value="{{ item.value }}" onchange="this.form.submit()" {% if item.value in selected.wilayah %}checked{% endif %}>
+            <span class="filter-checkbox"></span>{{ item.label }}<span class="filter-count">{{ item.count }}</span>
+          </label>
+          {% empty %}<div class="filter-empty">Belum ada wilayah.</div>{% endfor %}
+        </div>
+      </div>
+
+      {% if has_active_filter %}<a href="{% url 'dst:document_explore' %}" class="filter-reset">Reset Filter</a>{% endif %}
+    </aside>
+
+    {# ===================== KONTEN: SEARCH + DAFTAR ===================== #}
+    <main class="pd-main">
+
+      <div class="pd-search">
+        <input type="search" name="q" value="{{ q|default:'' }}"
+               placeholder="Dokumen apa yang ingin Anda cari?" aria-label="Cari dokumen">
+        <button type="submit" aria-label="Cari">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        </button>
+      </div>
+
+      <p class="pd-count"><strong>{{ total }}</strong> dokumen{% if has_active_filter %} · hasil filter{% endif %}</p>
+
+      <div class="pd-thead">
+        <span class="pd-thead__col">Judul</span>
+        <span class="pd-thead__col">Format &amp; Tahun</span>
+        <span class="pd-thead__col">Kategori</span>
+      </div>
+
+      <div class="pd-list">
+        {% for d in documents %}
+          <article class="pd-card">
+            <div class="pd-col--judul">
+              <h3 class="pd-card__title"><a href="{% url 'dst:document_detail' d.id %}">{{ d.title }}</a></h3>
+              {% if d.walidata or d.pengelola %}
+              <p class="pd-card__meta">
+                <svg class="pd-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 4v16"/></svg>
+                {% firstof d.walidata d.pengelola %}
+              </p>
+              {% endif %}
+              {% if d.updated %}
+              <p class="pd-card__meta">
+                <svg class="pd-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                Diperbarui pada {{ d.updated|date:"d M Y, H:i" }} WIB
+              </p>
+              {% endif %}
+              <a href="{% url 'dst:document_detail' d.id %}" class="pd-detail">
+                DETAIL
+                <span class="pd-detail__arr"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+              </a>
+            </div>
+
+            <div class="pd-col--sifat">
+              <span class="pd-field__label">Format</span>
+              <span class="pd-field__value">{{ d.extension|default:"—" }}</span>
+              <span class="pd-field__label pd-field__label--mt">Tahun</span>
+              <span class="pd-field__value">{{ d.year|default:"—" }}</span>
+            </div>
+
+            <div class="pd-col--kategori">
+              <span class="pd-field__value">{{ d.kategori|default:"—" }}</span>
+            </div>
+          </article>
+        {% empty %}
+          <div class="pd-empty">Tidak ada dokumen yang cocok dengan filter / pencarian Anda.</div>
+        {% endfor %}
+      </div>
+
+      <nav class="pd-pager" aria-label="Navigasi halaman">
+        {% if page_obj.has_previous %}
+          <a class="pd-pager__btn" href="?page={{ page_obj.previous_page_number }}{% if qs_no_page %}&amp;{{ qs_no_page }}{% endif %}">Sebelumnya</a>
+        {% else %}
+          <span class="pd-pager__btn pd-pager__btn--disabled">Sebelumnya</span>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a class="pd-pager__btn" href="?page={{ page_obj.next_page_number }}{% if qs_no_page %}&amp;{{ qs_no_page }}{% endif %}">Berikutnya</a>
+        {% else %}
+          <span class="pd-pager__btn pd-pager__btn--disabled">Berikutnya</span>
+        {% endif %}
+      </nav>
+
+    </main>
+  </form>
+</div>
+
+<footer class="landing-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{% url 'dst:landing' %}" class="brand">
+          <div class="brand-mark">{% if theme_logo_url %}<img src="{{ theme_logo_url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;padding:2px;">{% else %}L{% endif %}</div>
+          <div class="brand-text">
+            <div class="lockup-1">{{ site.name|default:"(Nama Aplikasi)" }}</div>
+            <div class="lockup-2">{{ site.domain|default:"(Nama Domain)" }}</div>
+          </div>
+        </a>
+        <p>{{ site.name|default:"(Nama Aplikasi)" }} adalah inisiatif Pemerintah Daerah {{ nama_kabupaten }} di bawah Program FOLUR Indonesia, didukung UNDP dan GEF, untuk tata kelola zonasi spasial terpadu.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="{% url 'dst:landing' %}#beranda">Beranda</a></li>
+          <li><a href="{% url 'dst:document_explore' %}">Dokumen Kebijakan</a></li>
+          <li><a href="{% url 'dst:landing' %}#katalog-data">Katalog Data</a></li>
+          <li><a href="{% url 'dst:dataset_explore' %}">Eksplorasi Dataset</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Akses Data</h4>
+        <ul>
+          <li><a href="/catalogue/csw" target="_blank" rel="noopener">Katalog CSW</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">WMS / WFS</a></li>
+          <li><a href="{% url 'dst:endpoint_explore' %}">REST API</a></li>
+          <li><a href="#">Lisensi &amp; Sitasi</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Kontak</h4>
+        <ul>
+          <li><a href="#">Bapelitbangda {{ nama_kabupaten }}</a></li>
+          <li><a href="#">Helpdesk Teknis</a></li>
+          <li><a href="#">FOLUR UNDP Indonesia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Pemerintah {{ nama_kabupaten }}</div>
+      <a href="{% url 'account_login' %}?next={% url 'dst_auth:dashboard' %}" class="btn-login">Login</a>
+    </div>
+  </div>
+</footer>
+{% endblock %}

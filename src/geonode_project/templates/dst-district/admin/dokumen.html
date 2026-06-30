@@ -1,0 +1,238 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Dokumen Kebijakan — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}dokumen{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="dokumen"] .filters-bar form { display: contents; }
+  body[data-page="dokumen"] .filter-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--cream); border: 1px solid var(--line-strong);
+    padding: 6px 12px; min-width: 220px;
+  }
+  body[data-page="dokumen"] .filter-search svg { width: 13px; height: 13px; color: var(--ink-400); }
+  body[data-page="dokumen"] .filter-search input {
+    border: none; background: none; outline: none;
+    font-family: var(--sans); font-size: 12px; flex: 1; min-width: 0;
+  }
+  body[data-page="dokumen"] .filter-chip { text-decoration: none; }
+  /* Kolom Approved + highlight baris belum di-approve */
+  body[data-page="dokumen"] .approved-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 3px 9px; border: 1px solid;
+  }
+  body[data-page="dokumen"] .approved-badge svg { width: 11px; height: 11px; }
+  body[data-page="dokumen"] .approved-badge.yes { color: var(--success); border-color: rgba(74, 107, 61, 0.35); background: rgba(74, 107, 61, 0.08); }
+  body[data-page="dokumen"] .approved-badge.no  { color: var(--ochre-600); border-color: rgba(176, 124, 42, 0.40); background: rgba(176, 124, 42, 0.10); }
+  body[data-page="dokumen"] tbody tr.row-unapproved { background: rgba(176, 124, 42, 0.07); }
+  body[data-page="dokumen"] tbody tr.row-unapproved:hover { background: rgba(176, 124, 42, 0.13); }
+  body[data-page="dokumen"] .per-page-form { display: inline-flex; align-items: center; gap: 6px; margin-left: 16px; font-size: 12px; color: var(--ink-400); }
+  body[data-page="dokumen"] .per-page-form select { font-family: var(--sans); font-size: 12px; padding: 3px 8px; border: 1px solid var(--line-strong); background: var(--cream); color: var(--ink); cursor: pointer; }
+  body[data-page="dokumen"] .per-page-form select:focus { outline: none; border-color: var(--forest); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <div class="page-header-left">
+    <div class="page-eyebrow">Pengelolaan Data · 01</div>
+    <h1 class="page-title">Dokumen <span class="italic">kebijakan</span></h1>
+    <p class="page-desc">Kelola dokumen perda, perbup, RPJMD, dan regulasi turunan yang relevan dengan ILM. Status <em>Published</em> akan masuk ke katalog CSW dan dipanen oleh DST Nasional pada siklus berikutnya.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'dst_auth:dokumen_baru' %}" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Tambah dokumen
+    </a>
+  </div>
+</header>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-card-label">Total Dokumen</div>
+    <div class="stat-card-value">{{ stats.total }}</div>
+    <div class="stat-card-meta"><strong>{{ stats.published }} published</strong> · {{ stats.draft }} draft · {{ stats.review }} review</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Metadata Lengkap</div>
+    <div class="stat-card-value">{{ stats.metadata_pct }}<span class="unit">%</span></div>
+    <div class="stat-card-meta"><strong>{{ stats.metadata_complete }} dari {{ stats.total }}</strong> dokumen punya abstrak</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Ter-harvest DST Nasional</div>
+    <div class="stat-card-value">{{ stats.published }}</div>
+    <div class="stat-card-meta">Berdasarkan dokumen <strong>published &amp; approved</strong></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Memerlukan Review {% if stats.review %}<span class="delta warn">{{ stats.review }} dokumen</span>{% endif %}</div>
+    <div class="stat-card-value">{{ stats.review }}</div>
+    <div class="stat-card-meta">Published tapi belum di-approve walidata</div>
+  </div>
+</div>
+
+<!-- FILTERS BAR -->
+<div class="filters-bar">
+  <form method="get" action="">
+    <div class="filter-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari judul, abstrak, atau keyword…">
+    </div>
+    <input type="hidden" name="status" value="{{ status }}">
+    <input type="hidden" name="category" value="{{ category }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <button type="submit" class="btn btn-ghost btn-sm">Cari</button>
+  </form>
+
+  <span class="filter-label" style="margin-left: 8px;">Status</span>
+  <a href="?status=all{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status == 'all' %}active{% endif %}">Semua<span class="count" style="margin-left:4px; opacity:0.6;">{{ status_counts.all }}</span></a>
+  <a href="?status=published{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status == 'published' %}active{% endif %}">Published<span class="count" style="margin-left:4px; opacity:0.6;">{{ status_counts.published }}</span></a>
+  <a href="?status=review{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status == 'review' %}active{% endif %}">Review<span class="count" style="margin-left:4px; opacity:0.6;">{{ status_counts.review }}</span></a>
+  <a href="?status=draft{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status == 'draft' %}active{% endif %}">Draft<span class="count" style="margin-left:4px; opacity:0.6;">{{ status_counts.draft }}</span></a>
+
+  {% if category_list %}
+  <div class="filter-divider"></div>
+  <span class="filter-label">Kategori</span>
+  <a href="?status={{ status }}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if not category %}active{% endif %}">Semua</a>
+  {% for c in category_list %}
+    <a href="?status={{ status }}&category={{ c.identifier }}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if category == c.identifier %}active{% endif %}">{{ c.gn_description|default:c.identifier|truncatechars:18 }}<span class="count" style="margin-left:4px; opacity:0.6;">{{ c.doc_used }}</span></a>
+  {% endfor %}
+  {% endif %}
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>
+          <a href="?status={{ status }}{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}&sort={% if sort == 'title' %}-title{% else %}title{% endif %}" style="color: inherit; text-decoration: none;">
+            Dokumen {% if sort == 'title' %}↑{% elif sort == '-title' %}↓{% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?status={{ status }}{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}&sort={% if sort == 'date' %}-date{% else %}date{% endif %}" style="color: inherit; text-decoration: none;">
+            Tahun {% if sort == 'date' %}↑{% elif sort == '-date' %}↓{% endif %}
+          </a>
+        </th>
+        <th>Sektor</th>
+        <th>Status</th>
+        <th>Approved</th>
+        <th>Walidata</th>
+        <th>
+          <a href="?status={{ status }}{% if category %}&category={{ category }}{% endif %}{% if search %}&q={{ search }}{% endif %}&sort={% if sort == '-updated' %}updated{% else %}-updated{% endif %}" style="color: inherit; text-decoration: none;">
+            Diperbarui {% if sort == '-updated' %}↓{% elif sort == 'updated' %}↑{% endif %}
+          </a>
+        </th>
+        <th>Harvest</th>
+        <th style="text-align: right;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in documents %}
+      <tr class="{% if not document.is_approved %}row-unapproved{% endif %}" onclick="if(!event.target.closest('.row-actions')) window.location.href='{% url 'dst_auth:dokumen_detail' %}?id={{ document.id }}'" style="cursor: pointer;">
+        <td class="title-col">
+          <div class="doc-title">{{ document.title|default:"(Tanpa judul)" }}</div>
+          <div class="doc-sub">
+            {% if document.subtype %}{{ document.subtype|title }}{% else %}Dokumen{% endif %}{% if document.extension %} · .{{ document.extension|upper }}{% endif %}
+          </div>
+        </td>
+        <td><span class="year">{% if document.date %}{{ document.date|date:"Y" }}{% else %}—{% endif %}</span></td>
+        <td>
+          <div class="sector-tags">
+            {% if document.category %}<span class="sector-tag">{{ document.category.gn_description|default:document.category.identifier }}</span>{% endif %}
+            {% for kw in document.keywords.all|slice:":2" %}<span class="sector-tag">{{ kw.name }}</span>{% endfor %}
+            {% if not document.category and not document.keywords.all %}<span class="sector-tag">—</span>{% endif %}
+          </div>
+        </td>
+        <td>
+          {% if document.is_published and document.is_approved %}<span class="status published">Published</span>
+          {% elif document.is_published %}<span class="status review">Review</span>
+          {% else %}<span class="status draft">Draft</span>{% endif %}
+        </td>
+        <td>
+          {% if document.is_approved %}
+          <span class="approved-badge yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>Yes</span>
+          {% else %}
+          <span class="approved-badge no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>No</span>
+          {% endif %}
+        </td>
+        <td>{% if document.walidata_label %}{{ document.walidata_label }}{% else %}<span style="color: var(--ink-400);">—</span>{% endif %}</td>
+        <td><span style="font-family: var(--mono); font-size: 11px; color: var(--ink-600);">{{ document.last_updated|timesince }} lalu</span></td>
+        <td>
+          {% if document.is_published and document.is_approved %}
+          <span class="sync-indicator ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Ter-harvest
+          </span>
+          {% else %}
+          <span class="sync-indicator">— Belum</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="row-actions">
+            <a href="{% url 'dst_auth:dokumen_detail' %}?id={{ document.id }}" title="Edit dokumen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 36px; color: var(--ink-400); font-family: var(--mono); font-size: 12px;">
+          {% if search or category or status != 'all' %}
+            Tidak ada dokumen yang cocok dengan filter ini. <a href="?" style="color: var(--forest);">Reset filter →</a>
+          {% else %}
+            Belum ada dokumen di database. <a href="{% url 'dst_auth:dokumen_baru' %}" style="color: var(--forest);">Tambah dokumen pertama →</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj and page_obj.paginator.count %}
+<div class="pagination">
+  <div class="pagination-info">
+    Menampilkan <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> dari <strong>{{ page_obj.paginator.count }}</strong> dokumen
+    <form method="get" class="per-page-form">
+      {% if status and status != 'all' %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+      {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+      {% if sort and sort != '-updated' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+      <label for="perPageSel">Tampilkan</label>
+      <select id="perPageSel" name="per_page" onchange="this.form.submit()">
+        {% for opt in per_page_options %}
+        <option value="{{ opt }}" {% if opt == per_page %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+      </select>
+      <span>per halaman</span>
+    </form>
+  </div>
+  <div class="pagination-controls">
+    {% if page_obj.has_previous %}
+      <a class="page-btn" href="?{{ querystring_prefix }}{% if querystring_prefix %}&{% endif %}page={{ page_obj.previous_page_number }}">←</a>
+    {% else %}
+      <button class="page-btn disabled">←</button>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if num == page_obj.number %}
+        <button class="page-btn active">{{ num }}</button>
+      {% elif num == 1 or num == page_obj.paginator.num_pages or num|add:"-2" <= page_obj.number and num|add:"2" >= page_obj.number %}
+        <a class="page-btn" href="?{{ querystring_prefix }}{% if querystring_prefix %}&{% endif %}page={{ num }}">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a class="page-btn" href="?{{ querystring_prefix }}{% if querystring_prefix %}&{% endif %}page={{ page_obj.next_page_number }}">→</a>
+    {% else %}
+      <button class="page-btn disabled">→</button>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

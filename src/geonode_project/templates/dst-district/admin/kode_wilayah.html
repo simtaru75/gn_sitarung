@@ -1,0 +1,165 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Kode Wilayah — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}kode_wilayah{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="kode_wilayah"] .kw-intro {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 14px 18px; font-size: 13px; color: var(--ink-600);
+    margin-bottom: 16px; line-height: 1.5;
+  }
+  body[data-page="kode_wilayah"] .kw-filter {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 16px 18px; margin-bottom: 18px;
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px;
+  }
+  body[data-page="kode_wilayah"] .kw-field { display: flex; flex-direction: column; gap: 5px; }
+  body[data-page="kode_wilayah"] .kw-field.grow { flex: 1 1 200px; min-width: 160px; }
+  body[data-page="kode_wilayah"] .kw-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink-400); font-family: var(--mono);
+  }
+  body[data-page="kode_wilayah"] .kw-select {
+    padding: 8px 10px; border: 1px solid var(--line); background: var(--cream-50, #fff);
+    font-size: 13px; color: var(--ink); font-family: inherit; min-width: 150px;
+  }
+  body[data-page="kode_wilayah"] .kw-select:disabled { opacity: .5; background: var(--cream-200); }
+  body[data-page="kode_wilayah"] .kw-btn {
+    padding: 9px 22px; border: none; background: var(--accent, #1F3A2E); color: #fff;
+    font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: .02em;
+  }
+  body[data-page="kode_wilayah"] .kw-btn:hover { opacity: .92; }
+  body[data-page="kode_wilayah"] .kw-tablewrap { background: var(--paper); border: 1px solid var(--line); overflow-x: auto; }
+  body[data-page="kode_wilayah"] table.kw-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  body[data-page="kode_wilayah"] .kw-table thead th {
+    background: #2c4a7c; color: #fff; text-align: left; padding: 11px 14px;
+    font-weight: 600; font-size: 12.5px; white-space: nowrap;
+  }
+  body[data-page="kode_wilayah"] .kw-table tbody td {
+    padding: 9px 14px; border-bottom: 1px solid var(--line); color: var(--ink); vertical-align: top;
+  }
+  body[data-page="kode_wilayah"] .kw-table tbody tr:nth-child(even) { background: var(--cream-100, #faf8f4); }
+  body[data-page="kode_wilayah"] .kw-table .col-no { width: 56px; color: var(--ink-400); font-family: var(--mono); }
+  body[data-page="kode_wilayah"] .kw-table .mono { font-family: var(--mono); font-size: 12.5px; }
+  body[data-page="kode_wilayah"] .kw-table .muted { color: var(--ink-200); }
+  body[data-page="kode_wilayah"] .kw-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px; margin: 0 0 10px;
+  }
+  body[data-page="kode_wilayah"] .kw-levelchip {
+    font-size: 12px; font-family: var(--mono); color: var(--ink-600);
+    background: var(--cream-200); padding: 3px 10px;
+  }
+  body[data-page="kode_wilayah"] .kw-note {
+    padding: 14px 16px; font-size: 12.5px; color: var(--ink-600);
+    background: var(--cream-100, #faf8f4); border: 1px dashed var(--line); line-height: 1.5;
+  }
+  body[data-page="kode_wilayah"] .kw-source {
+    margin-top: 12px; font-size: 12px; color: var(--ink-400);
+  }
+  body[data-page="kode_wilayah"] .kw-source a { color: var(--accent, #1F3A2E); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Administrasi</div>
+    <h1 class="page-title">Kode <span class="italic">Wilayah</span></h1>
+    <p class="page-desc">Relasi kode wilayah antar-instansi dari tabel referensi permanen, berjenjang dari provinsi sampai desa.</p>
+  </div>
+</header>
+
+<div class="kw-intro">
+  Kode Wilayah yang direlasikan adalah <strong>Kode Wilayah Kerja Statistik (Wilkerstat) BPS</strong>
+  dengan <strong>Kode Wilayah Administrasi Kemendagri</strong>.
+</div>
+
+<form method="get" id="kwForm" class="kw-filter">
+  <div class="kw-field">
+    <span class="kw-label">Periode</span>
+    <select class="kw-select" disabled title="Periode data aktif">
+      <option>{{ periode }}</option>
+    </select>
+  </div>
+  <div class="kw-field grow">
+    <span class="kw-label">Provinsi</span>
+    <select class="kw-select" name="prov" id="kwProv">
+      <option value="">— Semua Provinsi —</option>
+      {% for p in prov_opts %}
+      <option value="{{ p.kode_pum }}" {% if p.kode_pum == sel_prov %}selected{% endif %}>{{ p.nama }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="kw-field grow">
+    <span class="kw-label">Kab/Kota</span>
+    <select class="kw-select" name="kab" id="kwKab" {% if not kab_opts %}disabled{% endif %}>
+      <option value="">— — — —</option>
+      {% for k in kab_opts %}
+      <option value="{{ k.kode_pum }}" {% if k.kode_pum == sel_kab %}selected{% endif %}>{{ k.nama }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="kw-field grow">
+    <span class="kw-label">Kecamatan</span>
+    <select class="kw-select" name="kec" id="kwKec" {% if not kec_opts %}disabled{% endif %}>
+      <option value="">— — — —</option>
+      {% for c in kec_opts %}
+      <option value="{{ c.kode_pum }}" {% if c.kode_pum == sel_kec %}selected{% endif %}>{{ c.nama }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="kw-btn">View</button>
+</form>
+
+<div class="kw-meta">
+  <div class="kw-levelchip">Tabel: {{ level_label }} · {{ rows|length }} baris</div>
+</div>
+
+<div class="kw-tablewrap">
+  <table class="kw-table">
+    <thead>
+      <tr>
+        <th class="col-no">No</th>
+        <th>Kode BPS</th>
+        <th>Kode Kemendagri</th>
+        <th>Nama Wilayah</th>
+        <th>Nama File Logo{% if not is_kabkota %} <span style="opacity:.6;font-weight:400">(tabel kab/kota saja)</span>{% endif %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="col-no">{{ r.no }}</td>
+        <td class="mono">{{ r.bps|default:"—" }}</td>
+        <td class="mono">{{ r.pum|default:"—" }}</td>
+        <td>{{ r.nama|default:"—" }}</td>
+        <td class="mono">{% if is_kabkota %}{{ r.logo|default:"—" }}{% else %}<span class="muted">—</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="padding:18px;color:var(--ink-400);">Tidak ada data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="kw-source">
+  Sumber: <a href="{{ sumber_url }}" target="_blank" rel="noopener">{{ sumber_url }}</a>
+</div>
+
+<script>
+  (function () {
+    var form = document.getElementById('kwForm');
+    var prov = document.getElementById('kwProv');
+    var kab = document.getElementById('kwKab');
+    var kec = document.getElementById('kwKec');
+    // Cascading: ubah jenjang atas -> reset jenjang bawah lalu submit.
+    prov.addEventListener('change', function () { kab.value = ''; kec.value = ''; form.submit(); });
+    kab.addEventListener('change', function () { kec.value = ''; form.submit(); });
+    kec.addEventListener('change', function () { form.submit(); });
+  })();
+</script>
+{% endblock %}

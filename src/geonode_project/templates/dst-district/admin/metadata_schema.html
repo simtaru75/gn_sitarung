@@ -1,0 +1,148 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Metadata Schema — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}metadata_schema{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="metadata_schema"] .builder-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  body[data-page="metadata_schema"] .tree-pane,
+  body[data-page="metadata_schema"] .vocab-pane {
+    background: var(--paper); border: 1px solid var(--line);
+  }
+  body[data-page="metadata_schema"] .vocab-pane { padding: 0; }
+  body[data-page="metadata_schema"] .vocab-row {
+    padding: 10px 18px; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: center; gap: 12px;
+  }
+  body[data-page="metadata_schema"] .vocab-row:last-child { border-bottom: none; }
+  body[data-page="metadata_schema"] .vocab-name {
+    font-size: 13px; color: var(--ink);
+  }
+  body[data-page="metadata_schema"] .vocab-key {
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--ink-400); margin-top: 2px;
+  }
+  body[data-page="metadata_schema"] .vocab-count {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-600);
+    background: var(--cream-200); padding: 2px 8px;
+  }
+  body[data-page="metadata_schema"] .vocab-count.zero {
+    background: transparent; color: var(--ink-200);
+  }
+
+  @media (max-width: 1024px) {
+    body[data-page="metadata_schema"] .builder-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Pengelolaan Data</div>
+    <h1 class="page-title">Metadata <span class="italic">schema</span></h1>
+    <p class="page-desc">Field metadata yang aktif di GeoNode untuk seluruh resource (dataset, dokumen, map). Bersumber langsung dari model <code>ResourceBase</code> dan vocabulary di database.</p>
+  </div>
+</header>
+
+<!-- SCHEMA INFO -->
+<div class="schema-info">
+  <div class="schema-info-block">
+    <div class="schema-info-label">Field Inti</div>
+    <div class="schema-info-val">{{ stats.total_fields }}</div>
+  </div>
+  <div class="schema-info-block">
+    <div class="schema-info-label">Field Wajib</div>
+    <div class="schema-info-val">{{ stats.required_fields }}</div>
+  </div>
+  <div class="schema-info-block">
+    <div class="schema-info-label">Topic Category</div>
+    <div class="schema-info-val">{{ stats.categories }}</div>
+  </div>
+  <div class="schema-info-block">
+    <div class="schema-info-label">License</div>
+    <div class="schema-info-val">{{ stats.licenses }}</div>
+  </div>
+  <div class="schema-info-block">
+    <div class="schema-info-label">Resource Terdaftar</div>
+    <div class="schema-info-val">{{ stats.resources }}</div>
+  </div>
+</div>
+
+<!-- TWO COLUMNS: Field library + Vocabularies -->
+<div class="builder-grid">
+
+  <!-- FIELD LIBRARY -->
+  <aside class="tree-pane">
+    <div class="tree-header">
+      <div class="tree-title">Field Library · {{ stats.total_fields }}</div>
+    </div>
+    <div class="tree-list">
+      <div class="tree-group">
+        <div class="tree-group-header">
+          ResourceBase Core
+          <span class="caret">▾</span>
+        </div>
+        {% for f in core_fields %}
+        <div class="tree-field">
+          <div class="tree-field-type {{ f.type }}">{{ f.type }}</div>
+          <div class="tree-field-info">
+            <div class="tree-field-name">{{ f.label }}</div>
+            <div class="tree-field-key">{{ f.key }}</div>
+          </div>
+          <div class="tree-field-flags">
+            {% if f.required %}<span class="flag req">Req</span>{% endif %}
+            <span class="flag iso">ISO</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="tree-group" style="padding: 14px 18px; color: var(--ink-400); font-size: 12px; font-family: var(--mono);">
+        + Tambah field kustom memerlukan extension model.
+      </div>
+    </div>
+  </aside>
+
+  <!-- VOCABULARIES -->
+  <section class="vocab-pane">
+    <div class="tree-header">
+      <div class="tree-title">Topic Category · {{ stats.categories }}</div>
+    </div>
+    {% for c in categories %}
+    <div class="vocab-row">
+      <div>
+        <div class="vocab-name">{{ c.gn_description|default:c.identifier }}</div>
+        <div class="vocab-key">{{ c.identifier }}</div>
+      </div>
+      <span class="vocab-count {% if not c.used %}zero{% endif %}">{{ c.used }} resource</span>
+    </div>
+    {% empty %}
+    <div class="vocab-row" style="grid-template-columns: 1fr;">
+      <div style="color: var(--ink-400); font-family: var(--mono); font-size: 12px;">Belum ada kategori terdaftar.</div>
+    </div>
+    {% endfor %}
+
+    <div class="tree-header" style="margin-top: 24px;">
+      <div class="tree-title">License · {{ stats.licenses }}</div>
+    </div>
+    {% for l in licenses %}
+    <div class="vocab-row">
+      <div>
+        <div class="vocab-name">{{ l.name }}</div>
+        {% if l.url %}<div class="vocab-key">{{ l.url }}</div>{% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="vocab-row" style="grid-template-columns: 1fr;">
+      <div style="color: var(--ink-400); font-family: var(--mono); font-size: 12px;">Belum ada license terdaftar.</div>
+    </div>
+    {% endfor %}
+  </section>
+
+</div>
+{% endblock %}

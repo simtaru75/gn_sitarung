@@ -1,0 +1,499 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}{% if dataset %}{{ dataset.title|default:dataset.name }}{% else %}Detail Layer{% endif %} — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}layer_detail{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="layer_detail"] .map-showcase img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  /* map-showcase dipindah ke kolom kiri sbg uploader horizontal: gambar (kecil)
+     di kiri + kontrol ganti/hapus/unggah sejajar di kanan. */
+  body[data-page="layer_detail"] .map-uploader { display: flex; gap: 22px; align-items: stretch; flex-wrap: wrap; }
+  body[data-page="layer_detail"] .map-uploader .map-showcase {
+    flex: 0 0 auto; width: 300px; max-width: 100%; aspect-ratio: 16 / 10; margin-bottom: 0;
+  }
+  body[data-page="layer_detail"] .map-cam {
+    position: absolute; right: 12px; bottom: 12px;
+    width: 34px; height: 34px; display: grid; place-items: center;
+    background: var(--paper); border: 1px solid var(--line-strong); color: var(--ink-600);
+    cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(31, 58, 46, 0.18);
+  }
+  body[data-page="layer_detail"] .map-cam:hover { color: var(--forest); border-color: var(--forest); }
+  body[data-page="layer_detail"] .map-cam svg { width: 16px; height: 16px; }
+  body[data-page="layer_detail"] .map-upload-controls {
+    flex: 1 1 200px; min-width: 200px;
+    display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  }
+  body[data-page="layer_detail"] .map-upload-links { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  body[data-page="layer_detail"] .map-link {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-600); cursor: pointer; background: none; border: none; padding: 0;
+    text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s;
+  }
+  body[data-page="layer_detail"] .map-link:hover { color: var(--forest); border-bottom-color: var(--forest); }
+  body[data-page="layer_detail"] .map-link.danger:hover { color: var(--danger); border-bottom-color: var(--danger); }
+  body[data-page="layer_detail"] .map-link svg { width: 14px; height: 14px; }
+  body[data-page="layer_detail"] .map-upload-hint { font-size: 12px; color: var(--ink-400); }
+  @media (max-width: 560px) {
+    body[data-page="layer_detail"] .map-uploader .map-showcase { width: 100%; }
+  }
+  body[data-page="layer_detail"] .empty-layer {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 60px 40px; text-align: center;
+  }
+  body[data-page="layer_detail"] .empty-layer h2 {
+    font-family: var(--serif); font-size: 26px; color: var(--forest);
+    margin-bottom: 12px;
+  }
+  body[data-page="layer_detail"] .status-tag {
+    display: inline-block; padding: 2px 9px;
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; font-weight: 500; margin-left: 6px;
+  }
+  body[data-page="layer_detail"] .status-tag.published { background: rgba(74, 107, 61, 0.1); color: var(--success); }
+  body[data-page="layer_detail"] .status-tag.review { background: rgba(176, 112, 32, 0.1); color: var(--warning); }
+  body[data-page="layer_detail"] .status-tag.draft { background: var(--cream-200); color: var(--ink-600); }
+
+  body[data-page="layer_detail"] .abstract-empty {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-400);
+    font-style: italic;
+    padding: 8px 0;
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+{% if not dataset %}
+<div class="empty-layer">
+  <h2>Layer tidak ditemukan</h2>
+  <p style="color: var(--ink-600); margin-bottom: 24px;">Buka halaman ini melalui daftar Dataset Spasial agar parameter <code>?id=</code> terisi.</p>
+  <a href="{% url 'dst_auth:data_spasial' %}" class="btn btn-primary btn-sm">Kembali ke Dataset Spasial</a>
+</div>
+{% else %}
+
+<!-- HEADER STRIP -->
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Pengelolaan Data · Detail Layer</div>
+    <h1 class="page-title">{{ dataset.title|default:dataset.name }}
+      {% if status_published and status_approved %}<span class="status-tag published">Published</span>
+      {% elif status_published %}<span class="status-tag review">Review</span>
+      {% else %}<span class="status-tag draft">Draft</span>{% endif %}
+    </h1>
+    {% if dataset.purpose %}<p class="page-desc">{{ dataset.purpose|truncatechars:240 }}</p>{% endif %}
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'dst_auth:data_spasial' %}" class="btn btn-ghost btn-sm">← Kembali</a>
+    {% if request.user.is_superuser or request.user.pk == dataset.owner_id %}
+    <a href="{% url 'dst_auth:layer_edit' %}?id={{ dataset.pk }}" class="btn btn-primary btn-sm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit metadata
+    </a>
+    {% endif %}
+  </div>
+</header>
+
+<!-- QUICK STATS -->
+<section class="map-stats">
+  <div class="map-stat-cell">
+    <div class="map-stat-label">Tipe Resource</div>
+    <div class="map-stat-value">{{ geometry_label }}</div>
+    <div class="map-stat-sub">subtype = {{ dataset.subtype|default:"—" }}</div>
+  </div>
+  <div class="map-stat-cell">
+    <div class="map-stat-label">Atribut Kolom</div>
+    <div class="map-stat-value">{{ attributes_total }}</div>
+    <div class="map-stat-sub">Tabel atribut</div>
+  </div>
+  <div class="map-stat-cell">
+    <div class="map-stat-label">CRS Native</div>
+    <div class="map-stat-value mono" style="font-size: 18px;">{{ dataset.srid|default:"—" }}</div>
+    <div class="map-stat-sub">{% if ll_bbox_text %}LL bbox tersedia{% else %}bbox belum diset{% endif %}</div>
+  </div>
+  <div class="map-stat-cell">
+    <div class="map-stat-label">Diakses</div>
+    <div class="map-stat-value">{{ dataset.popular_count|default:0 }}</div>
+    <div class="map-stat-sub">popular_count</div>
+  </div>
+  <div class="map-stat-cell">
+    <div class="map-stat-label">Diperbarui</div>
+    <div class="map-stat-value" style="font-size: 16px;">{{ dataset.last_updated|date:"d M Y" }}</div>
+    <div class="map-stat-sub">{{ dataset.last_updated|timesince }} lalu</div>
+  </div>
+</section>
+
+<!-- MAIN GRID -->
+<div class="detail-grid">
+
+  <!-- LEFT -->
+  <div class="detail-main">
+
+    <!-- MAP / THUMBNAIL + UPLOADER -->
+    <div class="map-uploader">
+      <section class="map-showcase" style="overflow: hidden;">
+        {% if dataset.thumbnail_url %}
+          <img src="{{ dataset.thumbnail_url }}" alt="{{ dataset.title }}">
+        {% else %}
+          <svg viewBox="0 0 1400 540" preserveAspectRatio="xMidYMid slice">
+            <rect width="1400" height="540" fill="#2A4D3D"/>
+            <g stroke="rgba(244,239,230,0.05)" fill="none" stroke-width="0.5">
+              <path d="M-20,130 Q400,90 700,140 T1420,120"/>
+              <path d="M-20,230 Q400,190 700,240 T1420,220"/>
+              <path d="M-20,330 Q400,290 700,340 T1420,320"/>
+              <path d="M-20,430 Q400,390 700,440 T1420,420"/>
+            </g>
+            <g>
+              <path d="M180,140 Q230,90 320,110 Q400,130 380,220 Q360,290 280,300 Q200,290 170,220 Q150,170 180,140 Z" fill="#8B9D83" opacity="0.65" stroke="#F4EFE6" stroke-width="0.5"/>
+              <path d="M460,200 Q520,170 580,210 Q620,260 590,310 Q540,340 480,310 Q440,260 460,200 Z" fill="#C77D3E" opacity="0.6" stroke="#F4EFE6" stroke-width="0.5"/>
+              <path d="M700,100 Q780,80 850,130 Q900,180 870,240 Q820,280 740,250 Q680,200 700,100 Z" fill="#5D3A1F" opacity="0.55" stroke="#F4EFE6" stroke-width="0.5"/>
+            </g>
+            <text x="700" y="290" font-family="Geist Mono" font-size="14" fill="rgba(244,239,230,0.5)" text-anchor="middle">{{ dataset.title|default:dataset.name }}</text>
+          </svg>
+        {% endif %}
+        <div class="map-attribution">
+          {{ dataset.srid|default:"EPSG:4326" }}{% if typename %} · {{ typename }}{% endif %}
+        </div>
+        {% if can_edit_thumbnail %}
+        <label for="mapThumbInput" class="map-cam" title="Ganti / unggah gambar peta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </label>
+        {% endif %}
+      </section>
+
+      {% if can_edit_thumbnail %}
+      <div class="map-upload-controls">
+        <form method="post" action="?id={{ dataset.id }}" enctype="multipart/form-data" id="mapThumbForm" style="display:none;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="upload_thumbnail">
+          <input type="file" name="thumbnail" id="mapThumbInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="this.form.submit()">
+        </form>
+        <form method="post" action="?id={{ dataset.id }}" id="mapThumbDelForm" style="display:none;" onsubmit="return confirm('Hapus gambar peta layer ini?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_thumbnail">
+        </form>
+        <div class="map-upload-links">
+          {% if dataset.thumbnail_url %}
+          <label for="mapThumbInput" class="map-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Ganti gambar
+          </label>
+          <button type="submit" form="mapThumbDelForm" class="map-link danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Hapus gambar
+          </button>
+          {% else %}
+          <label for="mapThumbInput" class="map-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Unggah gambar
+          </label>
+          {% endif %}
+        </div>
+        <div class="map-upload-hint">Format JPG, PNG, GIF, atau WebP · maksimum 1 MB.</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ABOUT -->
+    <section class="info-section">
+      <div class="info-section-header">
+        <div class="is-title"><span class="num">01</span>Tentang <span class="italic">layer</span></div>
+        <div class="is-meta">Abstrak resmi</div>
+      </div>
+      <div class="info-section-body">
+        {% if has_real_abstract %}
+          <p class="abstract-block">{{ dataset.abstract }}</p>
+        {% else %}
+          <p class="abstract-empty">Belum ada abstrak metadata untuk layer ini.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- PROPERTIES -->
+    <section class="info-section">
+      <div class="info-section-header">
+        <div class="is-title"><span class="num">02</span>Properti <span class="italic">spasial</span></div>
+        <div class="is-meta">ISO 19115 metadata</div>
+      </div>
+      <div class="info-section-body">
+        <div class="def-list">
+          <div class="def-key">Tipe Geometri</div>
+          <div class="def-val"><strong>{{ geometry_label }}</strong></div>
+
+          <div class="def-key">Sistem Referensi</div>
+          <div class="def-val mono">{{ dataset.srid|default:"—" }}</div>
+
+          <div class="def-key">Bounding Box (WGS84)</div>
+          <div class="def-val mono">{{ ll_bbox_text|default:"—" }}<div class="sub">lon, lat extent</div></div>
+
+          <div class="def-key">Tanggal Referensi</div>
+          <div class="def-val">{% if dataset.date %}{{ dataset.date|date:"d F Y" }}{% else %}—{% endif %}</div>
+
+          <div class="def-key">Walidata</div>
+          <div class="def-val"><strong>{{ walidata_label|default:"— belum dipetakan —" }}</strong></div>
+
+          <div class="def-key">Workspace · Store</div>
+          <div class="def-val mono">{{ dataset.workspace|default:"—" }} · {{ dataset.store|default:"—" }}</div>
+
+          <div class="def-key">Typename</div>
+          <div class="def-val mono">{{ typename|default:"—" }}</div>
+
+          <div class="def-key">UUID</div>
+          <div class="def-val mono" style="font-size: 11px;">{{ dataset.uuid|default:"—" }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUALITY -->
+    {% if dataset.supplemental_information or dataset.data_quality_statement %}
+    <section class="info-section">
+      <div class="info-section-header">
+        <div class="is-title"><span class="num">03</span>Kualitas &amp; <span class="italic">metodologi</span></div>
+        <div class="is-meta">Lineage statement</div>
+      </div>
+      <div class="info-section-body">
+        <div class="def-list">
+          {% if dataset.supplemental_information %}
+          <div class="def-key">Metodologi / Lineage</div>
+          <div class="def-val" style="white-space: pre-line;">{{ dataset.supplemental_information }}</div>
+          {% endif %}
+          {% if dataset.data_quality_statement %}
+          <div class="def-key">Pernyataan Kualitas</div>
+          <div class="def-val">{{ dataset.data_quality_statement }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- THEMATIC -->
+    <section class="info-section">
+      <div class="info-section-header">
+        <div class="is-title"><span class="num">04</span>Klasifikasi <span class="italic">tematik</span></div>
+        <div class="is-meta">ISO + taxonomy</div>
+      </div>
+      <div class="info-section-body">
+        <div class="def-list">
+          <div class="def-key">Kategori ISO 19115</div>
+          <div class="def-val">
+            {% if dataset.category %}
+              <span class="view-tag primary">{{ dataset.category.gn_description|default:dataset.category.identifier }}</span>
+            {% else %}—{% endif %}
+          </div>
+
+          <div class="def-key">Kata Kunci</div>
+          <div class="def-val">
+            <div class="tag-list">
+              {% for kw in dataset.keywords.all %}<span class="view-tag">{{ kw.name }}</span>{% empty %}—{% endfor %}
+            </div>
+          </div>
+
+          <div class="def-key">Region</div>
+          <div class="def-val">
+            {% for r in dataset.regions.all %}{{ r.name }}{% if not forloop.last %} · {% endif %}{% empty %}—{% endfor %}
+          </div>
+
+          <div class="def-key">Bahasa</div>
+          <div class="def-val">{% if dataset.language == 'ind' %}Indonesia{% elif dataset.language == 'eng' %}English{% else %}{{ dataset.language|default:"—" }}{% endif %}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ATTRIBUTE PREVIEW -->
+    {% if attributes %}
+    <section class="info-section">
+      <div class="info-section-header">
+        <div class="is-title"><span class="num">05</span>Atribut <span class="italic">tabel</span></div>
+        <div class="is-meta">{{ attributes_total }} kolom · sumber GeoServer</div>
+      </div>
+      <div class="info-section-body" style="padding: 0;">
+        <div class="attr-table-wrap">
+          <table class="attr-table">
+            <thead>
+              <tr>
+                <th>Kolom</th>
+                <th>Tipe</th>
+                <th>Label</th>
+                <th>Visible</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in attributes %}
+              <tr>
+                <td class="mono">{{ a.attribute }}</td>
+                <td class="mono">{{ a.attribute_type|default:"—" }}</td>
+                <td>{{ a.attribute_label|default:"—" }}</td>
+                <td class="mono">{% if a.visible %}✓{% else %}—{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- CITATION -->
+    <section class="info-section">
+      <div class="info-section-header">
+        <div class="is-title"><span class="num">06</span>Sitasi &amp; <span class="italic">lisensi</span></div>
+        <div class="is-meta">{% if dataset.license %}{{ dataset.license.name }}{% else %}Lisensi tidak diset{% endif %}</div>
+      </div>
+      <div class="info-section-body">
+        <div class="citation-block">
+          {{ citation }}
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- RIGHT -->
+  <aside class="detail-side">
+
+    <!-- VISIBILITY -->
+    <div class="visibility-card">
+      <div class="vis-eyebrow">
+        <div class="pulse"></div>
+        Visibilitas
+      </div>
+      <div class="vis-text">
+        {% if status_published and status_approved %}
+          Layer <span class="italic">ter-publish &amp; ter-approve</span> — dapat dipanen DST Nasional.
+        {% elif status_published %}
+          Layer <span class="italic">ter-publish</span> tapi menunggu approval walidata.
+        {% else %}
+          Layer dalam status <span class="italic">draft</span> — belum tersedia untuk konsumen.
+        {% endif %}
+      </div>
+      <div class="vis-stats">
+        <span>Subtype · <strong>{{ dataset.subtype|default:"—" }}</strong></span>
+        <span>Owner · {{ owner_label }}</span>
+      </div>
+    </div>
+
+    <!-- DOWNLOAD OPTIONS -->
+    {% if downloads %}
+    <div class="side-card">
+      <div class="side-card-header">
+        <div class="side-title">Unduh Data</div>
+      </div>
+      <div class="side-card-body">
+        <div class="download-list">
+          {% for dl in downloads %}
+          <a href="{{ dl.url }}" target="_blank" rel="noopener" class="download-item">
+            <div class="dl-icon {{ dl.klass }}">{{ dl.kind }}</div>
+            <div class="dl-info">
+              <div class="dl-name">{{ dl.name }}</div>
+              <div class="dl-meta">{{ dl.meta }}</div>
+            </div>
+            <span class="dl-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ENDPOINTS -->
+    {% if endpoints %}
+    <div class="side-card">
+      <div class="side-card-header">
+        <div class="side-title">Endpoint Layanan</div>
+        <a href="{% url 'dst_auth:endpoint_api' %}" class="side-action">Dokumentasi →</a>
+      </div>
+      <div class="side-card-body">
+        <div class="endpoint-list">
+          {% for ep in endpoints %}
+          <div class="endpoint-item">
+            <div class="endpoint-row-top">
+              <span class="endpoint-tag {{ ep.klass }}">{{ ep.label }}</span>
+              <span class="endpoint-desc">{{ ep.desc }}</span>
+            </div>
+            <div class="endpoint-url-mini">
+              {{ ep.url }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- IDENTITY -->
+    <div class="side-card">
+      <div class="side-card-header">
+        <div class="side-title">Identitas Resource</div>
+      </div>
+      <div class="side-card-body">
+        <div class="meta-mini">
+          <div class="meta-mini-row">
+            <div class="meta-mini-key">Resource ID</div>
+            <div class="meta-mini-val mono">#{{ dataset.pk }}</div>
+          </div>
+          <div class="meta-mini-row">
+            <div class="meta-mini-key">UUID</div>
+            <div class="meta-mini-val mono">{{ uuid_short }}</div>
+          </div>
+          <div class="meta-mini-row">
+            <div class="meta-mini-key">Layer Name</div>
+            <div class="meta-mini-val mono" style="word-break: break-all;">{{ typename|default:dataset.name }}</div>
+          </div>
+          <div class="meta-mini-row">
+            <div class="meta-mini-key">Dibuat</div>
+            <div class="meta-mini-val">{{ dataset.created|date:"d M Y" }}</div>
+          </div>
+          <div class="meta-mini-row">
+            <div class="meta-mini-key">Diperbarui</div>
+            <div class="meta-mini-val">{{ dataset.last_updated|date:"d M Y" }}</div>
+          </div>
+          <div class="meta-mini-row">
+            <div class="meta-mini-key">Lisensi</div>
+            <div class="meta-mini-val mono">{{ dataset.license.name|default:"—" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATED LAYERS -->
+    {% if related %}
+    <div class="side-card">
+      <div class="side-card-header">
+        <div class="side-title">Layer Terkait</div>
+        <a href="{% url 'dst_auth:data_spasial' %}" class="side-action">Semua →</a>
+      </div>
+      <div class="side-card-body">
+        <div class="related-list">
+          {% for r in related %}
+          <a href="?id={{ r.id }}" class="related-item">
+            <div class="related-thumb">
+              {% if r.thumbnail_url %}
+                <img src="{{ r.thumbnail_url }}" alt="{{ r.title }}" style="width:100%;height:100%;object-fit:cover;">
+              {% else %}
+              <svg viewBox="0 0 44 36" preserveAspectRatio="xMidYMid slice">
+                <rect width="44" height="36" fill="#2A4D3D"/>
+                <path d="M5,15 Q12,10 20,14 L30,12 L35,22 L25,28 L10,25 Z" fill="#8B9D83" opacity="0.7"/>
+              </svg>
+              {% endif %}
+            </div>
+            <div class="related-info">
+              <div class="related-name">{{ r.title|default:r.name|truncatechars:50 }}</div>
+              <div class="related-meta">{{ r.subtype|default:"—" }}{% if r.category %} · {{ r.category.identifier }}{% endif %}</div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </aside>
+
+</div>
+{% endif %}
+{% endblock %}

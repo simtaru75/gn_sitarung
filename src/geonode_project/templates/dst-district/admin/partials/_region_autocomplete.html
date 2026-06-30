@@ -1,0 +1,139 @@
+<style>
+  .region-ac { position: relative; }
+  .region-ac-box {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    padding: 6px 8px; background: var(--cream); border: 1px solid var(--line-strong);
+    min-height: 42px; box-sizing: border-box; cursor: text;
+  }
+  .region-ac-box:focus-within { border-color: var(--forest); background: var(--paper); }
+  .region-chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 9px;
+    background: rgba(74, 107, 61, 0.1); border: 1px solid rgba(74, 107, 61, 0.3);
+    color: var(--forest); font-size: 12.5px; font-family: var(--sans);
+  }
+  .region-chip-x {
+    background: none; border: none; cursor: pointer; color: var(--forest);
+    font-size: 16px; line-height: 1; padding: 0 4px;
+  }
+  .region-chip-x:hover { color: var(--danger); }
+  .region-ac-input {
+    flex: 1; min-width: 150px; border: none; background: none; outline: none;
+    font-family: var(--sans); font-size: 13.5px; color: var(--ink); padding: 4px 2px;
+  }
+  .region-ac-suggest {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 40;
+    background: var(--paper); border: 1px solid var(--line-strong); border-top: none;
+    max-height: 240px; overflow-y: auto; display: none;
+    box-shadow: 0 8px 24px rgba(31, 58, 46, 0.14);
+  }
+  .region-ac-suggest.open { display: block; }
+  .region-ac-option { padding: 8px 12px; font-size: 13px; cursor: pointer; }
+  .region-ac-option:hover, .region-ac-option.active { background: var(--cream); color: var(--forest); }
+  .region-ac-empty { padding: 8px 12px; font-size: 12px; color: var(--ink-400); font-style: italic; }
+</style>
+
+<div class="region-ac" id="regionAc">
+  <div class="region-ac-box" id="regionAcBox">
+    {% for r in selected_regions %}
+    <span class="region-chip" data-id="{{ r.id }}">
+      <span class="region-chip-label">{{ r.name }}</span>
+      <button type="button" class="region-chip-x" aria-label="Hapus">&times;</button>
+      <input type="hidden" name="regions" value="{{ r.id }}">
+    </span>
+    {% endfor %}
+    <input type="text" class="region-ac-input" id="regionAcInput"
+           placeholder="Ketik nama provinsi / kabupaten / kota…" autocomplete="off">
+  </div>
+  <div class="region-ac-suggest" id="regionAcSuggest"></div>
+</div>
+{{ regions_all|json_script:"regionAcData" }}
+
+<script>
+(function () {
+  var root = document.getElementById('regionAc');
+  if (!root || root.dataset.init) return;
+  root.dataset.init = '1';
+  var dataEl = document.getElementById('regionAcData');
+  var data = [];
+  try { data = JSON.parse(dataEl.textContent || '[]'); } catch (e) { data = []; }
+  var box = document.getElementById('regionAcBox');
+  var input = document.getElementById('regionAcInput');
+  var suggest = document.getElementById('regionAcSuggest');
+  var activeIdx = -1;
+
+  function selectedIds() {
+    return Array.prototype.map.call(
+      box.querySelectorAll('input[name="regions"]'), function (i) { return i.value; }
+    );
+  }
+  function addChip(item) {
+    if (selectedIds().indexOf(String(item.id)) !== -1) return;
+    var chip = document.createElement('span');
+    chip.className = 'region-chip';
+    chip.setAttribute('data-id', item.id);
+    var lbl = document.createElement('span');
+    lbl.className = 'region-chip-label';
+    lbl.textContent = item.name;
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'region-chip-x';
+    btn.setAttribute('aria-label', 'Hapus'); btn.innerHTML = '&times;';
+    var hid = document.createElement('input');
+    hid.type = 'hidden'; hid.name = 'regions'; hid.value = item.id;
+    chip.appendChild(lbl); chip.appendChild(btn); chip.appendChild(hid);
+    box.insertBefore(chip, input);
+  }
+  function render(q) {
+    suggest.innerHTML = ''; activeIdx = -1;
+    q = (q || '').trim().toLowerCase();
+    if (q.length < 1) { suggest.classList.remove('open'); return; }
+    var sel = selectedIds();
+    var matches = data.filter(function (it) {
+      return it.name.toLowerCase().indexOf(q) !== -1 && sel.indexOf(String(it.id)) === -1;
+    }).slice(0, 12);
+    if (!matches.length) {
+      var em = document.createElement('div');
+      em.className = 'region-ac-empty'; em.textContent = 'Tidak ada wilayah cocok.';
+      suggest.appendChild(em); suggest.classList.add('open'); return;
+    }
+    matches.forEach(function (it) {
+      var d = document.createElement('div');
+      d.className = 'region-ac-option'; d.textContent = it.name;
+      d.addEventListener('mousedown', function (e) {
+        e.preventDefault(); addChip(it); input.value = ''; render(''); input.focus();
+      });
+      suggest.appendChild(d);
+    });
+    suggest.classList.add('open');
+  }
+  function moveActive(delta) {
+    var opts = suggest.querySelectorAll('.region-ac-option');
+    if (!opts.length) return;
+    if (activeIdx >= 0 && opts[activeIdx]) opts[activeIdx].classList.remove('active');
+    activeIdx = (activeIdx + delta + opts.length) % opts.length;
+    opts[activeIdx].classList.add('active');
+    opts[activeIdx].scrollIntoView({ block: 'nearest' });
+  }
+  input.addEventListener('input', function () { render(input.value); });
+  input.addEventListener('focus', function () { render(input.value); });
+  input.addEventListener('keydown', function (e) {
+    var opts = suggest.querySelectorAll('.region-ac-option');
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter' && activeIdx >= 0 && opts[activeIdx]) {
+      e.preventDefault();
+      var m = opts[activeIdx].dispatchEvent(new MouseEvent('mousedown'));
+    } else if (e.key === 'Backspace' && !input.value) {
+      var chips = box.querySelectorAll('.region-chip');
+      if (chips.length) chips[chips.length - 1].remove();
+    }
+  });
+  box.addEventListener('click', function (e) {
+    var x = e.target.closest('.region-chip-x');
+    if (x) { x.closest('.region-chip').remove(); return; }
+    if (e.target === box) input.focus();
+  });
+  document.addEventListener('click', function (e) {
+    if (!root.contains(e.target)) suggest.classList.remove('open');
+  });
+})();
+</script>

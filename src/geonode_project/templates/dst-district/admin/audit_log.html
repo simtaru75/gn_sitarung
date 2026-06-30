@@ -1,0 +1,324 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Audit Log — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}audit_log{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="audit_log"] .page { max-width: 1480px; }
+  body[data-page="audit_log"] .page-actions { display: flex; gap: 10px; align-items: center; }
+  body[data-page="audit_log"] .btn {
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--sans);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  body[data-page="audit_log"] .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  body[data-page="audit_log"] .btn-primary { background: var(--forest); color: var(--cream); }
+  body[data-page="audit_log"] .btn-primary:hover { background: var(--ink); }
+  body[data-page="audit_log"] .btn-ghost { background: none; color: var(--forest); border: 1px solid var(--line-strong); }
+  body[data-page="audit_log"] .btn-ghost:hover { border-color: var(--forest); }
+  body[data-page="audit_log"] .btn-sm { padding: 6px 12px; font-size: 12px; }
+  body[data-page="audit_log"] .btn-sm svg { width: 12px; height: 12px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); margin-bottom: 28px; }
+  .stat-card { background: var(--paper); padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+  .stat-card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); }
+  .stat-card-value { font-family: var(--serif); font-size: 32px; font-weight: 400; color: var(--forest); line-height: 1; letter-spacing: -0.02em; font-variation-settings: "SOFT" 30; }
+  .stat-card-meta { font-size: 12px; color: var(--ink-400); margin-top: 2px; }
+  .stat-card-meta strong { color: var(--ink); font-weight: 500; }
+
+  .filter-bar {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 14px 18px; margin-bottom: 18px;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .filter-bar form { display: contents; }
+  .filter-bar-search {
+    flex: 1; min-width: 240px; display: flex; align-items: center; gap: 10px;
+    background: var(--cream); border: 1px solid var(--line-strong);
+    padding: 7px 12px;
+  }
+  .filter-bar-search svg { width: 14px; height: 14px; color: var(--ink-400); }
+  .filter-bar-search input {
+    border: none; background: none; outline: none;
+    font-family: var(--sans); font-size: 13px; flex: 1; min-width: 0;
+  }
+  .filter-select {
+    padding: 7px 11px; background: var(--cream); border: 1px solid var(--line-strong);
+    font-family: var(--mono); font-size: 11px; color: var(--ink); cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .filter-select:focus { outline: none; border-color: var(--forest); }
+
+  .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .filter-chip {
+    padding: 7px 12px; background: var(--paper); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 10px; color: var(--ink-600);
+    text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+    text-decoration: none; transition: all 0.15s; display: inline-flex;
+  }
+  .filter-chip:hover { border-color: var(--forest); color: var(--forest); }
+  .filter-chip.active { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+  .filter-chip .count { margin-left: 4px; opacity: 0.6; }
+
+  .log-panel { background: var(--paper); border: 1px solid var(--line); }
+
+  .day-sep {
+    padding: 14px 24px; background: var(--cream-200);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 10px; color: var(--ink-600);
+    text-transform: uppercase; letter-spacing: 0.14em; font-weight: 500;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .day-sep .day-count {
+    background: var(--paper); padding: 2px 8px;
+    color: var(--ink-400); font-size: 10px;
+  }
+
+  .log-row {
+    padding: 14px 24px; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 80px 24px 1.5fr 1fr 110px 100px;
+    gap: 18px; align-items: center; transition: background 0.15s;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: var(--cream-200); }
+
+  .log-time {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-600);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .log-time .ts-rel { display: block; font-size: 9.5px; color: var(--ink-400); margin-top: 2px; }
+
+  .log-dot {
+    width: 10px; height: 10px; border-radius: 50%; margin: 0 auto;
+    background: var(--ink-200);
+  }
+  .log-dot.create  { background: var(--success); }
+  .log-dot.update  { background: var(--info, #3D5C66); }
+  .log-dot.publish { background: var(--ochre); }
+  .log-dot.delete  { background: var(--danger); }
+  .log-dot.login   { background: var(--sage); }
+  .log-dot.harvest { background: var(--ochre); }
+  .log-dot.config  { background: var(--cocoa); }
+  .log-dot.screening { background: var(--forest); }
+
+  .log-text { font-size: 13.5px; color: var(--ink); line-height: 1.4; min-width: 0; }
+  .log-text strong { font-weight: 500; color: var(--forest); }
+  .log-text em {
+    font-style: normal; font-family: var(--mono); font-size: 12px;
+    color: var(--ink); background: var(--cream-200); padding: 1px 5px;
+  }
+
+  .log-actor { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .log-actor-avatar {
+    width: 28px; height: 28px; flex-shrink: 0;
+    background: var(--forest); color: var(--cream);
+    display: grid; place-items: center;
+    font-family: var(--serif); font-size: 11px; font-weight: 500;
+    font-variation-settings: "SOFT" 30;
+  }
+  .log-actor-avatar.system { background: var(--cocoa); }
+  .log-actor-name {
+    font-size: 12.5px; color: var(--ink); line-height: 1.3;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .log-actor-role {
+    font-family: var(--mono); font-size: 9.5px; color: var(--ink-400);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px;
+  }
+
+  .log-ip {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-400);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  .log-status {
+    display: inline-flex; align-items: center;
+    padding: 3px 8px; font-family: var(--mono); font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+    justify-content: center;
+  }
+  .log-status.ok   { background: rgba(74, 107, 61, 0.1); color: var(--success); }
+  .log-status.warn { background: rgba(176, 112, 32, 0.1); color: var(--warning); }
+  .log-status.err  { background: rgba(139, 58, 42, 0.1); color: var(--danger); }
+  .log-status.info { background: rgba(61, 92, 102, 0.1); color: var(--info, #3D5C66); }
+
+  .log-empty {
+    padding: 48px 24px; text-align: center;
+    color: var(--ink-400); font-family: var(--mono); font-size: 12px;
+  }
+
+  .table-footer {
+    padding: 14px 22px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-400);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .pagination { display: flex; gap: 4px; }
+  .page-btn {
+    min-width: 28px; height: 28px; padding: 0 6px;
+    background: var(--cream); border: 1px solid var(--line);
+    color: var(--ink-600); display: grid; place-items: center; cursor: pointer;
+    font-family: var(--mono); font-size: 11px; text-decoration: none;
+  }
+  .page-btn:hover { border-color: var(--forest); color: var(--forest); }
+  .page-btn.current { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+  .page-btn.disabled { opacity: 0.5; pointer-events: none; }
+  .page-btn svg { width: 12px; height: 12px; }
+
+  @media (max-width: 1100px) {
+    .log-row { grid-template-columns: 1fr; gap: 8px; padding: 16px 20px; }
+    .log-row > * { width: 100%; }
+    .log-dot { margin: 0; }
+  }
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 32px;">
+  <div>
+    <div class="page-eyebrow">Administrasi · Audit</div>
+    <h1 class="page-title">Audit <span class="italic">Log</span></h1>
+    <p class="page-desc">Catatan aktivitas {{ site.name|default:"DST Kabupaten Abc" }} — siapa melakukan apa, kapan, dan terhadap objek apa. Bersumber dari activity stream GeoNode.</p>
+  </div>
+  <div class="page-actions">
+    <a href="?range={{ range }}&category={{ category }}{% if search %}&q={{ search }}{% endif %}&export=csv" class="btn btn-ghost btn-export" title="Unduh log aktivitas sesuai filter (CSV)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Ekspor (CSV)
+    </a>
+  </div>
+</header>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-card-label">Aktivitas Hari Ini</div>
+    <div class="stat-card-value">{{ stats.today }}</div>
+    <div class="stat-card-meta"><strong>{{ stats.today_actors }} aktor</strong> aktif</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">7 Hari Terakhir</div>
+    <div class="stat-card-value">{{ stats.week }}</div>
+    <div class="stat-card-meta">Rata-rata <strong>{{ stats.week_avg }}/hari</strong></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Harvest / Download</div>
+    <div class="stat-card-value">{{ stats.harvest_week }}</div>
+    <div class="stat-card-meta">7 hari terakhir</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Retensi Log</div>
+    <div class="stat-card-value">{{ stats.retention_days }}<span style="font-size:14px; color:var(--ink-400); font-weight:300; margin-left:4px;">hari</span></div>
+    <div class="stat-card-meta">Sesuai kebijakan</div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <form method="get" action="" style="display: contents;">
+    <div class="filter-bar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari aksi, deskripsi, atau objek…">
+    </div>
+    <input type="hidden" name="category" value="{{ category }}">
+    <select class="filter-select" name="range" onchange="this.form.submit()">
+      <option value="24h" {% if range == '24h' %}selected{% endif %}>24 jam terakhir</option>
+      <option value="7d"  {% if range == '7d'  %}selected{% endif %}>7 hari terakhir</option>
+      <option value="30d" {% if range == '30d' %}selected{% endif %}>30 hari terakhir</option>
+      <option value="all" {% if range == 'all' %}selected{% endif %}>Semua waktu</option>
+    </select>
+    <button type="submit" class="btn btn-ghost btn-sm">Terapkan</button>
+  </form>
+</div>
+
+<!-- CATEGORY CHIPS -->
+<div class="filter-chips">
+  <a href="?category=all&range={{ range }}" class="filter-chip {% if category == 'all' %}active{% endif %}">Semua<span class="count">{{ category_counts.all }}</span></a>
+  <a href="?category=login&range={{ range }}" class="filter-chip {% if category == 'login' %}active{% endif %}">Login &amp; Sesi<span class="count">{{ category_counts.login }}</span></a>
+  <a href="?category=data&range={{ range }}" class="filter-chip {% if category == 'data' %}active{% endif %}">Data &amp; Dokumen<span class="count">{{ category_counts.data }}</span></a>
+  <a href="?category=harvest&range={{ range }}" class="filter-chip {% if category == 'harvest' %}active{% endif %}">Harvest / Download<span class="count">{{ category_counts.harvest }}</span></a>
+  <a href="?category=config&range={{ range }}" class="filter-chip {% if category == 'config' %}active{% endif %}">Konfigurasi<span class="count">{{ category_counts.config }}</span></a>
+  <a href="?category=screening&range={{ range }}" class="filter-chip {% if category == 'screening' %}active{% endif %}">Screening Tools analisis<span class="count">{{ category_counts.screening }}</span></a>
+</div>
+
+<!-- LOG LIST -->
+<div class="log-panel">
+  {% for group in grouped_rows %}
+    <div class="day-sep">
+      {{ group.date|date:"l, d F Y" }}
+      <span class="day-count">{{ group.count }} aktivitas</span>
+    </div>
+    {% for row in group.rows %}
+    <div class="log-row">
+      <div class="log-time">
+        {{ row.timestamp|date:"H:i" }}
+        <span class="ts-rel">{{ row.timestamp|timesince }} lalu</span>
+      </div>
+      <div><span class="log-dot {{ row.dot }}"></span></div>
+      <div class="log-text">
+        <strong>{{ row.actor_name }}</strong> {{ row.verb }}
+        {% if row.target_label %}<em>{{ row.target_label }}</em>{% endif %}
+        {% if row.target_type %}<span style="color: var(--ink-400); font-family: var(--mono); font-size: 11px;">· {{ row.target_type }}</span>{% endif %}
+      </div>
+      <div class="log-actor">
+        <div class="log-actor-avatar {% if not row.ip and row.actor_role == 'Sistem' %}system{% endif %}">{{ row.actor_initials }}</div>
+        <div>
+          <div class="log-actor-name">{{ row.actor_name }}</div>
+          <div class="log-actor-role">{{ row.actor_role }}</div>
+        </div>
+      </div>
+      <div class="log-ip">{{ row.ip|default:"—" }}</div>
+      <div><span class="log-status {{ row.status_tone }}">{{ row.status_label }}</span></div>
+    </div>
+    {% endfor %}
+  {% empty %}
+    <div class="log-empty">Tidak ada aktivitas yang cocok dengan filter ini.</div>
+  {% endfor %}
+
+  {% if page_obj and page_obj.paginator.count %}
+  <div class="table-footer">
+    <div>
+      Menampilkan {{ page_obj.start_index }}–{{ page_obj.end_index }} dari
+      {{ page_obj.paginator.count }} aktivitas
+    </div>
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a class="page-btn" href="?category={{ category }}&range={{ range }}&q={{ search }}&page={{ page_obj.previous_page_number }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+      {% else %}
+        <span class="page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></span>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <span class="page-btn current">{{ num }}</span>
+        {% elif num == 1 or num == page_obj.paginator.num_pages or num|add:"-2" <= page_obj.number and num|add:"2" >= page_obj.number %}
+          <a class="page-btn" href="?category={{ category }}&range={{ range }}&q={{ search }}&page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a class="page-btn" href="?category={{ category }}&range={{ range }}&q={{ search }}&page={{ page_obj.next_page_number }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      {% else %}
+        <span class="page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

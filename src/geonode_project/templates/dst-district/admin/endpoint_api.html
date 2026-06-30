@@ -1,0 +1,163 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Endpoint API — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}endpoint_api{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="endpoint_api"] .api-layout { display: block; }
+
+  body[data-page="endpoint_api"] .ep-group {
+    background: var(--paper); border: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  body[data-page="endpoint_api"] .ep-group-header {
+    padding: 14px 22px; border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-600); font-weight: 500;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  body[data-page="endpoint_api"] .ep-group-header .count {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-400);
+    background: var(--cream-200); padding: 2px 8px;
+  }
+
+  body[data-page="endpoint_api"] .ep-row {
+    padding: 12px 22px; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 70px 1.5fr 2fr 90px 60px;
+    gap: 16px; align-items: center; transition: background 0.15s;
+  }
+  body[data-page="endpoint_api"] .ep-row:last-child { border-bottom: none; }
+  body[data-page="endpoint_api"] .ep-row:hover { background: var(--cream-200); }
+
+  body[data-page="endpoint_api"] .ep-method {
+    display: inline-flex; padding: 3px 8px; font-family: var(--mono);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    justify-content: center;
+  }
+  body[data-page="endpoint_api"] .ep-method.get  { background: rgba(74, 107, 61, 0.12); color: var(--success); }
+  body[data-page="endpoint_api"] .ep-method.post { background: rgba(176, 112, 32, 0.12); color: var(--warning); }
+  body[data-page="endpoint_api"] .ep-method.csw  { background: rgba(61, 92, 102, 0.12); color: var(--info, #3D5C66); }
+  body[data-page="endpoint_api"] .ep-method.wms,
+  body[data-page="endpoint_api"] .ep-method.wfs,
+  body[data-page="endpoint_api"] .ep-method.wcs,
+  body[data-page="endpoint_api"] .ep-method.wmts { background: var(--cocoa); color: var(--cream); }
+
+  body[data-page="endpoint_api"] .ep-path {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    word-break: break-all;
+  }
+  body[data-page="endpoint_api"] .ep-desc {
+    font-size: 12.5px; color: var(--ink-600); line-height: 1.4;
+  }
+  body[data-page="endpoint_api"] .ep-count {
+    font-family: var(--mono); font-size: 12px; color: var(--forest);
+    text-align: right;
+  }
+  body[data-page="endpoint_api"] .ep-count .label {
+    display: block; font-size: 9px; color: var(--ink-400);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px;
+  }
+  body[data-page="endpoint_api"] .ep-count.empty { color: var(--ink-200); }
+  body[data-page="endpoint_api"] .ep-action a {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 4px 10px; background: var(--cream); border: 1px solid var(--line-strong);
+    color: var(--forest); text-decoration: none; font-family: var(--mono);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+  body[data-page="endpoint_api"] .ep-action a:hover { border-color: var(--forest); background: var(--paper); }
+
+  @media (max-width: 1000px) {
+    body[data-page="endpoint_api"] .ep-row {
+      grid-template-columns: 70px 1fr 60px;
+      grid-template-areas: "method path action" "desc desc desc" "count count count";
+      gap: 8px;
+    }
+    body[data-page="endpoint_api"] .ep-row .ep-method { grid-area: method; }
+    body[data-page="endpoint_api"] .ep-row .ep-path { grid-area: path; }
+    body[data-page="endpoint_api"] .ep-row .ep-desc { grid-area: desc; }
+    body[data-page="endpoint_api"] .ep-row .ep-count { grid-area: count; text-align: left; }
+    body[data-page="endpoint_api"] .ep-row .ep-action { grid-area: action; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Distribusi &amp; Akses</div>
+    <h1 class="page-title">Endpoint <span class="italic">API</span></h1>
+    <p class="page-desc">Daftar endpoint resmi GeoNode REST v2 dan OGC Services yang aktif di instalasi {{ site.name|default:"DST Kabupaten Abc" }}. Hitungan resource diambil langsung dari database; URL OGC dari konfigurasi <code>OGC_SERVER</code>.</p>
+  </div>
+</header>
+
+<!-- BASE URL CARD -->
+<div class="baseurl-card">
+  <div>
+    <div class="baseurl-label">Base URL</div>
+  </div>
+  <div class="baseurl-value">
+    {{ base_url }}
+  </div>
+  <div class="baseurl-env">
+    <span class="env-tab active">Active</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); margin-bottom: 28px;">
+  <div class="stat-card" style="background: var(--paper); padding: 18px 22px;">
+    <div class="stat-card-label">Total Endpoint</div>
+    <div class="stat-card-value">{{ stats.total_endpoints }}</div>
+    <div class="stat-card-meta">REST &amp; OGC tercatat</div>
+  </div>
+  <div class="stat-card" style="background: var(--paper); padding: 18px 22px;">
+    <div class="stat-card-label">Dataset Terdaftar</div>
+    <div class="stat-card-value">{{ stats.datasets }}</div>
+    <div class="stat-card-meta">tersedia via <code>/api/v2/datasets</code></div>
+  </div>
+  <div class="stat-card" style="background: var(--paper); padding: 18px 22px;">
+    <div class="stat-card-label">Resource Total</div>
+    <div class="stat-card-value">{{ stats.resources }}</div>
+    <div class="stat-card-meta">tersedia via <code>/api/v2/resources</code></div>
+  </div>
+  <div class="stat-card" style="background: var(--paper); padding: 18px 22px;">
+    <div class="stat-card-label">OGC Services</div>
+    <div class="stat-card-value">{{ stats.ogc_services }}</div>
+    <div class="stat-card-meta">{{ geoserver_url }}</div>
+  </div>
+</div>
+
+<!-- ENDPOINT GROUPS -->
+{% for g in groups %}
+<div class="ep-group">
+  <div class="ep-group-header">
+    {{ g.title }}
+    <span class="count">{{ g.items|length }}</span>
+  </div>
+  {% for method, path, desc, count in g.items %}
+  <div class="ep-row">
+    <span class="ep-method {{ method|lower }}">{{ method }}</span>
+    <span class="ep-path">{{ path }}</span>
+    <span class="ep-desc">{{ desc }}</span>
+    {% if count is not None %}
+      <span class="ep-count">{{ count }}<span class="label">item</span></span>
+    {% else %}
+      <span class="ep-count empty">—</span>
+    {% endif %}
+    <span class="ep-action">
+      {% if "{" in path %}
+        <span style="color: var(--ink-200); font-family: var(--mono); font-size: 10px;">{id}</span>
+      {% elif path|slice:":4" == "http" %}
+        <a href="{{ path }}?service={{ method }}&request=GetCapabilities" target="_blank" rel="noopener">GetCaps</a>
+      {% else %}
+        <a href="{{ path }}" target="_blank" rel="noopener">Buka</a>
+      {% endif %}
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

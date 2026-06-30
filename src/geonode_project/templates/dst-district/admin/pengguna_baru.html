@@ -1,0 +1,213 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Tambah Pengguna Baru — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}pengguna_baru{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="pengguna_baru"] .new-grid { grid-template-columns: 1fr; max-width: 720px; margin: 0 auto; }
+  body[data-page="pengguna_baru"] .new-side { display: none; }
+
+  body[data-page="pengguna_baru"] .info-note {
+    margin-bottom: 24px; padding: 14px 18px;
+    background: var(--cream-200); border: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-600); line-height: 1.5;
+  }
+  body[data-page="pengguna_baru"] .info-note strong { color: var(--forest); }
+
+  body[data-page="pengguna_baru"] .submit-bar {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 20px 0;
+  }
+
+  body[data-page="pengguna_baru"] .form-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--ink-600); margin-bottom: 7px; font-weight: 500;
+  }
+  body[data-page="pengguna_baru"] .form-label .req { color: var(--ochre); margin-left: 2px; }
+  body[data-page="pengguna_baru"] .form-label .helper {
+    font-family: var(--mono); font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-400); font-weight: 400;
+  }
+  body[data-page="pengguna_baru"] .form-input {
+    width: 100%; padding: 10px 14px; background: var(--cream);
+    border: 1px solid var(--line-strong); font-family: var(--sans);
+    font-size: 13.5px; color: var(--ink); transition: all 0.15s;
+  }
+  body[data-page="pengguna_baru"] .form-input:focus {
+    outline: none; border-color: var(--forest); background: var(--paper);
+  }
+  body[data-page="pengguna_baru"] .form-input::placeholder {
+    color: var(--ink-200); font-style: italic;
+  }
+  body[data-page="pengguna_baru"] .form-help {
+    font-size: 11.5px; color: var(--ink-400); margin-top: 6px; line-height: 1.4;
+  }
+  body[data-page="pengguna_baru"] .form-help.warn {
+    color: var(--ochre-600); display: flex; align-items: center; gap: 6px;
+  }
+  body[data-page="pengguna_baru"] .form-group { margin-bottom: 20px; }
+  body[data-page="pengguna_baru"] .form-group:last-child { margin-bottom: 0; }
+
+  body[data-page="pengguna_baru"] .btn-primary { background: var(--forest); color: var(--cream); }
+  body[data-page="pengguna_baru"] .btn-primary:hover { background: var(--ink); }
+  body[data-page="pengguna_baru"] .btn-primary:disabled { background: var(--ink-200); cursor: not-allowed; }
+  body[data-page="pengguna_baru"] .btn-ghost { background: none; color: var(--forest); border: 1px solid var(--line-strong); }
+  body[data-page="pengguna_baru"] .btn-ghost:hover { border-color: var(--forest); }
+  body[data-page="pengguna_baru"] .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  body[data-page="pengguna_baru"] .errorlist {
+    list-style: none; padding: 0; margin: 6px 0 0;
+    font-size: 12px; color: var(--danger);
+  }
+  body[data-page="pengguna_baru"] .errorlist li { display: flex; align-items: center; gap: 6px; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Administrasi · Pengguna &amp; Role</div>
+    <h1 class="page-title">Tambah <span class="italic">Pengguna</span></h1>
+    <p class="page-desc">Setelah pengguna dibuat, Anda dapat mengedit opsi pengguna lebih lanjut.</p>
+  </div>
+</header>
+
+<div class="info-note">
+  <strong>Peran:</strong> <strong>Walidata</strong> = pengelola data dengan akses Panel Admin. <strong>Umum</strong> = pengguna terbatas yang hanya melihat <strong>Dashboard</strong> berisi aktivitas analisis Screening WebGIS miliknya. Super Admin diberikan lewat <em>Edit Pengguna</em>.
+</div>
+
+<form method="post" action="" novalidate>
+  {% csrf_token %}
+  <div class="new-grid">
+    <div class="new-main">
+
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">01</span>
+            <div>
+              <h2 class="ds-title">Informasi <span class="italic">akun</span></h2>
+              <div class="ds-meta">Username dan kata sandi</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-group">
+            <label class="form-label">
+              Username <span class="req">*</span>
+              <span class="helper">username</span>
+            </label>
+            <input class="form-input" type="text" name="username" maxlength="150" required
+                   value="{{ form_data.username|default:'' }}"
+                   placeholder="nama_pengguna"
+                   pattern="^[\w.@+-]+$"
+                   title="Hanya huruf, angka, dan @/./+/-/_ yang diperbolehkan.">
+            <div class="form-help">Wajib. 150 karakter atau kurang. Hanya huruf, angka, dan @/./+/-/_.</div>
+            {% if errors.username %}
+              <ul class="errorlist">
+                {% for e in errors.username %}<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Password <span class="req">*</span>
+              <span class="helper">password</span>
+            </label>
+            <input class="form-input" type="password" name="password1" required
+                   placeholder="••••••••">
+            {% if errors.password1 %}
+              <ul class="errorlist">
+                {% for e in errors.password1 %}<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Password confirmation <span class="req">*</span>
+              <span class="helper">password2</span>
+            </label>
+            <input class="form-input" type="password" name="password2" required
+                   placeholder="••••••••">
+            <div class="form-help">Masukkan password yang sama seperti sebelumnya, untuk verifikasi.</div>
+            {% if errors.password2 %}
+              <ul class="errorlist">
+                {% for e in errors.password2 %}<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">02</span>
+            <div>
+              <h2 class="ds-title">Identitas &amp; <span class="italic">peran</span></h2>
+              <div class="ds-meta">Nama lengkap, email, dan peran akses</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-group">
+            <label class="form-label">
+              Nama Lengkap
+              <span class="helper">opsional</span>
+            </label>
+            <input class="form-input" type="text" name="full_name" maxlength="300"
+                   value="{{ form_data.full_name|default:'' }}"
+                   placeholder="mis. Budi Santoso">
+            <div class="form-help">Satu kolom nama lengkap (dipisah otomatis menjadi nama depan &amp; belakang).</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Alamat Email
+              <span class="helper">opsional</span>
+            </label>
+            <input class="form-input" type="email" name="email"
+                   value="{{ form_data.email|default:'' }}"
+                   placeholder="nama@instansi.go.id">
+            {% if errors.email %}
+              <ul class="errorlist">
+                {% for e in errors.email %}<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">
+              Peran <span class="req">*</span>
+              <span class="helper">role</span>
+            </label>
+            <select class="form-input" name="peran">
+              {% for val, lbl in peran_choices %}
+              <option value="{{ val }}" {% if form_data.peran|default:'umum' == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-help"><strong>Walidata</strong>: akses Panel Admin (pengelola data). <strong>Umum</strong>: hanya Dashboard untuk memantau aktivitas Screening WebGIS miliknya.</div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="submit-bar">
+        <a href="{% url 'dst_auth:pengguna' %}" class="btn btn-ghost btn-sm">Batal</a>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan pengguna
+        </button>
+      </div>
+
+    </div>
+  </div>
+</form>
+{% endblock %}

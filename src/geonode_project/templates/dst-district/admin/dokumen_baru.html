@@ -1,0 +1,140 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Tambah Dokumen — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}dokumen_baru{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="dokumen_baru"] .upload-wrap { max-width: 720px; margin: 0 auto; }
+  .up-header { margin-bottom: 24px; }
+  .up-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ochre-600); margin-bottom: 8px; }
+  .up-title { font-family: var(--serif); font-size: 30px; font-weight: 400; color: var(--forest); letter-spacing: -0.02em; }
+  .up-title .italic { font-style: italic; }
+  .up-desc { font-family: var(--serif); font-size: 15px; color: var(--ink-600); font-weight: 300; margin-top: 8px; }
+
+  .up-flash { margin-bottom: 18px; padding: 12px 16px; border: 1px solid var(--line); font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  .up-flash.success { background: rgba(74,107,61,0.08); color: var(--success); border-color: rgba(74,107,61,0.25); }
+  .up-flash.error { background: rgba(139,58,42,0.08); color: var(--danger); border-color: rgba(139,58,42,0.25); }
+  .up-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .up-card { background: var(--paper); border: 1px solid var(--line); }
+  .up-card-body { padding: 28px; }
+
+  .dropzone { display: block; border: 2px dashed var(--line-strong); background: var(--cream-200); padding: 48px 24px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .dropzone:hover, .dropzone.drag { border-color: var(--forest); background: rgba(31,58,46,0.04); }
+  .dropzone .dz-icon { width: 54px; height: 54px; margin: 0 auto 14px; color: var(--forest); }
+  .dropzone .dz-icon svg { width: 100%; height: 100%; }
+  .dz-title { font-family: var(--serif); font-size: 20px; color: var(--forest); }
+  .dz-title .italic { font-style: italic; }
+  .dz-sub { font-size: 13px; color: var(--ink-600); margin-top: 6px; }
+  .dz-formats { display: flex; gap: 6px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .dz-pill { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--forest); background: var(--cream); border: 1px solid var(--line); padding: 3px 9px; }
+  .dz-selected { margin-top: 16px; font-family: var(--mono); font-size: 12px; color: var(--forest); display: none; align-items: center; gap: 8px; justify-content: center; }
+  .dz-selected.show { display: flex; }
+  .dz-selected svg { width: 14px; height: 14px; color: var(--success); }
+
+  /* Sembunyikan input file tanpa artefak render native (tetap dapat divalidasi) */
+  .visually-hidden-file { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; opacity: 0; }
+  .up-note { margin-top: 18px; padding: 12px 14px; background: var(--ochre-100); border-left: 3px solid var(--ochre); font-size: 12.5px; color: var(--ink-600); line-height: 1.55; }
+  .up-note strong { color: var(--ink); }
+  .up-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-wrap">
+  <div class="upload-wrap">
+
+    <header class="up-header">
+      <div class="up-eyebrow">Dokumen Kebijakan</div>
+      <h1 class="up-title">Tambah <span class="italic">Dokumen</span></h1>
+      <p class="up-desc">Unggah berkas dokumen. Judul otomatis diambil dari nama berkas — metadata dilengkapi pada langkah berikutnya.</p>
+    </header>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="up-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ message }}
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="up-card">
+      <div class="up-card-body">
+        <form method="post" action="" enctype="multipart/form-data" id="uploadForm">
+          {% csrf_token %}
+
+          <label class="dropzone" id="dropzone" for="fileInput">
+            <div class="dz-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dz-title">Seret berkas <span class="italic">ke sini</span></div>
+            <div class="dz-sub">atau <strong>klik untuk memilih berkas</strong></div>
+            <div class="dz-formats">
+              <span class="dz-pill">PDF</span><span class="dz-pill">DOCX</span><span class="dz-pill">XLSX</span>
+              <span class="dz-pill">PPTX</span><span class="dz-pill">ZIP</span>
+            </div>
+            <div class="dz-selected" id="dzSelected">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="dzFileName"></span>
+            </div>
+          </label>
+          <input type="file" name="file" id="fileInput" required class="visually-hidden-file"
+                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.jpg,.jpeg,.png">
+
+          <div class="up-note">
+            Judul dokumen <strong>otomatis dari nama berkas</strong>. Setelah diunggah, lengkapi metadata di halaman edit.
+            Nilai default yang langsung diterapkan: <strong>Bahasa Indonesia</strong> · <strong>Wilayah Indonesia</strong> — semuanya dapat diubah. Kategori dibiarkan kosong (<em>— Tidak ditetapkan —</em>).
+          </div>
+
+          <div class="up-actions">
+            <a href="{% url 'dst_auth:dokumen' %}" class="btn btn-ghost btn-sm">Batal</a>
+            <button class="btn btn-primary btn-sm" type="submit" id="submitBtn" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Unggah &amp; lengkapi metadata
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var input = document.getElementById('fileInput');
+  var dz = document.getElementById('dropzone');
+  var sel = document.getElementById('dzSelected');
+  var nameEl = document.getElementById('dzFileName');
+  var btn = document.getElementById('submitBtn');
+
+  function showFile() {
+    if (input.files && input.files.length) {
+      nameEl.textContent = input.files[0].name;
+      sel.classList.add('show');
+      btn.disabled = false;
+    } else {
+      sel.classList.remove('show');
+      btn.disabled = true;
+    }
+  }
+  input.addEventListener('change', showFile);
+
+  ['dragenter', 'dragover'].forEach(function (e) {
+    dz.addEventListener(e, function (ev) { ev.preventDefault(); dz.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function (e) {
+    dz.addEventListener(e, function (ev) { ev.preventDefault(); dz.classList.remove('drag'); });
+  });
+  dz.addEventListener('drop', function (ev) {
+    if (ev.dataTransfer && ev.dataTransfer.files.length) {
+      input.files = ev.dataTransfer.files;
+      showFile();
+    }
+  });
+})();
+</script>
+{% endblock %}

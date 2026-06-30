@@ -1,0 +1,143 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Backend — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}backend{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="backend"] .page-wrap { display: block; }
+  body[data-page="backend"] .page-content { max-width: 860px; margin: 0 auto; }
+
+  .settings-flash {
+    margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--line);
+    font-size: 13px; display: flex; align-items: center; gap: 10px; font-family: var(--sans);
+  }
+  .settings-flash.success { background: rgba(74, 107, 61, 0.08); color: var(--success); border-color: rgba(74, 107, 61, 0.25); }
+  .settings-flash.error   { background: rgba(139, 58, 42, 0.08); color: var(--danger);  border-color: rgba(139, 58, 42, 0.25); }
+  .settings-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="backend"] .fe-summary {
+    display: flex; gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong);
+    margin-bottom: 22px;
+  }
+  body[data-page="backend"] .fe-summary .cell { background: var(--paper); padding: 16px 22px; flex: 1; }
+  body[data-page="backend"] .fe-summary .label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); }
+  body[data-page="backend"] .fe-summary .value { font-family: var(--serif); font-size: 28px; color: var(--forest); line-height: 1.1; }
+
+  .be-group { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); margin: 22px 0 8px; }
+  .fe-head, .fe-row {
+    display: grid; grid-template-columns: 1fr 130px 130px; align-items: center; gap: 16px;
+    padding: 12px 18px;
+  }
+  .fe-head { background: var(--cream-200); border: 1px solid var(--line); border-bottom: none; }
+  .fe-colhead { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-600); text-align: center; font-weight: 500; }
+  .fe-colhead.menu { text-align: left; }
+  .fe-list { border: 1px solid var(--line); background: var(--paper); }
+  .fe-row { border-bottom: 1px solid var(--line); }
+  .fe-row:last-child { border-bottom: none; }
+  .fe-info .fe-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .fe-info .fe-meta { font-family: var(--mono); font-size: 11px; color: var(--ink-400); margin-top: 2px; }
+  .fe-cell { display: flex; justify-content: center; }
+
+  /* Toggle switch (per kolom peran, tanpa label teks) */
+  .fe-toggle { display: inline-flex; align-items: center; cursor: pointer; user-select: none; }
+  .fe-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .fe-switch { width: 42px; height: 24px; background: var(--ink-200, #c9c4b8); border-radius: 12px; position: relative; transition: background 0.18s; flex-shrink: 0; }
+  .fe-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .fe-toggle input:checked + .fe-switch { background: var(--success); }
+  .fe-toggle input:checked + .fe-switch::after { transform: translateX(18px); }
+
+  .be-locked { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ochre-600); justify-content: center; }
+  .be-locked svg { width: 12px; height: 12px; }
+  @media (max-width: 640px) { .fe-head, .fe-row { grid-template-columns: 1fr 84px 84px; gap: 8px; } }
+
+  .fe-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 20px 0 0; }
+  body[data-page="backend"] .btn {
+    padding: 9px 16px; font-size: 13px; font-weight: 500; border: 1px solid transparent;
+    cursor: pointer; font-family: var(--sans); display: inline-flex; align-items: center;
+    gap: 8px; text-decoration: none; letter-spacing: 0.01em; transition: all 0.2s; border-radius: 0;
+  }
+  body[data-page="backend"] .btn svg { width: 14px; height: 14px; }
+  body[data-page="backend"] .btn-primary { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+  body[data-page="backend"] .btn-primary:hover { background: var(--ink); border-color: var(--ink); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-wrap">
+  <div class="page-content">
+
+    <header class="page-header">
+      <div>
+        <div class="page-eyebrow">Administrasi</div>
+        <h1 class="page-title">Pengelolaan <span class="italic">Backend</span></h1>
+        <p class="page-desc">Tentukan menu opsional pada <strong>sidebar Panel Admin</strong> yang ditampilkan atau disembunyikan secara global (berlaku untuk Super Admin &amp; Walidata). Menu grup <strong>Administrasi</strong> tidak tampil di sini karena visibilitasnya sudah dikontrol otomatis oleh <strong>peran</strong> (khusus Super Admin). Menu <strong>Dashboard</strong> selalu tampil.</p>
+      </div>
+    </header>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="settings-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="fe-summary">
+      <div class="cell"><div class="label">Menu dapat diatur</div><div class="value">{{ total_count }}</div></div>
+      <div class="cell"><div class="label">Tampil · Super Admin</div><div class="value">{{ super_count }}</div></div>
+      <div class="cell"><div class="label">Tampil · Walidata</div><div class="value">{{ walidata_count }}</div></div>
+    </div>
+
+    <form method="post" action="">
+      {% csrf_token %}
+      <div class="fe-head">
+        <div class="fe-colhead menu">Menu</div>
+        <div class="fe-colhead">Super Admin</div>
+        <div class="fe-colhead">Walidata</div>
+      </div>
+      {% regroup menus by grup as menu_groups %}
+      {% for group in menu_groups %}
+      <div class="be-group">{{ group.grouper }}</div>
+      <div class="fe-list">
+        {% for m in group.list %}
+        <div class="fe-row">
+          <div class="fe-info">
+            <div class="fe-title">{{ m.title }}</div>
+            <div class="fe-meta">key: {{ m.key }}</div>
+          </div>
+          {% if m.locked %}
+          <div class="fe-cell"><span class="be-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Selalu</span></div>
+          <div class="fe-cell"><span class="be-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Selalu</span></div>
+          {% else %}
+          <div class="fe-cell">
+            <label class="fe-toggle" title="Tampil untuk Super Admin">
+              <input type="checkbox" name="visible_super" value="{{ m.key }}" {% if m.is_visible %}checked{% endif %}>
+              <span class="fe-switch"></span>
+            </label>
+          </div>
+          <div class="fe-cell">
+            <label class="fe-toggle" title="Tampil untuk Walidata">
+              <input type="checkbox" name="visible_walidata" value="{{ m.key }}" {% if m.visible_walidata %}checked{% endif %}>
+              <span class="fe-switch"></span>
+            </label>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="fe-actions">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan tampilan menu
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

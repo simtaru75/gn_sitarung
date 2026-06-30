@@ -1,0 +1,595 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Profil Pengguna — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}profil{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  .profil-wrap { max-width: 880px; margin: 0 auto; }
+
+  .identity-hero {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 28px 32px; display: flex; align-items: center; gap: 24px;
+    margin-bottom: 28px;
+  }
+  .avatar-large {
+    width: 80px; height: 80px; flex-shrink: 0;
+    background: var(--forest); color: var(--cream);
+    display: grid; place-items: center;
+    font-family: var(--serif); font-size: 32px; font-weight: 500;
+    font-variation-settings: "SOFT" 40;
+    position: relative;
+  }
+  .avatar-large .avatar-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .identity-actions { display: flex; gap: 16px; margin-top: 12px; }
+  .identity-photo-link {
+    background: none; border: none; cursor: pointer; padding: 0;
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-600);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    display: inline-flex; align-items: center; gap: 5px;
+    border-bottom: 1px solid var(--line-strong); transition: color 0.15s;
+  }
+  .identity-photo-link:hover { color: var(--forest); }
+  .identity-photo-link.danger:hover { color: var(--danger); }
+  .identity-photo-link svg { width: 12px; height: 12px; }
+  .avatar-edit-btn {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 26px; height: 26px; background: var(--ochre); color: var(--forest);
+    border: 2px solid var(--paper); cursor: pointer;
+    display: grid; place-items: center; transition: all 0.2s;
+  }
+  .avatar-edit-btn:hover { background: var(--cocoa); color: var(--cream); }
+  .avatar-edit-btn svg { width: 11px; height: 11px; }
+
+  .identity-info { flex: 1; min-width: 0; }
+  .identity-name {
+    font-family: var(--serif); font-size: 24px; color: var(--forest);
+    font-variation-settings: "SOFT" 35; letter-spacing: -0.01em;
+    line-height: 1.2; margin-bottom: 4px;
+  }
+  .identity-email {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-400);
+    margin-bottom: 12px;
+  }
+  .identity-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .identity-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .identity-tag.role { background: var(--cocoa); color: var(--cream); }
+  .identity-tag.dept { background: var(--cream-200); color: var(--ink-600); border: 1px solid var(--line); }
+  .identity-tag.status { background: rgba(74, 107, 61, 0.1); color: var(--success); }
+  .identity-tag.status::before {
+    content: ''; width: 6px; height: 6px; background: var(--success); border-radius: 50%;
+  }
+
+  .profil-section { background: var(--paper); border: 1px solid var(--line); margin-bottom: 20px; }
+  .profil-section-header {
+    padding: 18px 28px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title-block { display: flex; align-items: baseline; gap: 14px; }
+  .section-num {
+    font-family: var(--serif); font-size: 17px; color: var(--ochre-600);
+    font-variation-settings: "SOFT" 30;
+  }
+  .profil-section-title {
+    font-family: var(--serif); font-size: 22px; color: var(--forest);
+    font-weight: 400; font-variation-settings: "SOFT" 30;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .profil-section-title .italic { font-style: italic; font-weight: 300; color: var(--cocoa); }
+  .section-meta {
+    font-family: var(--mono); font-size: 9.5px; color: var(--ink-400);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;
+  }
+  .profil-section-body { padding: 24px 28px 28px; }
+
+  .field-group { margin-bottom: 18px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--ink-600); margin-bottom: 7px; font-weight: 500;
+  }
+  .field-label .req { color: var(--ochre); margin-left: 2px; }
+  .field-input-wrap { position: relative; display: flex; align-items: center; }
+  .field-input-icon {
+    position: absolute; left: 12px; color: var(--ink-400);
+    display: grid; place-items: center; pointer-events: none;
+  }
+  .field-input-icon svg { width: 14px; height: 14px; }
+  .field-input {
+    width: 100%; padding: 10px 14px 10px 38px; background: var(--cream);
+    border: 1px solid var(--line-strong); font-family: var(--sans);
+    font-size: 14px; color: var(--ink); transition: all 0.15s;
+  }
+  .field-input.no-icon { padding-left: 14px; }
+  .field-input.password { padding-right: 42px; }
+  .field-input:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+  .field-input::placeholder { color: var(--ink-200); }
+  .field-toggle-vis {
+    position: absolute; right: 10px; background: none; border: none;
+    cursor: pointer; color: var(--ink-400); padding: 6px;
+    display: grid; place-items: center;
+  }
+  .field-toggle-vis:hover { color: var(--forest); }
+  .field-toggle-vis svg { width: 15px; height: 15px; }
+  .field-help { font-size: 11px; color: var(--ink-400); margin-top: 6px; line-height: 1.5; }
+  .field-help.warn { color: var(--warning); }
+
+  .email-current-row {
+    background: var(--cream-200); border: 1px solid var(--line);
+    padding: 10px 14px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 12px; color: var(--ink);
+  }
+  .email-current-row .verified,
+  .email-current-row .unverified {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--sans); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;
+  }
+  .email-current-row .verified { color: var(--success); }
+  .email-current-row .unverified { color: var(--warning); }
+  .email-current-row .verified svg,
+  .email-current-row .unverified svg { width: 11px; height: 11px; }
+
+  .strength-meter { margin-top: 10px; }
+  .strength-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 6px; }
+  .strength-bar { height: 4px; background: var(--cream-200); }
+  .strength-bar.on-1 { background: var(--danger); }
+  .strength-bar.on-2 { background: var(--warning); }
+  .strength-bar.on-3 { background: var(--ochre); }
+  .strength-bar.on-4 { background: var(--success); }
+  .strength-label {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-400);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    display: flex; justify-content: space-between;
+  }
+  .strength-label .level { color: var(--ink); font-weight: 500; }
+
+  .pwd-requirements { margin-top: 14px; padding: 14px 16px; background: var(--cream); border: 1px solid var(--line); }
+  .pwd-req-title {
+    font-family: var(--mono); font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--ink-400); margin-bottom: 10px;
+  }
+  .pwd-req-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pwd-req-list li {
+    font-size: 11.5px; color: var(--ink-600);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pwd-req-list li .check-mark {
+    width: 14px; height: 14px; flex-shrink: 0; color: var(--ink-200);
+    display: grid; place-items: center;
+  }
+  .pwd-req-list li.met { color: var(--success); }
+  .pwd-req-list li.met .check-mark { color: var(--success); }
+  .pwd-req-list svg { width: 11px; height: 11px; }
+
+  .profil-section-footer {
+    padding: 16px 28px; border-top: 1px solid var(--line);
+    background: var(--cream); display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  }
+  .section-footer-note { font-size: 11.5px; color: var(--ink-400); line-height: 1.4; }
+
+  body[data-page="profil"] .btn { padding: 9px 16px; font-size: 13px; }
+  body[data-page="profil"] .btn svg { width: 13px; height: 13px; }
+  body[data-page="profil"] .btn-sm { padding: 6px 12px; font-size: 12px; }
+  body[data-page="profil"] .btn-sm svg { width: 12px; height: 12px; }
+
+  .profil-flash {
+    margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--line);
+    font-size: 13px; display: flex; align-items: center; gap: 10px;
+    font-family: var(--sans);
+  }
+  .profil-flash.success { background: rgba(74, 107, 61, 0.08); color: var(--success); border-color: rgba(74, 107, 61, 0.25); }
+  .profil-flash.error   { background: rgba(139, 58, 42, 0.08); color: var(--danger);  border-color: rgba(139, 58, 42, 0.25); }
+  .profil-flash.info    { background: var(--cream-200); color: var(--ink); }
+  .profil-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  @media (max-width: 700px) {
+    .identity-hero { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .pwd-req-list { grid-template-columns: 1fr; }
+    .profil-section-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="profil-wrap">
+  <header class="page-header">
+    <div class="page-eyebrow">Akun Anda</div>
+    <h1 class="page-title">Profil <span class="italic">Pengguna</span></h1>
+    <p class="page-desc">Kelola informasi akun Anda di {{ site.name|default:"DST Kabupaten Abc" }} — nama yang ditampilkan, email login, dan kata sandi.</p>
+  </header>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="profil-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- ===== IDENTITY HERO ===== -->
+  <div class="identity-hero">
+    <form method="post" action="" enctype="multipart/form-data" id="photoForm" style="flex-shrink: 0;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_photo">
+      <div class="avatar-large">
+        {% if profile.photo_url %}
+          <img class="avatar-img" src="{{ profile.photo_url }}" alt="Foto profil {{ profile.full_name }}">
+        {% else %}
+          {{ profile.initials }}
+        {% endif %}
+        <button type="button" class="avatar-edit-btn" id="avatarEditBtn" title="Ganti foto profil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+      </div>
+      <input type="file" name="avatar" id="avatarFileInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+    </form>
+    <div class="identity-info">
+      <div class="identity-name">{{ profile.full_name|default:"(Tanpa nama)" }}</div>
+      <div class="identity-email">{{ profile.email|default:"(Tanpa email)" }}</div>
+      <div class="identity-tags">
+        <span class="identity-tag role">{{ profile.role }}</span>
+        {% if profile.department %}<span class="identity-tag dept">{{ profile.department }}</span>{% endif %}
+        {% if profile.is_active %}<span class="identity-tag status">Aktif</span>{% endif %}
+      </div>
+      <div class="identity-actions">
+        <button type="button" class="identity-photo-link" id="avatarChangeLink">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          {% if profile.photo_url %}Ganti foto{% else %}Unggah foto{% endif %}
+        </button>
+        {% if profile.photo_url %}
+        <form method="post" action="" style="display: inline;" onsubmit="return confirm('Hapus foto profil Anda?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="remove_photo">
+          <button type="submit" class="identity-photo-link danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Hapus foto
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      <div class="field-help" style="margin-top: 8px;">Format JPG, PNG, GIF, atau WebP · maksimum 1 MB.</div>
+    </div>
+  </div>
+
+  <!-- ===== 01: NAMA ===== -->
+  <section class="profil-section">
+    <div class="profil-section-header">
+      <div class="section-title-block">
+        <span class="section-num">01</span>
+        <div>
+          <h2 class="profil-section-title">Nama <span class="italic">tampilan</span></h2>
+          <div class="section-meta">Tertera di header, audit log, dan dokumen yang Anda terbitkan</div>
+        </div>
+      </div>
+    </div>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_name">
+      <div class="profil-section-body">
+        <div class="field-group">
+          <label class="field-label" for="namaLengkap">Nama Lengkap <span class="req">*</span></label>
+          <div class="field-input-wrap">
+            <span class="field-input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input class="field-input" id="namaLengkap" name="full_name" type="text" value="{{ profile.full_name }}" required>
+          </div>
+          <div class="field-help">Nama lengkap disimpan apa adanya (tidak diubah otomatis). Gunakan nama resmi sesuai SK kepegawaian.</div>
+        </div>
+      </div>
+      <div class="profil-section-footer">
+        <div class="section-footer-note">Perubahan nama akan tampak di seluruh sistem dalam 1 menit.</div>
+        <button class="btn btn-primary btn-sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan nama
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 02: INSTANSI ===== -->
+  <section class="profil-section">
+    <div class="profil-section-header">
+      <div class="section-title-block">
+        <span class="section-num">02</span>
+        <div>
+          <h2 class="profil-section-title">Nama <span class="italic">Instansi</span></h2>
+          <div class="section-meta">Instansi tempat Anda bekerja</div>
+        </div>
+      </div>
+    </div>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_walidata">
+      <div class="profil-section-body">
+        <div class="field-group" style="margin-bottom: 0;">
+          <label class="field-label" for="walidataSelect">Instansi</label>
+          <div class="field-input-wrap">
+            <span class="field-input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3"/></svg>
+            </span>
+            <select class="field-input" id="walidataSelect" name="walidata">
+              <option value="">— Tidak ditetapkan —</option>
+              {% for w in walidata_choices %}
+              <option value="{{ w.id }}" {% if w.id == walidata_current_id %}selected{% endif %}>{{ w.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field-help">Pilih instansi Anda. Daftar dikelola Super Admin lewat menu <strong>Walidata</strong>.</div>
+        </div>
+      </div>
+      <div class="profil-section-footer">
+        <div class="section-footer-note">Menautkan akun Anda ke instansi wali data resmi.</div>
+        <button class="btn btn-primary btn-sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Simpan walidata
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 03: EMAIL ===== -->
+  <section class="profil-section">
+    <div class="profil-section-header">
+      <div class="section-title-block">
+        <span class="section-num">03</span>
+        <div>
+          <h2 class="profil-section-title">Alamat <span class="italic">email</span></h2>
+          <div class="section-meta">Digunakan untuk login dan notifikasi sistem</div>
+        </div>
+      </div>
+    </div>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_email">
+      <div class="profil-section-body">
+        <label class="field-label">Email saat ini</label>
+        <div class="email-current-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 14px; height: 14px; color: var(--ink-400); flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          {{ profile.email|default:"(belum di-set)" }}
+          {% if profile.email %}
+            {% if profile.email_verified %}
+            <span class="verified">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Terverifikasi
+            </span>
+            {% else %}
+            <span class="unverified">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Belum diverifikasi
+            </span>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <div class="field-group" style="margin-top: 20px;">
+          <label class="field-label" for="emailBaru">Ganti ke email baru</label>
+          <div class="field-input-wrap">
+            <span class="field-input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input class="field-input" id="emailBaru" name="new_email" type="email" placeholder="email.baru@bappeda.luwukab.go.id">
+          </div>
+          <div class="field-help warn">
+            Setelah disimpan, email baru langsung berlaku untuk login — tidak perlu login ulang. Status akan ditandai "belum diverifikasi".
+          </div>
+        </div>
+      </div>
+      <div class="profil-section-footer">
+        <div class="section-footer-note">Pastikan email benar dan dapat Anda akses, karena dipakai untuk login dan notifikasi sistem.</div>
+        <button class="btn btn-primary btn-sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+          Ganti email
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 04: PASSWORD ===== -->
+  <section class="profil-section">
+    <div class="profil-section-header">
+      <div class="section-title-block">
+        <span class="section-num">04</span>
+        <div>
+          <h2 class="profil-section-title">Ganti <span class="italic">kata sandi</span></h2>
+          <div class="section-meta">Minimum 12 karakter · disarankan ganti setiap 90 hari</div>
+        </div>
+      </div>
+    </div>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_password">
+      <div class="profil-section-body">
+        <div class="field-group">
+          <label class="field-label" for="pwdLama">Kata sandi saat ini <span class="req">*</span></label>
+          <div class="field-input-wrap">
+            <span class="field-input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input class="field-input password" id="pwdLama" name="oldpassword" type="password" placeholder="Masukkan kata sandi saat ini" required>
+            <button class="field-toggle-vis" type="button" data-target="pwdLama" aria-label="Toggle visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="pwdBaru">Kata sandi baru <span class="req">*</span></label>
+          <div class="field-input-wrap">
+            <span class="field-input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input class="field-input password" id="pwdBaru" name="password1" type="password" placeholder="Minimum 12 karakter" required>
+            <button class="field-toggle-vis" type="button" data-target="pwdBaru" aria-label="Toggle visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+
+          <div class="strength-meter">
+            <div class="strength-bars">
+              <div class="strength-bar" id="bar1"></div>
+              <div class="strength-bar" id="bar2"></div>
+              <div class="strength-bar" id="bar3"></div>
+              <div class="strength-bar" id="bar4"></div>
+            </div>
+            <div class="strength-label">
+              <span>Kekuatan kata sandi</span>
+              <span class="level" id="strengthLevel">Belum diisi</span>
+            </div>
+          </div>
+
+          <div class="pwd-requirements">
+            <div class="pwd-req-title">Persyaratan</div>
+            <ul class="pwd-req-list">
+              <li id="req-len"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>Minimum 12 karakter</li>
+              <li id="req-upper"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>1 huruf besar (A–Z)</li>
+              <li id="req-lower"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>1 huruf kecil (a–z)</li>
+              <li id="req-num"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>1 angka (0–9)</li>
+              <li id="req-sym"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>1 simbol (!@#$%…)</li>
+              <li id="req-nospace"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>Tanpa spasi</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom: 0;">
+          <label class="field-label" for="pwdKonfirmasi">Konfirmasi kata sandi baru <span class="req">*</span></label>
+          <div class="field-input-wrap">
+            <span class="field-input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input class="field-input password" id="pwdKonfirmasi" name="password2" type="password" placeholder="Ketik ulang kata sandi baru" required>
+            <button class="field-toggle-vis" type="button" data-target="pwdKonfirmasi" aria-label="Toggle visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-help" id="pwdMatchHelp">Kedua kolom kata sandi harus sama persis.</div>
+        </div>
+      </div>
+      <div class="profil-section-footer">
+        <div class="section-footer-note">Anda akan keluar otomatis dari semua perangkat lain setelah ganti kata sandi.</div>
+        <button class="btn btn-primary btn-sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Ganti kata sandi
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+  document.querySelectorAll('.field-toggle-vis').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+      btn.innerHTML = isPwd
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+  });
+
+  const pwdBaru = document.getElementById('pwdBaru');
+  const pwdKonfirmasi = document.getElementById('pwdKonfirmasi');
+  const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3'), document.getElementById('bar4')];
+  const levelLabel = document.getElementById('strengthLevel');
+  const matchHelp = document.getElementById('pwdMatchHelp');
+  const checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+  const circleSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
+
+  function evaluatePassword(pwd) {
+    const checks = {
+      len: pwd.length >= 12,
+      upper: /[A-Z]/.test(pwd),
+      lower: /[a-z]/.test(pwd),
+      num: /[0-9]/.test(pwd),
+      sym: /[^A-Za-z0-9]/.test(pwd),
+      nospace: pwd.length > 0 && !/\s/.test(pwd),
+    };
+    Object.keys(checks).forEach(k => {
+      const el = document.getElementById('req-' + k);
+      if (!el) return;
+      el.classList.toggle('met', checks[k]);
+      const mark = el.querySelector('.check-mark');
+      mark.innerHTML = checks[k] ? checkSvg : circleSvg;
+    });
+    return Object.values(checks).filter(Boolean).length;
+  }
+
+  function updateStrength() {
+    if (!pwdBaru) return;
+    const pwd = pwdBaru.value;
+    const met = evaluatePassword(pwd);
+    bars.forEach(b => b && (b.className = 'strength-bar'));
+    if (pwd.length === 0) {
+      levelLabel.textContent = 'Belum diisi';
+      levelLabel.style.color = '';
+      return;
+    }
+    let level = 1;
+    if (met >= 6 && pwd.length >= 16) level = 4;
+    else if (met >= 5) level = 3;
+    else if (met >= 4) level = 2;
+    for (let i = 0; i < level; i++) bars[i] && bars[i].classList.add('on-' + level);
+    const labels = ['', 'Lemah', 'Sedang', 'Kuat', 'Sangat kuat'];
+    const colors = ['', 'var(--danger)', 'var(--warning)', 'var(--ochre-600)', 'var(--success)'];
+    levelLabel.textContent = labels[level];
+    levelLabel.style.color = colors[level];
+  }
+
+  function updateMatch() {
+    if (!pwdKonfirmasi) return;
+    if (!pwdKonfirmasi.value) {
+      matchHelp.textContent = 'Kedua kolom kata sandi harus sama persis.';
+      matchHelp.className = 'field-help';
+      return;
+    }
+    if (pwdBaru.value === pwdKonfirmasi.value) {
+      matchHelp.textContent = '✓ Cocok';
+      matchHelp.style.color = 'var(--success)';
+    } else {
+      matchHelp.textContent = '✕ Tidak cocok dengan kata sandi baru';
+      matchHelp.style.color = 'var(--danger)';
+    }
+  }
+
+  if (pwdBaru) pwdBaru.addEventListener('input', () => { updateStrength(); updateMatch(); });
+  if (pwdKonfirmasi) pwdKonfirmasi.addEventListener('input', updateMatch);
+
+  // ===== Foto profil: buka file picker & submit otomatis saat dipilih =====
+  const photoForm = document.getElementById('photoForm');
+  const fileInput = document.getElementById('avatarFileInput');
+  const editBtn = document.getElementById('avatarEditBtn');
+  const changeLink = document.getElementById('avatarChangeLink');
+  const openPicker = () => fileInput && fileInput.click();
+  if (editBtn) editBtn.addEventListener('click', openPicker);
+  if (changeLink) changeLink.addEventListener('click', openPicker);
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      if (!fileInput.files.length) return;
+      const MAX = 1024 * 1024; // 1 MB — sesuai AVATAR_MAX_SIZE
+      if (fileInput.files[0].size > MAX) {
+        alert('Ukuran foto melebihi 1 MB. Pilih berkas yang lebih kecil.');
+        fileInput.value = '';
+        return;
+      }
+      photoForm.submit();
+    });
+  }
+</script>
+{% endblock %}

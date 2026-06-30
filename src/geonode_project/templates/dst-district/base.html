@@ -1,0 +1,18 @@
+{% load static dst_theme %}<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}DST Kabupaten Luwu — FOLUR Program{% endblock %}</title>
+{% dst_theme_logo_url as logo_url %}
+{% if logo_url %}<link rel="icon" href="{{ logo_url }}">{% else %}<link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">{% endif %}
+{% dst_font_vars %}
+<link rel="stylesheet" href="{% static 'dst-district/css/base.css' %}?v=20260523d">
+<style>{% include "dst-district/partials/_theme_vars.html" %}</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body data-page="{% block page_slug %}{% endblock %}" data-theme="{% dst_active_theme %}">
+{% block body %}{% endblock %}
+{% block extra_js %}{% endblock %}
+</body>
+</html>

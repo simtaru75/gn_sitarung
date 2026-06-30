@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Database GeoNode</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1;
+    margin: 24px auto;
+    max-width: 1200px;
+    color: #222;
+    padding: 0 20px;
+}
+h1, h2, h3 {
+    color: #1f4e79;
+    margin-top: 24px;
+    margin-bottom: 10px;
+}
+p {
+    margin: 4px 0;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 14px;
+}
+thead {
+    background-color: #1f4e79;
+    color: white;
+}
+th, td {
+    border: 1px solid #d0d7de;
+    padding: 10px 12px;
+    vertical-align: top;
+}
+tbody tr:nth-child(even) {
+    background-color: #f6f8fa;
+}
+tbody tr:hover {
+    background-color: #eef5ff;
+}
+pre {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+code, em {
+    font-style: italic;
+}
+strong {
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+<p >Berikut adalah analisis lengkap <strong>Model Database dan Relasi</strong> di project <strong>geonode-project-folurians</strong>:</p>
+<h2>🗄️ Model Database & Relasi</h2>
+<h3><strong>1. Hierarki Model Resource (GeoNode Core)</strong></h3>
+<p >GeoNode menggunakan <strong>Polymorphic Model</strong> di mana semua resource (data spasial, dokumen, peta) mewarisi dari model dasar ResourceBase:</p>
+<p >&nbsp;</p>
+<p >ResourceBase (PolymorphicModel)</p>
+<p >├── Dataset        → Layer spasial (vector, raster, tabular)</p>
+<p >├── Document       → File attachments (PDF, gambar, video, dll)</p>
+<p >├── Map            → Peta komposit (gabungan layer)</p>
+<p >└── GeoApp         → Aplikasi client generik</p>
+<p >&nbsp;</p>
+<h3><strong>2. Model ResourceBase — Parent Semua Resource</strong></h3>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Relasi</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>uuid</td><td>CharField(36)</td><td>—</td><td>UUID unik per resource</td></tr>
+<tr><td>title</td><td>CharField</td><td>—</td><td>Judul resource</td></tr>
+<tr><td>abstract</td><td>TextField</td><td>—</td><td>Abstrak/deskripsi</td></tr>
+<tr><td>purpose</td><td>TextField</td><td>—</td><td>Tujuan data</td></tr>
+<tr><td>owner</td><td>ForeignKey</td><td>→ <strong>User</strong></td><td>Pemilik resource</td></tr>
+<tr><td>contacts</td><td>ManyToMany</td><td>→ User (via ContactRole)</td><td>Kontak dengan peran</td></tr>
+<tr><td>keywords</td><td>TaggableManager</td><td>→ HierarchicalKeyword</td><td>Keyword hierarkis</td></tr>
+<tr><td>tkeywords</td><td>ManyToMany</td><td>→ ThesaurusKeyword</td><td>Keyword dari thesaurus</td></tr>
+<tr><td>regions</td><td>ManyToMany</td><td>→ <strong>Region</strong></td><td>Wilayah geografis</td></tr>
+<tr><td>category</td><td>ForeignKey</td><td>→ <strong>TopicCategory</strong></td><td>Kategori tematik ISO</td></tr>
+<tr><td>license</td><td>ForeignKey</td><td>→ <strong>License</strong></td><td>Lisensi data</td></tr>
+<tr><td>group</td><td>ForeignKey</td><td>→ Django Group</td><td>Grup pemilik</td></tr>
+<tr><td>bbox_polygon</td><td>PolygonField</td><td>—</td><td>Bounding box (native SRS)</td></tr>
+<tr><td>ll_bbox_polygon</td><td>PolygonField</td><td>—</td><td>Bounding box (WGS84)</td></tr>
+<tr><td>thumbnail_url</td><td>TextField</td><td>—</td><td>URL thumbnail</td></tr>
+<tr><td>is_published</td><td>BooleanField</td><td>—</td><td>Sudah dipublish?</td></tr>
+<tr><td>is_approved</td><td>BooleanField</td><td>—</td><td>Sudah di-approve?</td></tr>
+<tr><td>state</td><td>CharField</td><td>—</td><td>Status proses (ready/running)</td></tr>
+<tr><td>blob</td><td>JSONField</td><td>—</td><td>Data tambahan fleksibel</td></tr>
+</tbody>
+</table>
+<h3><strong>3. Model Dataset (Layer Spasial)</strong></h3>
+<p >Mewarisi semua field dari ResourceBase, ditambah:</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Relasi</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>workspace</td><td>CharField</td><td>—</td><td>Workspace GeoServer</td></tr>
+<tr><td>store</td><td>CharField</td><td>—</td><td>Data store GeoServer</td></tr>
+<tr><td>name</td><td>CharField</td><td>—</td><td>Nama layer</td></tr>
+<tr><td>typename</td><td>CharField</td><td>—</td><td>workspace:name</td></tr>
+<tr><td>subtype</td><td>CharField</td><td>—</td><td>vector / raster / vector_time / tabular</td></tr>
+<tr><td>srid</td><td>CharField</td><td>—</td><td>Sistem koordinat (EPSG:4326, dll)</td></tr>
+<tr><td>ows_url</td><td>URLField</td><td>—</td><td>URL layanan OWS</td></tr>
+<tr><td>default_style</td><td>ForeignKey</td><td>→ <strong>Style</strong></td><td>Style default</td></tr>
+<tr><td>styles</td><td>ManyToMany</td><td>→ <strong>Style</strong></td><td>Semua style tersedia</td></tr>
+<tr><td>is_mosaic</td><td>BooleanField</td><td>—</td><td>Mosaic dataset?</td></tr>
+<tr><td>has_time</td><td>BooleanField</td><td>—</td><td>Time-enabled?</td></tr>
+<tr><td>charset</td><td>CharField</td><td>—</td><td>Encoding file</td></tr>
+</tbody>
+</table>
+<p ><strong>Relasi turunan:</strong></p>
+<p >- Attribute → ForeignKey ke Dataset (related_name=attribute_set) — daftar kolom/atribut layer</p>
+<h3><strong>4. Model Document (Dokumen Kebijakan)</strong></h3>
+<p >Mewarisi dari ResourceBase, ditambah:</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>extension</td><td>CharField(128)</td><td>Ekstensi file</td></tr>
+<tr><td>doc_url</td><td>URLField</td><td>URL eksternal (jika bukan file lokal)</td></tr>
+</tbody>
+</table>
+<h3><strong>5. Model Map (Peta Komposit)</strong></h3>
+<p >Mewarisi dari ResourceBase, ditambah:</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>last_modified</td><td>DateTimeField</td><td>Terakhir dimodifikasi</td></tr>
+<tr><td>urlsuffix</td><td>CharField</td><td>Suffix URL custom</td></tr>
+</tbody>
+</table>
+<p ><strong>Relasi turunan:</strong></p>
+<p >- MapLayer → ForeignKey ke Map (related_name=maplayers) — layer-layer dalam peta</p>
+<h3><strong>6. Model MapLayer</strong></h3>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Relasi</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>map</td><td>ForeignKey</td><td>→ <strong>Map</strong></td><td>Map induk</td></tr>
+<tr><td>dataset</td><td>ForeignKey</td><td>→ <strong>Dataset</strong> (nullable)</td><td>Referensi ke Dataset GeoNode</td></tr>
+<tr><td>name</td><td>TextField</td><td>—</td><td>Nama layer</td></tr>
+<tr><td>store</td><td>TextField</td><td>—</td><td>Store GeoServer</td></tr>
+<tr><td>current_style</td><td>TextField</td><td>—</td><td>Style aktif</td></tr>
+<tr><td>ows_url</td><td>URLField</td><td>—</td><td>URL OWS</td></tr>
+<tr><td>local</td><td>BooleanField</td><td>—</td><td>Dari GeoServer lokal?</td></tr>
+<tr><td>order</td><td>IntegerField</td><td>—</td><td>Urutan layer</td></tr>
+<tr><td>visibility</td><td>BooleanField</td><td>—</td><td>Terlihat?</td></tr>
+<tr><td>opacity</td><td>FloatField</td><td>—</td><td>Opasitas</td></tr>
+</tbody>
+</table>
+<h3><strong>7. Model User & Group</strong></h3>
+<p ><strong>Profile</strong> (extends AbstractUser)</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>organization</td><td>CharField</td><td>Organisasi</td></tr>
+<tr><td>position</td><td>CharField</td><td>Jabatan</td></tr>
+<tr><td>profile</td><td>TextField</td><td>Bio</td></tr>
+<tr><td>voice, fax, delivery, city, area, zipcode, country</td><td>CharField</td><td>Info kontak/alamat</td></tr>
+<tr><td>language</td><td>CharField</td><td>Bahasa</td></tr>
+<tr><td>timezone</td><td>CharField</td><td>Zona waktu</td></tr>
+<tr><td>extra_data</td><td>JSONField</td><td>Atribut tambahan</td></tr>
+</tbody>
+</table>
+<p ><strong>GroupProfile</strong></p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Relasi</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>group</td><td>OneToOne</td><td>→ Django Group</td><td>Grup auth Django</td></tr>
+<tr><td>title, slug, logo, description</td><td>—</td><td>Info grup</td></tr>
+<tr><td>email</td><td>EmailField</td><td>Kontak grup</td></tr>
+<tr><td>access</td><td>CharField</td><td>public / public-invite / private</td></tr>
+<tr><td>categories</td><td>ManyToMany</td><td>→ GroupCategory</td><td>Kategori grup</td></tr>
+</tbody>
+</table>
+<h3><strong>8. Model Harvesting (Akses Nasional)</strong></h3>
+<table>
+<thead><tr><th>Model</th><th>Field Kunci</th><th>Relasi</th></tr></thead>
+<tbody>
+<tr><td><strong>Harvester</strong></td><td>name, status, remote_url, scheduling_enabled</td><td>default_owner → User</td></tr>
+<tr><td><strong>AsynchronousHarvestingSession</strong></td><td>harvester (FK), status, start/end time</td><td>→ Harvester</td></tr>
+<tr><td><strong>HarvestableResource</strong></td><td>unique_identifier, title, should_be_harvested</td><td>harvester → Harvester, geonode_resource → ResourceBase (nullable)</td></tr>
+</tbody>
+</table>
+<h3><strong>9. Model Custom: geonode_project</strong></h3>
+<p >Project ini menambahkan <strong>2 model custom</strong>:</p>
+<p >&nbsp;</p>
+<p ><strong>A. SiteIdentity</strong> — Singleton (pk=1)</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>nama_kabupaten</td><td>CharField(100)</td><td>Nama kabupaten untuk branding</td></tr>
+<tr><td>timezone</td><td>CharField(8)</td><td>WIB / WITA / WIT</td></tr>
+<tr><td>updated</td><td>DateTimeField(auto_now)</td><td>Terakhir diupdate</td></tr>
+</tbody>
+</table>
+<p ><strong>Karakteristik:</strong></p>
+<p >- Selalu <strong>1 baris saja</strong> (pk=1, dipaksa di save())</p>
+<p >- <strong>Tidak berelasi</strong> dengan model GeoNode apapun</p>
+<p >- Digunakan di template untuk menampilkan nama kabupaten dan zona waktu</p>
+<p >&nbsp;</p>
+<p ><strong>B. ScreeningLog</strong> — Log WebGIS</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Relasi</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>nomor_reg</td><td>CharField(64), db_index</td><td>—</td><td>Nomor registrasi laporan</td></tr>
+<tr><td>user</td><td>ForeignKey</td><td>→ <strong>User</strong> (nullable)</td><td>Pengguna (bisa anonim)</td></tr>
+<tr><td>user_label</td><td>CharField(150)</td><td>—</td><td>Label tampilan ("Publik" default)</td></tr>
+<tr><td>ip</td><td>GenericIPAddressField</td><td>—</td><td>IP address</td></tr>
+<tr><td>area_ha</td><td>FloatField</td><td>—</td><td>Luas area (hektar)</td></tr>
+<tr><td>created</td><td>DateTimeField(auto_now_add)</td><td>—</td><td>Waktu log</td></tr>
+</tbody>
+</table>
+<p ><strong>Karakteristik:</strong></p>
+<p >- Relasi <strong>lemah</strong> ke User (nullable, SET_NULL)</p>
+<p >- <strong>Tidak berelasi</strong> ke ResourceBase/Dataset/Document/Map</p>
+<p >- Sengaja <strong>tidak pakai actstream</strong> karena WebGIS bisa diakses publik tanpa login</p>
+<h3><strong>10. Activity Stream (django-actstream)</strong></h3>
+<p >Model Action mencatat semua aktivitas di sistem:</p>
+<table>
+<thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>actor</td><td>GenericForeignKey</td><td>User yang melakukan aksi</td></tr>
+<tr><td>verb</td><td>CharField</td><td>"created", "updated", "deleted", "uploaded", dll</td></tr>
+<tr><td>action_object</td><td>GenericForeignKey</td><td>Objek yang dikenai aksi (Dataset/Map/Document)</td></tr>
+<tr><td>target</td><td>GenericForeignKey</td><td>Target aksi (biasanya null)</td></tr>
+<tr><td>timestamp</td><td>DateTimeField</td><td>Waktu aksi</td></tr>
+<tr><td>public</td><td>BooleanField</td><td>Visibilitas publik</td></tr>
+</tbody>
+</table>
+<h2>📊 Diagram Relasi (Teks)</h2>
+<pre>
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                               USER / AUTH                                    │
+│   ┌───────────────┐         ┌───────────────┐                                │
+│   │    Profile    │◄────────┤ GroupMember   │                                │
+│   │ (AbstractUser)│         │(manager/      │                                │
+│   │               │         │ member)       │                                │
+│   └───────┬───────┘         └───────┬───────┘                                │
+│           │                         │                                        │
+│           │     ┌───────────────────┘                                        │
+│           │     │                                                            │
+│           │     ▼                                                            │
+│           │  ┌───────────────┐         ┌───────────────┐                     │
+│           └──┤ GroupProfile  │◄────────┤ GroupCategory │                     │
+│              │(OneToOne:     │   M2M   │               │                     │
+│              │ Django Group) │         └───────────────┘                     │
+│              └───────────────┘                                               │
+└───────────────────────────────────────┬──────────────────────────────────────┘
+                                        │
+                                        │
+┌───────────────────────────────────────┼──────────────────────────────────────┐
+│                             RESOURCES │                                      │
+│                                       │                                      │
+│   ┌───────────────────────────────────┼────────────────────────────────────┐ │
+│   │                            ResourceBase                                │ │
+│   │   (PolymorphicModel - parent untuk semua resource)                     │ │
+│   │                                                                        │ │
+│   │   Fields: uuid, title, abstract, owner(FK→User),                       │ │
+│   │           contacts(M2M→User via ContactRole),                          │ │
+│   │           keywords(M2M→HierarchicalKeyword),                           │ │
+│   │           tkeywords(M2M→ThesaurusKeyword),                             │ │
+│   │           regions(M2M→Region), category(FK→TopicCategory),             │ │
+│   │           license(FK→License), group(FK→Django Group),                 │ │
+│   │           bbox_polygon, ll_bbox_polygon,                               │ │
+│   │           is_published, is_approved, state, blob                       │ │
+│   └───────┬────────────┬───────────────┼──────────────┬────────────────────┘ │
+│           │            │               │              │                      │
+│     ┌─────┘      ┌─────┘         ┌─────┘       ┌──────┘                      │
+│     ▼            ▼               ▼             ▼                             │
+│ ┌───────┐   ┌─────────┐     ┌──────────┐  ┌──────────┐                       │
+│ │Dataset│   │Document │     │   Map    │  │ GeoApp   │                       │
+│ │(Layer)│   │         │     │          │  │          │                       │
+│ └───┬───┘   └─────────┘     └─────┬────┘  └──────────┘                       │
+│     │                             │                                          │
+│     │     ┌───────────────────────┘                                          │
+│     │     │                                                                  │
+│     │     ▼                                                                  │
+│     │  ┌───────────────────────┐                                             │
+│     └──┤ MapLayer              │◄──────────────────────────────────────┐     │
+│        │(FK→Map)               │                                       │     │
+│        │(FK→Dataset, nullable) │                                       │     │
+│        └───────────────────────┘                                       │     │
+│                                                                        │     │
+│   ┌─────────────┐  ┌────────────┐  ┌─────────────────┐  ┌───────────┐  │     │
+│   │   Style     │  │ Attribute  │  │    Link         │  │   Asset   │  │     │
+│   │             │  │(FK→Dataset)│  │(FK→ResourceBase)│  │(FK→User)  │  │     │
+│   │default_style│  │            │  │                 │  │           │  │     │
+│   │ (FK)        │  │            │  │asset(FK)        │  │           │  │     │
+│   │styles(M2M)  │  │            │  │                 │  │           │  │     │
+│   └─────────────┘  └────────────┘  └─────────────────┘  └───────────┘  │     │
+│                                                                        │     │
+│   ┌───────────────┐  ┌─────────────────┐  ┌──────────────────┐         │     │
+│   │LinkedResource │  │ ExtraMetadata   │  │ UserGeoLimit/    │         │     │
+│   │source(FK→RB)  │  │(FK→ResourceBase)│  │ GroupGeoLimit    │         │     │
+│   │target(FK→RB)  │  └─────────────────┘  │(FK→ResourceBase) │         │     │
+│   └───────────────┘                       └──────────────────┘         │     │
+│                                                                        │     │
+└────────────────────────────────────────────────────────────────────────┼─────┘
+                                                                         │
+┌────────────────────────────────────────────────────────────────────────┼─────┐
+│                          HARVESTING                                    │     │
+│                                                                        │     │
+│   ┌───────────────┐         ┌───────────────────────────────┐          │     │
+│   │   Harvester   │◄────────┤ AsynchronousHarvestingSession │          │     │
+│   │               │   1:M   │                               │          │     │
+│   │ default_owner │         └───────────────────────────────┘          │     │
+│   │ (FK→User)     │                                                    │     │
+│   └───────┬───────┘        ┌───────────────────────────┐               │     │
+│           │                │    HarvestableResource    │               │     │
+│           └───────────────►│    (FK→Harvester)         │               │     │
+│               1:M          │    geonode_resource       │               │     │
+│                            │    (FK→ResourceBase, null)│               │     │
+│                            └───────────────────────────┘               │     │
+│                                                                        │     │
+└────────────────────────────────────────────────────────────────────────┼─────┘
+                                                                         │
+┌────────────────────────────────────────────────────────────────────────┼─────┐
+│                       ACTIVITY STREAM (actstream)                      │     │
+│                                                                        │     │
+│   ┌──────────────────────────────────────────────────────────┐         │     │
+│   │                       Action                             │         │     │
+│   │   actor (GenericFK→User)                                 │         │     │
+│   │   verb ("created"/"updated"/"deleted"/"uploaded")        │         │     │
+│   │   action_object (GenericFK→Dataset/Map/Document/GeoApp)  │         │     │
+│   │   target (GenericFK, usually null)                       │         │     │
+│   │   timestamp, public, description                         │         │     │
+│   └──────────────────────────────────────────────────────────┘         │     │
+│                                                                        │     │
+└────────────────────────────────────────────────────────────────────────┼─────┘
+                                                                         │
+┌────────────────────────────────────────────────────────────────────────┼─────┐
+│               MODEL CUSTOM: geonode_project                            │     │
+│                                                                        │     │
+│   ┌──────────────────────┐      ┌────────────────────────────┐         │     │
+│   │     SiteIdentity     │      │       ScreeningLog         │         │     │
+│   │   (Singleton, pk=1)  │      │   nomor_reg                │         │     │
+│   │   nama_kabupaten     │      │   user (FK→User, nullable) │         │     │
+│   │   timezone (WIB/     │      │   user_label               │         │     │
+│   │          WITA/WIT)   │      │   ip, area_ha, created     │         │     │
+│   └──────────────────────┘      └────────────────────────────┘         │     │
+│                                                                        │     │
+│   NOTE: Kedua model custom ini TIDAK berelasi langsung                 │     │
+│         dengan model GeoNode (ResourceBase, Dataset, dll).             │     │
+│         SiteIdentity adalah standalone singleton.                      │     │
+│         ScreeningLog hanya berelasi ke User (nullable).                │     │
+│                                                                        │     │
+└────────────────────────────────────────────────────────────────────────┴─────┘
+</pre>
+<h2>🔑 Relasi Model Custom dengan GeoNode</h2>
+<table>
+<thead><tr><th>Model Custom</th><th>Relasi ke GeoNode</th><th>Cara Penggunaan</th></tr></thead>
+<tbody>
+<tr><td><strong>SiteIdentity</strong></td><td><strong>Tidak ada</strong></td><td>Standalone. Diakses via SiteIdentity.load() di views untuk branding (nama kabupaten, timezone)</td></tr>
+<tr><td><strong>ScreeningLog</strong></td><td><strong>FK nullable → User</strong></td><td>Tidak berelasi ke ResourceBase. Endpoint publik menerima POST dari WebGIS. user_label menangani anonim</td></tr>
+</tbody>
+</table>
+<p >Apakah Anda ingin saya menjelaskan lebih detail tentang:</p>
+<p >1. <strong>Cara query</strong> model-model ini di views?</p>
+<p >2. <strong>Migrations</strong> dan cara menambah field baru?</p>
+<p >3. <strong>Relasi spesifik</strong> seperti LinkedResource, ExtraMetadata, atau geo-limits?</p>
+<p >4. <strong>Cara menambah model custom baru</strong> yang berelasi dengan GeoNode?</p>
+</body>
+</html>

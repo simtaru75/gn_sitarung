@@ -1,0 +1,22 @@
+{% extends 'dst-district/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'dst-district/css/admin.css' %}?v=20260606a">
+{% endblock %}
+
+{% block body %}
+<div class="app">
+  {% include 'dst-district/admin/partials/_sidebar.html' %}
+  <main class="main">
+    {% include 'dst-district/admin/partials/_topbar.html' %}
+    <div class="page">
+      {% block admin_content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'dst-district/js/admin.js' %}?v=20260523c" defer></script>
+{% endblock %}

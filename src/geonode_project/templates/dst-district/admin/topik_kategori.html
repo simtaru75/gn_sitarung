@@ -1,0 +1,243 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}Topik Kategori — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}topik_kategori{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="topik_kategori"] .page-content { max-width: 1100px; margin: 0 auto; }
+
+  body[data-page="topik_kategori"] .page-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--line); gap: 32px; }
+  body[data-page="topik_kategori"] .page-eyebrow { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ochre-600); margin-bottom: 10px; }
+  body[data-page="topik_kategori"] .page-title { font-family: var(--serif); font-size: 40px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; color: var(--forest); font-variation-settings: "SOFT" 30, "opsz" 144; margin-bottom: 10px; }
+  body[data-page="topik_kategori"] .page-title .italic { font-style: italic; font-weight: 300; color: var(--cocoa); }
+  body[data-page="topik_kategori"] .page-desc { font-family: var(--serif); font-size: 15px; color: var(--ink-600); font-weight: 300; line-height: 1.5; max-width: 640px; font-variation-settings: "SOFT" 60; }
+
+  body[data-page="topik_kategori"] .settings-flash { margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--line); font-size: 13px; display: flex; align-items: center; gap: 10px; font-family: var(--sans); }
+  body[data-page="topik_kategori"] .settings-flash.success { background: rgba(74,107,61,0.08); color: var(--success); border-color: rgba(74,107,61,0.25); }
+  body[data-page="topik_kategori"] .settings-flash.error { background: rgba(139,58,42,0.08); color: var(--danger); border-color: rgba(139,58,42,0.25); }
+  body[data-page="topik_kategori"] .settings-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="topik_kategori"] .stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); margin-bottom: 24px; }
+  body[data-page="topik_kategori"] .stat-card { background: var(--paper); padding: 18px 22px; display: flex; flex-direction: column; gap: 4px; }
+  body[data-page="topik_kategori"] .stat-card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); }
+  body[data-page="topik_kategori"] .stat-card-value { font-family: var(--serif); font-size: 30px; color: var(--forest); line-height: 1; letter-spacing: -0.02em; font-variation-settings: "SOFT" 30; }
+
+  body[data-page="topik_kategori"] .settings-section { margin-bottom: 40px; }
+  body[data-page="topik_kategori"] .settings-section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+  body[data-page="topik_kategori"] .ss-num { font-family: var(--serif); font-size: 20px; color: var(--ochre-600); }
+  body[data-page="topik_kategori"] .ss-title { font-family: var(--serif); font-size: 26px; color: var(--forest); font-weight: 400; letter-spacing: -0.015em; line-height: 1; }
+  body[data-page="topik_kategori"] .ss-title .italic { font-style: italic; font-weight: 300; color: var(--cocoa); }
+  body[data-page="topik_kategori"] .ss-sub { font-size: 13px; color: var(--ink-600); margin-top: 6px; max-width: 620px; }
+
+  body[data-page="topik_kategori"] .settings-panel { background: var(--paper); border: 1px solid var(--line); margin-bottom: 20px; }
+  body[data-page="topik_kategori"] .settings-panel-eyebrow { padding: 16px 26px 0; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-400); }
+  body[data-page="topik_kategori"] .settings-panel-body { padding: 20px 26px 24px; }
+
+  body[data-page="topik_kategori"] .cat-table { width: 100%; border-collapse: collapse; }
+  body[data-page="topik_kategori"] .cat-table th, body[data-page="topik_kategori"] .cat-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; font-size: 13px; }
+  body[data-page="topik_kategori"] .cat-table th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); font-weight: 500; }
+  body[data-page="topik_kategori"] .cat-table tbody tr:last-child td { border-bottom: none; }
+  body[data-page="topik_kategori"] .cat-ident { font-family: var(--mono); font-size: 12.5px; color: var(--forest); font-weight: 600; }
+  body[data-page="topik_kategori"] .cat-desc { color: var(--ink-600); font-size: 12px; max-width: 240px; }
+  body[data-page="topik_kategori"] .cat-fa { font-family: var(--mono); font-size: 11px; color: var(--ink-400); }
+  body[data-page="topik_kategori"] .cat-use { font-family: var(--mono); font-size: 11px; }
+  body[data-page="topik_kategori"] .cat-use .n { color: var(--forest); font-weight: 600; }
+  body[data-page="topik_kategori"] .cat-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  body[data-page="topik_kategori"] .cat-empty { padding: 24px; text-align: center; color: var(--ink-400); font-family: var(--mono); font-size: 12px; }
+
+  body[data-page="topik_kategori"] .btn-mini { padding: 5px 10px; font-size: 11px; font-family: var(--sans); border: 1px solid var(--line-strong); background: var(--paper); color: var(--forest); text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+  body[data-page="topik_kategori"] .btn-mini:hover { border-color: var(--forest); }
+  body[data-page="topik_kategori"] .btn-mini.danger { color: var(--danger); border-color: rgba(139,58,42,0.3); }
+  body[data-page="topik_kategori"] .btn-mini.danger:hover { background: var(--danger); color: var(--cream); }
+
+  body[data-page="topik_kategori"] .fe-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; }
+  body[data-page="topik_kategori"] .fe-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  body[data-page="topik_kategori"] .fe-switch { width: 40px; height: 22px; background: #c9c4b8; border-radius: 11px; position: relative; transition: background 0.18s; flex-shrink: 0; }
+  body[data-page="topik_kategori"] .fe-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  body[data-page="topik_kategori"] .fe-toggle input:checked + .fe-switch { background: var(--success); }
+  body[data-page="topik_kategori"] .fe-toggle input:checked + .fe-switch::after { transform: translateX(18px); }
+  body[data-page="topik_kategori"] .fe-state { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-400); }
+  body[data-page="topik_kategori"] .fe-toggle input:disabled + .fe-switch { opacity: 0.5; cursor: not-allowed; }
+  body[data-page="topik_kategori"] .fe-toggle-label { font-size: 13px; color: var(--ink); font-weight: 500; }
+
+  body[data-page="topik_kategori"] .field { margin-bottom: 18px; }
+  body[data-page="topik_kategori"] .field:last-child { margin-bottom: 0; }
+  body[data-page="topik_kategori"] .field-label { font-size: 12px; color: var(--ink-600); margin-bottom: 7px; font-weight: 500; }
+  body[data-page="topik_kategori"] .field-input, body[data-page="topik_kategori"] textarea.field-input { width: 100%; padding: 9px 12px; background: var(--cream); border: 1px solid var(--line-strong); font-family: var(--sans); font-size: 13px; color: var(--ink); transition: all 0.15s; }
+  body[data-page="topik_kategori"] .field-input.mono { font-family: var(--mono); font-size: 12px; }
+  body[data-page="topik_kategori"] textarea.field-input { resize: vertical; min-height: 64px; }
+  body[data-page="topik_kategori"] .field-input:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+  body[data-page="topik_kategori"] .field-help { font-size: 11px; color: var(--ink-400); margin-top: 6px; line-height: 1.5; }
+  body[data-page="topik_kategori"] .field-help code { font-family: var(--mono); font-size: 10.5px; background: var(--cream-200); padding: 1px 4px; color: var(--forest); }
+  body[data-page="topik_kategori"] .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  body[data-page="topik_kategori"] .btn { padding: 9px 16px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; font-family: var(--sans); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: all 0.2s; }
+  body[data-page="topik_kategori"] .btn svg { width: 14px; height: 14px; }
+  body[data-page="topik_kategori"] .btn-primary { background: var(--forest); color: var(--cream); }
+  body[data-page="topik_kategori"] .btn-primary:hover { background: var(--ink); }
+  body[data-page="topik_kategori"] .btn-ghost { background: none; color: var(--forest); border: 1px solid var(--line-strong); }
+  body[data-page="topik_kategori"] .btn-ghost:hover { border-color: var(--forest); }
+  body[data-page="topik_kategori"] .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  @media (max-width: 700px) {
+    body[data-page="topik_kategori"] .field-row { grid-template-columns: 1fr; }
+    body[data-page="topik_kategori"] .stats-cards { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="page-header">
+  <div>
+    <div class="page-eyebrow">Administrasi · Vocabulary</div>
+    <h1 class="page-title">Topik <span class="italic">Kategori</span></h1>
+    <p class="page-desc">Kelola daftar <strong>Topic Category</strong> (ISO 19115) GeoNode yang dipakai sebagai kategori Dataset &amp; Dokumen, dan bertautan dengan kartu <strong>Layanan Data</strong> di Landing. Perubahan berlaku global pada seluruh GeoNode.</p>
+  </div>
+</header>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="settings-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="stats-cards">
+  <div class="stat-card">
+    <div class="stat-card-label">Total Kategori</div>
+    <div class="stat-card-value">{{ kategori_total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Jadi Pilihan (is_choice)</div>
+    <div class="stat-card-value">{{ kategori_choice }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Bukan Pilihan</div>
+    <div class="stat-card-value">{{ kategori_non_choice }}</div>
+  </div>
+</div>
+
+<section class="settings-section">
+  <div class="settings-section-header">
+    <span class="ss-num">A</span>
+    <div class="ss-title-block">
+      <h2 class="ss-title">Daftar <span class="italic">Kategori</span></h2>
+      <p class="ss-sub">Kolom <strong>Dipakai</strong> menunjukkan jumlah resource (dataset/dokumen/map) yang memakai kategori — periksa sebelum menghapus. <strong>Is choice</strong> menentukan apakah kategori muncul sebagai pilihan di form metadata.</p>
+    </div>
+  </div>
+
+  <div class="settings-panel">
+    <div class="settings-panel-body" style="padding: 0;">
+      <table class="cat-table">
+        <thead>
+          <tr><th>Identifier</th><th>Description</th><th>GeoNode description</th><th>Fa class</th><th>Dipakai</th><th>Is choice</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for c in kategori_list %}
+          <tr>
+            <td><span class="cat-ident">{{ c.identifier }}</span></td>
+            <td class="cat-desc">{{ c.description|truncatechars:60|default:"—" }}</td>
+            <td class="cat-desc">{{ c.gn_description|truncatechars:60|default:"—" }}</td>
+            <td><span class="cat-fa">{{ c.fa_class|default:"—" }}</span></td>
+            <td class="cat-use"><span class="n">{{ c.resource_count }}</span></td>
+            <td>
+              {% if request.user.is_superuser %}
+              <form method="post" action="" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="form" value="kategori_toggle">
+                <input type="hidden" name="kategori_id" value="{{ c.pk }}">
+                <label class="fe-toggle" title="is_choice (muncul sebagai pilihan metadata)">
+                  <input type="checkbox" name="is_choice" onchange="this.form.submit()" {% if c.is_choice %}checked{% endif %}>
+                  <span class="fe-switch"></span>
+                  <span class="fe-state">{% if c.is_choice %}Ya{% else %}Tidak{% endif %}</span>
+                </label>
+              </form>
+              {% else %}
+              <span class="fe-state">{% if c.is_choice %}Ya{% else %}Tidak{% endif %}</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="cat-actions">
+                <a class="btn-mini" href="?edit_kategori={{ c.pk }}">Edit</a>
+                {% if request.user.is_superuser %}
+                <form method="post" action="" onsubmit="return confirm('Hapus kategori {{ c.identifier|escapejs }}?{% if c.resource_count %} Kategori ini dipakai {{ c.resource_count }} resource — kategorinya akan dikosongkan.{% endif %}');" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="form" value="kategori_delete">
+                  <input type="hidden" name="kategori_id" value="{{ c.pk }}">
+                  <button type="submit" class="btn-mini danger">Hapus</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="cat-empty">Belum ada kategori. Tambahkan lewat form di bawah.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="settings-section">
+  <div class="settings-section-header">
+    <span class="ss-num">B</span>
+    <div class="ss-title-block">
+      <h2 class="ss-title">{% if kategori_edit %}Edit Kategori: <span class="italic">{{ kategori_edit.identifier }}</span>{% else %}Tambah <span class="italic">Kategori</span>{% endif %}</h2>
+      <p class="ss-sub">{% if not request.user.is_superuser %}Hanya Super Admin yang dapat menambah/mengubah kategori.{% else %}Lengkapi data kategori lalu simpan.{% endif %}</p>
+    </div>
+  </div>
+
+  <div class="settings-panel">
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="kategori_save">
+      {% if kategori_edit %}<input type="hidden" name="kategori_id" value="{{ kategori_edit.pk }}">{% endif %}
+      <div class="settings-panel-body">
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Identifier *</label>
+            <input class="field-input mono" type="text" name="identifier" maxlength="255" required value="{{ kategori_edit.identifier|default:'' }}" placeholder="mis. economy" {% if not request.user.is_superuser %}readonly{% endif %}>
+            <div class="field-help">Kode unik kategori (dipakai API/metadata). Mis. <code>economy</code>, <code>health</code>.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Fa class</label>
+            <input class="field-input mono" type="text" name="fa_class" maxlength="64" value="{{ kategori_edit.fa_class|default:'' }}" placeholder="fa-money" {% if not request.user.is_superuser %}readonly{% endif %}>
+            <div class="field-help">Kelas ikon Font Awesome. Mis. <code>fa-money</code>, <code>fa-medkit</code>.</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Description</label>
+          <textarea class="field-input" name="description" rows="2" {% if not request.user.is_superuser %}readonly{% endif %}>{{ kategori_edit.description|default:'' }}</textarea>
+          <div class="field-help">Deskripsi ringkas kategori.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">GeoNode description</label>
+          <textarea class="field-input" name="gn_description" rows="2" {% if not request.user.is_superuser %}readonly{% endif %}>{{ kategori_edit.gn_description|default:'' }}</textarea>
+          <div class="field-help">Label yang ditampilkan GeoNode untuk kategori ini.</div>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label class="fe-toggle">
+            <input type="checkbox" name="is_choice" {% if not kategori_edit or kategori_edit.is_choice %}checked{% endif %} {% if not request.user.is_superuser %}disabled{% endif %}>
+            <span class="fe-switch"></span>
+            <span class="fe-toggle-label">Is choice (muncul sebagai pilihan di form metadata)</span>
+          </label>
+        </div>
+      </div>
+      {% if request.user.is_superuser %}
+      <div class="settings-panel-body" style="border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;">
+        {% if kategori_edit %}<a href="{% url 'dst_auth:topik_kategori' %}" class="btn btn-ghost btn-sm">Batal</a>{% endif %}
+        <button class="btn btn-primary btn-sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          {% if kategori_edit %}Simpan perubahan{% else %}Tambah kategori{% endif %}
+        </button>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,403 @@
+{% extends 'dst-district/admin/base.html' %}
+
+{% block title %}{% if dataset %}Edit · {{ dataset.title|default:dataset.name }}{% else %}Edit Layer{% endif %} — {{ site.name|default:"DST Kabupaten Abc" }}{% endblock %}
+{% block page_slug %}layer_edit{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  body[data-page="layer_edit"] .layer-edit-flash {
+    margin-bottom: 18px; padding: 12px 16px; border: 1px solid var(--line);
+    font-size: 13px; display: flex; align-items: center; gap: 10px;
+    font-family: var(--sans);
+  }
+  body[data-page="layer_edit"] .layer-edit-flash.success { background: rgba(74, 107, 61, 0.08); color: var(--success); border-color: rgba(74, 107, 61, 0.25); }
+  body[data-page="layer_edit"] .layer-edit-flash.error   { background: rgba(139, 58, 42, 0.08); color: var(--danger);  border-color: rgba(139, 58, 42, 0.25); }
+  body[data-page="layer_edit"] .layer-edit-flash svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  body[data-page="layer_edit"] select[multiple] {
+    height: auto; min-height: 110px; padding: 8px;
+  }
+  body[data-page="layer_edit"] .empty-layer {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 60px 40px; text-align: center;
+  }
+  body[data-page="layer_edit"] .empty-layer h2 {
+    font-family: var(--serif); font-size: 26px; color: var(--forest);
+    margin-bottom: 12px;
+  }
+
+  /* === APPROVE TOGGLE (section 03 · superuser) === */
+  body[data-page="layer_edit"] .approve-toggle {
+    position: relative; display: flex; align-items: center; gap: 16px;
+    padding: 16px 18px; cursor: pointer;
+    border: 1px solid var(--line-strong); background: var(--paper);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  body[data-page="layer_edit"] .approve-toggle:hover { border-color: var(--forest); }
+  body[data-page="layer_edit"] .approve-toggle:has(> input:checked) {
+    border-color: rgba(74, 124, 89, 0.45); background: rgba(74, 124, 89, 0.06);
+  }
+  body[data-page="layer_edit"] .approve-toggle > input {
+    position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
+  }
+  body[data-page="layer_edit"] .approve-switch {
+    position: relative; width: 46px; height: 26px; flex-shrink: 0;
+    background: var(--line-strong); transition: background 0.2s;
+  }
+  body[data-page="layer_edit"] .approve-switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; background: var(--paper);
+    box-shadow: 0 1px 2px rgba(31, 58, 46, 0.3); transition: transform 0.2s;
+  }
+  body[data-page="layer_edit"] .approve-toggle > input:checked + .approve-switch { background: var(--success); }
+  body[data-page="layer_edit"] .approve-toggle > input:checked + .approve-switch::after { transform: translateX(20px); }
+  body[data-page="layer_edit"] .approve-toggle > input:focus-visible + .approve-switch {
+    outline: 2px solid var(--forest); outline-offset: 2px;
+  }
+  body[data-page="layer_edit"] .approve-text { display: flex; flex-direction: column; gap: 3px; }
+  body[data-page="layer_edit"] .approve-title { font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  body[data-page="layer_edit"] .approve-sub { font-family: var(--sans); font-size: 11.5px; color: var(--ink-400); line-height: 1.4; }
+  body[data-page="layer_edit"] .approve-state {
+    margin-left: auto; flex-shrink: 0;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; font-weight: 500;
+    padding: 5px 11px; border: 1px solid var(--line-strong); color: var(--ink-400);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  body[data-page="layer_edit"] .approve-state::after { content: 'OFF'; }
+  body[data-page="layer_edit"] .approve-toggle > input:checked ~ .approve-state {
+    color: var(--success); border-color: rgba(74, 124, 89, 0.45); background: rgba(74, 124, 89, 0.08);
+  }
+  body[data-page="layer_edit"] .approve-toggle > input:checked ~ .approve-state::after { content: 'ON'; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="layer-edit-flash {% if message.tags %}{{ message.tags }}{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% if not dataset %}
+<div class="empty-layer">
+  <h2>Layer tidak ditemukan</h2>
+  <p style="color: var(--ink-600); margin-bottom: 24px;">Buka halaman ini dari daftar Dataset Spasial agar parameter <code>?id=</code> terisi.</p>
+  <a href="{% url 'dst_auth:data_spasial' %}" class="btn btn-primary btn-sm">Kembali ke Dataset Spasial</a>
+</div>
+{% else %}
+
+<div class="validation-banner">
+  <div class="vb-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <div class="vb-text">
+    <div class="vb-title">Edit metadata layer</div>
+    <div class="vb-sub">Field yang dapat diubah akan tersimpan ke <code>Dataset</code> di database. Properti teknis (CRS, geometri, bbox) terkunci karena terikat dataset spasial.</div>
+  </div>
+  <a href="{% url 'dst_auth:layer_detail' %}?id={{ dataset.pk }}" class="btn btn-ghost btn-sm" style="flex-shrink: 0;">Lihat detail →</a>
+</div>
+
+<form method="post" action="?id={{ dataset.pk }}">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save">
+
+  <div class="detail-grid">
+
+    <!-- ==================== MAIN ==================== -->
+    <div class="doc-main">
+
+      <!-- 01: METADATA DESKRIPTIF -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">01</span>
+            <div>
+              <h2 class="ds-title">Metadata <span class="italic">deskriptif</span></h2>
+              <div class="ds-meta">Judul, abstrak, kategori ISO 19115</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-group">
+            <label class="form-label">Judul Layer <span class="req">*</span></label>
+            <input class="form-input large" type="text" name="title" maxlength="255" required value="{{ dataset.title|default:'' }}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Abstrak / Deskripsi <span class="req">*</span></label>
+            <textarea class="form-textarea long" name="abstract" required>{{ dataset.abstract|default:'' }}</textarea>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Kategori ISO 19115</label>
+              <select class="form-select" name="category">
+                <option value="">— Tidak ditetapkan —</option>
+                {% for c in categories %}
+                  <option value="{{ c.pk }}" {% if dataset.category_id == c.pk %}selected{% endif %}>{{ c.gn_description|default:c.identifier }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Bahasa</label>
+              <select class="form-select" name="language">
+                <option value="ind" {% if dataset.language == "ind" %}selected{% endif %}>Bahasa Indonesia (ind)</option>
+                <option value="eng" {% if dataset.language == "eng" %}selected{% endif %}>English (eng)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Region / Cakupan</label>
+            {% include 'dst-district/admin/partials/_region_autocomplete.html' %}
+            <div class="form-help">Ketik untuk mencari, pilih satu atau beberapa. Kabupaten tanpa kata "Kabupaten" (mis. <strong>Luwu</strong>); kota dengan kata "Kota" (mis. <strong>Kota Palopo</strong>).</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Kata Kunci</label>
+            <input class="form-input" name="keywords" type="text" value="{{ keywords_csv }}" placeholder="kakao, smallholder, FOLUR">
+            <div class="form-help">Dipisahkan koma. Mengganti semua keyword yang ada.</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 02: KUALITAS & SUMBER -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">02</span>
+            <div>
+              <h2 class="ds-title">Kualitas &amp; <span class="italic">sumber data</span></h2>
+              <div class="ds-meta">Akurasi, lineage, dan pemilik</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Tanggal Referensi</label>
+              <input class="form-input mono" name="date" type="date" value="{% if dataset.date %}{{ dataset.date|date:'Y-m-d' }}{% endif %}">
+            </div>
+            <div>
+              <label class="form-label">Pengelola / Pemilik <span class="helper">owner</span></label>
+              <select class="form-select" name="owner">
+                {% for u in walidata_users %}
+                  <option value="{{ u.pk }}" {% if dataset.owner_id == u.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }} ({{ u.username }})</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Walidata <span class="helper">instansi penyelenggara data</span></label>
+            <select class="form-select" name="walidata">
+              <option value="">— Tidak ditetapkan —</option>
+              {% for w in walidata_master %}
+                <option value="{{ w.pk }}" {% if current_walidata_id == w.pk %}selected{% endif %}>{{ w.nama }}{% if w.kepanjangan %} · {{ w.kepanjangan }}{% endif %}</option>
+              {% endfor %}
+            </select>
+            <div class="form-help">Instansi <strong>Walidata</strong> (pengampu/penanggung jawab data) dari <strong>Daftar Walidata</strong>. Tampil sebagai Walidata &amp; menjadi filter di Jelajah Dataset.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Sumber Data</label>
+            <input class="form-input" name="data_source" type="text" placeholder="Contoh: Citra Sentinel-2 + survei lapangan" value="">
+            <div class="form-help">Akan digabung ke <code>supplemental_information</code> bersama lineage.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Riwayat &amp; Metodologi (Lineage)</label>
+            <textarea class="form-textarea" name="lineage">{{ dataset.supplemental_information|default:'' }}</textarea>
+            <div class="form-help">Tersimpan di <code>supplemental_information</code>.</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 03: PENERBITAN & LISENSI -->
+      <section class="doc-section">
+        <div class="doc-section-header">
+          <div class="ds-title-block">
+            <span class="ds-num">03</span>
+            <div>
+              <h2 class="ds-title">Penerbitan &amp; <span class="italic">lisensi</span></h2>
+              <div class="ds-meta">Atribusi, lisensi, dan visibilitas</div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Atribusi</label>
+              <input class="form-input" name="attribution" type="text" maxlength="255" value="{{ dataset.attribution|default:'' }}">
+            </div>
+            <div>
+              <label class="form-label">Lisensi</label>
+              <select class="form-select" name="license">
+                <option value="">— Tidak ditetapkan —</option>
+                {% for l in licenses %}
+                  <option value="{{ l.pk }}" {% if dataset.license_id == l.pk %}selected{% endif %}>{{ l.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Visibilitas</label>
+            <select class="form-select" name="visibility">
+              <option value="public" {% if dataset.is_published %}selected{% endif %}>Publik — dipublish ke katalog</option>
+              <option value="draft" {% if not dataset.is_published %}selected{% endif %}>Draft — belum dipublish</option>
+            </select>
+          </div>
+
+          {% if request.user.is_staff or request.user.is_superuser %}
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="approve-toggle">
+              <input type="checkbox" name="is_approved" {% if dataset.is_approved %}checked{% endif %}>
+              <span class="approve-switch"></span>
+              <span class="approve-text">
+                <span class="approve-title">Sudah ter-approve walidata</span>
+                <span class="approve-sub">Hanya layer ter-approve yang dipanen DST Nasional.</span>
+              </span>
+              <span class="approve-state"></span>
+            </label>
+          </div>
+          {% endif %}
+
+        </div>
+      </section>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 20px 0;">
+        <a href="{% url 'dst_auth:layer_detail' %}?id={{ dataset.pk }}" class="btn btn-ghost btn-sm">Batal</a>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Simpan perubahan
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ==================== RIGHT SIDEBAR ==================== -->
+    <aside class="doc-side">
+
+      <div class="visibility-card">
+        <div class="vis-eyebrow">
+          <div class="pulse"></div>
+          Visibilitas saat ini
+        </div>
+        <div class="vis-text">
+          {% if dataset.is_published and dataset.is_approved %}
+            Layer <span class="italic">ter-publish &amp; ter-approve</span>.
+          {% elif dataset.is_published %}
+            Ter-publish, menunggu approval walidata.
+          {% else %}
+            <span class="italic">Draft</span> — belum tersedia untuk konsumen.
+          {% endif %}
+        </div>
+        <div class="vis-stats">
+          <span>Diakses · <strong>{{ dataset.popular_count|default:0 }}</strong></span>
+          <span>Diperbarui · <strong>{{ dataset.last_updated|timesince }} lalu</strong></span>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="side-title">Ringkasan Metadata</div>
+        </div>
+        <div class="side-card-body">
+          <div class="meta-list">
+            <div class="meta-row">
+              <div class="meta-key">Resource ID</div>
+              <div class="meta-val mono">#{{ dataset.pk }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">UUID</div>
+              <div class="meta-val mono" style="font-size: 10px; word-break: break-all;">{{ dataset.uuid|default:"—" }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Layer Name</div>
+              <div class="meta-val mono" style="word-break: break-all;">{{ typename|default:dataset.name }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Tipe Resource</div>
+              <div class="meta-val serif">{{ geometry_label }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Dibuat</div>
+              <div class="meta-val">{{ dataset.created|date:"d M Y" }}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-key">Diperbarui</div>
+              <div class="meta-val">{{ dataset.last_updated|date:"d M Y" }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="side-title">Endpoint Layer</div>
+          <a href="{% url 'dst_auth:endpoint_api' %}" class="side-action">Dokumentasi →</a>
+        </div>
+        <div class="side-card-body">
+          {% for label, url, disabled in endpoints %}
+          <div class="endpoint-row">
+            <span class="endpoint-tag {% if disabled %}disabled{% endif %}">{{ label }}</span>
+            <div class="endpoint-url-mini" {% if disabled %}style="color: var(--ink-200);"{% endif %}>{{ url }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</form>
+
+<!-- DANGER ZONE (separate forms so they don't co-submit with main form) -->
+<aside style="max-width: 480px; margin-left: auto; margin-top: 24px;">
+  <div class="danger-card">
+    <div class="side-card-header" style="border-bottom: 1px solid var(--line);">
+      <div class="side-title" style="color: var(--danger);">Tindakan Sensitif</div>
+    </div>
+    <div class="danger-list">
+      <form method="post" action="?id={{ dataset.pk }}" style="display: contents;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="archive">
+        <div class="danger-row">
+          <div class="danger-info">
+            <div class="danger-title">Arsipkan layer</div>
+            <div class="danger-desc">Set <code>is_published=False</code> &amp; <code>is_approved=False</code>. Layer tidak lagi dipanen DST Nasional.</div>
+          </div>
+          <button type="submit" class="btn-danger-outline" onclick="return confirm('Arsipkan layer ini?');">Arsipkan</button>
+        </div>
+      </form>
+
+      {% if request.user.is_superuser or dataset.owner_id == request.user.pk %}
+      <form method="post" action="?id={{ dataset.pk }}" style="display: contents;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <div class="danger-row">
+          <div class="danger-info">
+            <div class="danger-title">Hapus permanen</div>
+            <div class="danger-desc">Hapus row Dataset dari database. Tidak bisa dipulihkan.</div>
+          </div>
+          <button type="submit" class="btn-danger-outline" onclick="return confirm('Hapus layer ini permanen? Tidak dapat dibatalkan.');">Hapus</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</aside>
+
+{% endif %}
+{% endblock %}

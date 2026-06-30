@@ -1,0 +1,6 @@
+{# Reusable admin page header. Pass: eyebrow, title (with optional .italic span), description, actions block via {% include with %}. #}
+<header class="page-header">
+  {% if eyebrow %}<div class="page-header-eyebrow">{{ eyebrow }}</div>{% endif %}
+  {% if title %}<h1 class="page-header-title">{{ title|safe }}</h1>{% endif %}
+  {% if description %}<p class="page-header-desc">{{ description }}</p>{% endif %}
+</header>
