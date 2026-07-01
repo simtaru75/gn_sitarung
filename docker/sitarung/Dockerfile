@@ -1,28 +1,36 @@
-# Stage 1: Install dependencies (browser-sync)
+# Stage 1: Install dependencies (Next.js)
 FROM node:22-alpine AS deps
-RUN npm install -g browser-sync@3.0.3
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
-EXPOSE 3030
-CMD ["browser-sync", "start", \
-     "--server", "/app", \
-     "--port", "3030", \
-     "--host", "0.0.0.0", \
-     "--files", "**/*", \
-     "--no-notify", \
-     "--no-open", \
-     "--reload-delay", "300"]
 
-# Stage 2: Production runner (with files baked in)
-FROM node:22-alpine AS runner
-RUN npm install -g browser-sync@3.0.3
+COPY sitarung/package.json ./
+RUN npm install && cp -r node_modules /tmp/node_modules
+
+# Stage 2: Build application
+FROM node:22-alpine AS builder
 WORKDIR /app
-COPY ./ADMINSITARUNG /app
+
+ARG NEXT_PUBLIC_GEONODE_URL=http://localhost
+ENV NEXT_PUBLIC_GEONODE_URL=${NEXT_PUBLIC_GEONODE_URL}
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN npm run build
+
+# Stage 3: Production runner
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
 EXPOSE 3030
-CMD ["browser-sync", "start", \
-     "--server", "/app", \
-     "--port", "3030", \
-     "--host", "0.0.0.0", \
-     "--files", "**/*", \
-     "--no-notify", \
-     "--no-open", \
-     "--reload-delay", "300"]
+CMD ["node", "server.js"]

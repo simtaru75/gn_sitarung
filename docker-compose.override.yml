@@ -29,12 +29,28 @@ services:
     healthcheck:
       start_period: 60s
 
-  # SITARUNG — mode DEV: serve static files ADMINSITARUNG via browser-sync
+  # SITARUNG — replika frontend, jalan di port 3030
+  # Awalnya identik dengan frontend, bertahap akan dikustomisasi
   sitarung:
     build:
       target: deps
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        if [ ! -d "/app/node_modules/.package-lock.json" ]; then
+          echo "Restoring node_modules from /tmp..."
+          cp -r /tmp/node_modules /app/node_modules
+        fi
+        npm run dev -- -H 0.0.0.0 -p 3030
     volumes:
-      - ./ADMINSITARUNG:/app
+      - ./sitarung:/app
+      - /app/node_modules
     environment:
+      - HOSTNAME=0.0.0.0
+      - GEONODE_INTERNAL_URL=http://django:8000
+      - NEXT_PUBLIC_GEONODE_URL=http://localhost
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+    healthcheck:
+      start_period: 60s

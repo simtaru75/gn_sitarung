@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+@theme {
+  /* Token warna Tailwind merujuk token tema semantik (--forest/--cream/…) yang
+     di-override per [data-theme]. Jadi SEMUA utility (folur-*, sky-*, cap-*,
+     pd-*, ds-*) otomatis ikut tema yang dipilih admin di /dst-auth/tema. */
+  --color-folur-50: var(--cream);
+  --color-folur-100: var(--cream-200);
+  --color-folur-200: var(--cream-300);
+  --color-folur-500: var(--forest-500);
+  --color-folur-600: var(--forest-500);
+  --color-folur-700: var(--forest);
+  --color-folur-800: var(--forest-700);
+  --color-folur-900: var(--forest-700);
+  --color-earth-50: var(--ochre-100);
+  --color-earth-100: var(--ochre-100);
+  --color-earth-500: var(--ochre);
+  --color-earth-600: var(--ochre-600);
+  --color-earth-700: var(--cocoa);
+  --color-sky-50: var(--cream);
+  --color-sky-100: var(--cream-200);
+  --color-sky-500: var(--forest-500);
+  --color-sky-600: var(--forest);
+  --color-sky-700: var(--forest-700);
+  --color-cap-bg: var(--cream);
+  --color-cap-line: var(--line-strong);
+  --color-cap-muted: var(--ink-400);
+  --color-cap-lead: var(--ink-600);
+  --color-cap-ink: var(--ink);
+  --color-cap-green-100: var(--cream-200);
+  --color-cap-green-600: var(--forest-500);
+  --color-cap-green-700: var(--forest);
+  --color-cap-green-900: var(--forest-700);
+  --color-cap-ochre: var(--ochre);
+  --color-cap-cocoa: var(--cocoa);
+  --color-cap-amber: var(--ochre);
+  --color-cap-green-500: var(--forest-500);
+  --color-pd-ink: var(--ink);
+  --color-pd-muted: var(--ink-400);
+  --color-pd-meta: var(--ink-400);
+  --color-ds-forest: var(--forest);
+  --color-ds-cream: var(--cream);
+  --color-ds-cream-200: var(--cream-200);
+  --color-ds-paper: var(--paper);
+  --color-ds-ink-600: var(--ink-600);
+  --color-ds-line: var(--line);
+  --color-ds-line-strong: var(--line-strong);
+  --color-ds-ochre: var(--ochre);
+  --color-ds-ochre-600: var(--ochre-600);
+  --color-ds-cocoa: var(--cocoa);
+  --color-ds-sage: var(--sage);
+  /* var(--font-dm-sans) = DM Sans asli yang dimuat next/font (nama ter-hash);
+     literal 'DM Sans' hanya fallback bila variable belum ter-set. */
+  --font-sans: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+  --font-serif: var(--serif), Georgia, serif;
+  --font-mono: var(--mono), ui-monospace, monospace;
+}
+
+/* Token desain halaman viewer/metadata (dataset-spasial & dataset-dokumen),
+   selaras dengan :root template GeoNode dst-district. Sumber tunggal warna &
+   tipografi — komponen merujuk var(--token) tanpa nilai hardcode. */
+:root {
+  --forest: #1F3A2E; --forest-700: #2A4D3D; --forest-500: #3D6657;
+  --cream: #F4EFE6; --cream-200: #E8DFCE; --cream-300: #D9CEB8; --paper: #FAF7F0;
+  --ink: #1A1A1A; --ink-600: #4A4A4A; --ink-400: #7A7A7A;
+  --ochre: #C77D3E; --ochre-600: #A66830; --ochre-100: #F5E6D3;
+  --sage: #8B9D83; --cocoa: #5D3A1F;
+  --line: rgba(31, 58, 46, 0.1); --line-strong: rgba(31, 58, 46, 0.2);
+  --cream-a25: rgba(244, 239, 230, 0.25); --cream-a10: rgba(244, 239, 230, 0.1);
+  --danger: #8B3A2A;
+
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', system-ui, sans-serif;
+  --mono: 'Geist Mono', monospace;
+
+  /* Halaman peta dataset (panel, basemap, scale) */
+  --map-bg: #c9d8c8;
+  --paper-a95: rgba(250, 247, 240, 0.95);
+  --paper-a92: rgba(250, 247, 240, 0.92);
+  --header-line: rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 4px 16px rgba(31, 58, 46, 0.12);
+  --shadow-btn: 0 2px 8px rgba(31, 58, 46, 0.1);
+  --swatch-osm: #aadaff;
+  --swatch-topo: #d8e0c0;
+  --swatch-s2: #3a4a2a;
+
+  /* Kromis viewer dokumen (tema gelap) */
+  --viewer-bg: #2b2b2b;
+  --viewer-toolbar: #1f1f1f;
+  --viewer-toolbar-border: #000;
+  --viewer-border: #444;
+  --viewer-fg: #d8d8d8;
+  --viewer-fg-strong: #fff;
+  --viewer-fg-dim: #9a9a9a;
+  --viewer-btn-hover: #383838;
+  --viewer-loading: #999;
+  --viewer-msg: #bbb;
+  --viewer-page-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+/* ── Tema CMS (dari GeoNode /dst-auth/tema) ────────────────────────────── */
+[data-theme="pesisir"] {
+  --forest:#0E3F4F; --forest-700:#195A6E; --forest-500:#2F7E92;
+  --cream:#F0EAD7; --cream-200:#E2D9BD; --cream-300:#CFC29A; --paper:#F7F2E3;
+  --ochre:#D87A3C; --ochre-600:#B65F26; --ochre-100:#F5DDC4;
+  --sage:#8AA8A8; --cocoa:#6E3E1F;
+}
+[data-theme="pegunungan"] {
+  --forest:#2A3848; --forest-700:#3B4A5C; --forest-500:#56697E;
+  --cream:#ECECE6; --cream-200:#DCDCD3; --cream-300:#C8C8BC; --paper:#F4F4EE;
+  --ochre:#B5763C; --ochre-600:#8F5C2A; --ochre-100:#EDDDC6;
+  --sage:#93A099; --cocoa:#5C3F2A;
+}
+[data-theme="vulkanik"] {
+  --forest:#2B2826; --forest-700:#3E3A37; --forest-500:#595350;
+  --cream:#EFE9DF; --cream-200:#DED5C5; --cream-300:#C9BEA9; --paper:#F6F1E8;
+  --ochre:#B83F2E; --ochre-600:#94301F; --ochre-100:#F0CFC8;
+  --sage:#8A8377; --cocoa:#4A2A1C;
+}
+[data-theme="rawa"] {
+  --forest:#2F3A26; --forest-700:#455534; --forest-500:#5E724A;
+  --cream:#EEE9D9; --cream-200:#DDD5BC; --cream-300:#C7BC9A; --paper:#F4F0E0;
+  --ochre:#CC9430; --ochre-600:#A0741F; --ochre-100:#F3E1B4;
+  --sage:#9AAB87; --cocoa:#5A3A1A;
+}
+[data-theme="modern"] {
+  --forest:#256180; --forest-700:#1B4A63; --forest-500:#3A7C9C;
+  --cream:#EAEDF1; --cream-200:#DDE2E8; --cream-300:#C9D1DA; --paper:#FFFFFF;
+  --ochre:#E08A3C; --ochre-600:#C06E26; --ochre-100:#F7E3CB;
+  --sage:#8FA6AE; --cocoa:#2C3E46;
+}
+[data-theme="pastel"] {
+  --forest:#5E4A82; --forest-700:#4C3A6B; --forest-500:#7E6CA0;
+  --cream:#FBF4F7; --cream-200:#F2E6EE; --cream-300:#E6D3E0; --paper:#FFFCFE;
+  --ochre:#E89BBE; --ochre-600:#D17BA0; --ochre-100:#FBE6F0;
+  --sage:#A8C3B5; --cocoa:#8A6D9C;
+}
+[data-theme="kontras"] {
+  --forest:#14213D; --forest-700:#1F2F52; --forest-500:#2E4372;
+  --cream:#F2F3F5; --cream-200:#E6E8EB; --cream-300:#D5D8DC; --paper:#FFFFFF;
+  --ochre:#FCA311; --ochre-600:#E08A00; --ochre-100:#FFE9C2;
+  --sage:#2EC4B6; --cocoa:#C1121F;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+  margin: 0;
+  padding: 0;
+}
+
+.stat-card {
+  transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,.08);
+}
+
+.layanan-card {
+  transition: transform .25s, box-shadow .25s;
+}
+.layanan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0,0,0,.1);
+}
+
+.dok-row {
+  opacity: 0;
+  transform: translateX(-30px);
+  animation: slideInRow .5s ease forwards;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  transition: background-color .3s, padding-left .3s, padding-right .3s, box-shadow .3s;
+}
+.dok-row:hover {
+  background-color: #dcfce7;
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  box-shadow: inset 4px 0 0 #15803d;
+}
+.dok-row:nth-child(2) { animation-delay: .1s; }
+.dok-row:nth-child(3) { animation-delay: .2s; }
+.dok-row:nth-child(4) { animation-delay: .3s; }
+.dok-row:nth-child(5) { animation-delay: .4s; }
+.dok-row:nth-child(6) { animation-delay: .5s; }
+
+@keyframes slideInRow {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.underline-hover {
+  position: relative;
+  text-decoration: none;
+}
+.underline-hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+  transform: scaleX(0.15);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+.underline-hover:hover::after {
+  transform: scaleX(1);
+  opacity: 0.6;
+}
+
+.hero-underline {
+  background-image: linear-gradient(var(--ochre, #C77D3E), var(--ochre, #C77D3E));
+  background-size: 100% 3px;
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+}
