@@ -77,13 +77,13 @@
    selaras dengan :root template GeoNode dst-district. Sumber tunggal warna &
    tipografi — komponen merujuk var(--token) tanpa nilai hardcode. */
 :root {
-  --forest: #0d5c4e; --forest-700: #5cbdb8; --forest-500: #177766;
-  --cream: #F4EFE6; --cream-200: #E8DFCE; --cream-300: #D9CEB8; --paper: #FAF7F0;
+  --forest: #1A3E38; --forest-700: #2E5E55; --forest-500: #4B8B7E;
+  --cream: #F5F1EB; --cream-200: #EBE2D6; --cream-300: #DDD0C0; --paper: #FCF9F4;
   --ink: #1A1A1A; --ink-600: #4A4A4A; --ink-400: #7A7A7A;
-  --ochre: #C77D3E; --ochre-600: #A66830; --ochre-100: #F5E6D3;
-  --sage: #8B9D83; --cocoa: #5D3A1F;
-  --line: rgba(31, 58, 46, 0.1); --line-strong: rgba(31, 58, 46, 0.2);
-  --cream-a25: rgba(244, 239, 230, 0.25); --cream-a10: rgba(244, 239, 230, 0.1);
+  --ochre: #D4A24E; --ochre-600: #BF8A3A; --ochre-100: #F5E9D0;
+  --sage: #7B9B83; --cocoa: #5D3820;
+  --line: rgba(26, 62, 56, 0.1); --line-strong: rgba(26, 62, 56, 0.2);
+  --cream-a25: rgba(245, 241, 235, 0.25); --cream-a10: rgba(245, 241, 235, 0.1);
   --danger: #8B3A2A;
 
   --serif: 'Fraunces', 'Times New Roman', serif;
