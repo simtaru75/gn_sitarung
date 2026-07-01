@@ -7251,13 +7251,14 @@ class TemaView(LoginRequiredMixin, DstAdminPageView):
 
         ctx = super().get_context_data(**kwargs)
         identity = SiteIdentity.load()
-        ctx["active_theme"] = identity.theme or "simtaru"
+        raw = identity.theme or "simtaru"
+        ctx["active_theme"] = "simtaru" if raw == "luwu" else raw
         ctx["theme_choices"] = SiteIdentity.THEME_CHOICES
         ctx["font_option"] = identity.font_option or 1
         # Peta tema→3 opsi font untuk pratinjau dinamis di form (JS).
         ctx["font_combos_json"] = _json.dumps(SiteIdentity.FONT_COMBOS)
         ctx["active_font_combos"] = SiteIdentity.FONT_COMBOS.get(
-            identity.theme or "simtaru", SiteIdentity.FONT_COMBOS["simtaru"]
+            ctx["active_theme"], SiteIdentity.FONT_COMBOS["simtaru"]
         )
         return ctx
 
@@ -7268,6 +7269,9 @@ class TemaView(LoginRequiredMixin, DstAdminPageView):
         from .models import SiteIdentity
 
         theme = (request.POST.get("theme") or "").strip()
+        # Auto-migrasi: nilai lama "luwu" → "simtaru" (transisi pasca-rename).
+        if theme == "luwu":
+            theme = "simtaru"
         valid = {code for code, _ in SiteIdentity.THEME_CHOICES}
         if theme not in valid:
             messages.error(request, "Tema tidak valid.")
