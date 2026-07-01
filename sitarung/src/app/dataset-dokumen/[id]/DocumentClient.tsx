@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import LoadingState from "@/components/LoadingState";
 import type { DocumentDetail, SiteIdentity } from "@/lib/geonode";
 
 export default function DocumentClient({
@@ -378,9 +379,13 @@ function PdfViewer({ fileUrl, filename }: { fileUrl: string; filename: string })
       <div ref={canvasAreaRef} className="flex-1 min-h-0 overflow-auto p-6 flex flex-col items-center" style={{ alignContent: "safe center" }}>
         <style>{vtBtnStyles}</style>
         {loading && (
-          <div className="text-xs m-auto" style={{ fontFamily: "var(--mono)", color: "var(--viewer-loading)" }}>
-            Memuat dokumen…{progress > 0 ? ` ${progress}%` : ""}
-          </div>
+          <LoadingState
+            label={`Memuat dokumen…${progress > 0 ? ` ${progress}%` : ""}`}
+            className="m-auto"
+            spinnerClassName="h-12 w-12 opacity-80"
+            labelClassName="text-xs font-semibold tracking-[0.14em] uppercase"
+            labelStyle={{ fontFamily: "var(--mono)", color: "var(--viewer-loading)" }}
+          />
         )}
         {error && <div className="text-xs text-center m-auto max-w-xs leading-relaxed" style={{ fontFamily: "var(--mono)", color: "var(--viewer-msg)" }}>{error}</div>}
         <div id="pdfPages" className="flex flex-col items-center gap-4">

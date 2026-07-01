@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const ident = await getSiteIdentity();
   return {
     title: `WebGIS — ${ident.siteName}`,
-    description: `WebGIS ${ident.siteName} — Modul Screening Analisis`,
+    description: `WebGIS ${ident.siteName} — Modul Akurat`,
     icons: ident.logo ? { icon: ident.logo } : undefined,
   };
 }

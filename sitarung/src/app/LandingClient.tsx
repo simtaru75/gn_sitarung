@@ -12,7 +12,6 @@ const OfflineBanner = () => (
 
 const AUTO_ADVANCE_MS = 6000;
 const SWIPE_THRESHOLD = 50;
-const HERO_SLIDES = 3;
 
 // Judul header bergulir (marquee) — selaras index-tailwind.html.
 const MARQUEE_TITLE = "SISTEM INFORMASI TATA RUANG (SITARUNG)";
@@ -28,16 +27,217 @@ const HERO_BANNERS = [
 const HERO_OVERLAY =
   "linear-gradient(90deg,rgba(8,55,46,.90),rgba(8,55,46,.50) 48%,rgba(8,55,46,.10))";
 
-// Selaras dengan menu landing GeoNode: Screening · Layanan · Indikator ·
-// Dokumen · Katalog · Dataset · Tentang.
+const RTRW_CONTENT = [
+  {
+    id: "01",
+    href: "/rtrw/tujuan",
+    image: `${HERO_MEDIA}/fpr.png`,
+    title: "Tujuan, Kebijakan & Strategi",
+    description: "Susunan pusat permukiman dan sistem jaringan prasarana wilayah pendukung kegiatan sosial ekonomi masyarakat.",
+  },
+  {
+    id: "02",
+    href: "/rtrw/struktur",
+    image: `${HERO_MEDIA}/Flatdesignlineartaf.png`,
+    title: "Rencana Struktur Ruang",
+    description: "Hierarki perkotaan serta konektivitas infrastruktur transportasi, energi, telekomunikasi, dan utilitas.",
+  },
+  {
+    id: "03",
+    href: "/rtrw/pola",
+    image: `${HERO_MEDIA}/Flatdesignlineart3af.png`,
+    title: "Rencana Pola Ruang",
+    description: "Distribusi peruntukan ruang mencakup penetapan kawasan lindung dan kawasan budidaya.",
+  },
+  {
+    id: "04",
+    href: "/rtrw/strategis",
+    image: `${HERO_MEDIA}/Flatdesignlineart4af.png`,
+    title: "Rencana Kawasan Strategis",
+    description: "Wilayah prioritas dengan pengaruh penting terhadap ekonomi, sosial budaya, atau lingkungan hidup.",
+  },
+  {
+    id: "05",
+    href: "/rtrw/pemanfaatan",
+    image: `${HERO_MEDIA}/teodolit.png`,
+    title: "Arahan Pemanfaatan Ruang",
+    description: "Ketentuan Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR) dan indikasi program utama pembangunan.",
+  },
+  {
+    id: "06",
+    href: "/rtrw/pengendalian",
+    image: `${HERO_MEDIA}/kendali.png`,
+    title: "Arahan Pengendalian",
+    description: "Memastikan pemanfaatan ruang berlangsung tertib dan sesuai dengan rencana tata ruang yang ditetapkan.",
+  },
+];
+
+const PENATAAN_RUANG_ITEMS = [
+  {
+    image: `${HERO_MEDIA}/z1.PERENCANAANTATARUANG.png`,
+    title: "Perencanaan Tata Ruang",
+    description: "Menghasilkan Rencana Umum Tata Ruang dan Rencana Rinci Tata Ruang.",
+  },
+  {
+    image: `${HERO_MEDIA}/z2.PEMANFAATANRUANG.png`,
+    title: "Pemanfaatan Ruang",
+    description: "Pelaksanaan KKPR dan sinkronisasi program pemanfaatan ruang.",
+  },
+  {
+    image: `${HERO_MEDIA}/z3.PENGENDALIANPEMANFAATANRUANG.png`,
+    title: "Pengendalian Pemanfaatan Ruang",
+    description: "Mendorong terwujudnya tata ruang sesuai dengan RTR.",
+  },
+  {
+    image: `${HERO_MEDIA}/z4.PENGAWASANPENATAANRUANG.png`,
+    title: "Pengawasan Penataan Ruang",
+    description: "Kegiatan monev untuk menjamin tercapainya tujuan penyelenggaraan penataan ruang.",
+  },
+  {
+    image: `${HERO_MEDIA}/z5.PEMBINAANPENATAANRUANG.png`,
+    title: "Pembinaan Penataan Ruang",
+    description: "Meningkatkan kualitas, efektifitas, dan peran masyarakat dalam penyelenggaraan penataan ruang.",
+  },
+  {
+    image: `${HERO_MEDIA}/z6.KELEMBAGAANPENATAANRUANG.png`,
+    title: "Kelembagaan Penataan Ruang",
+    description: "Penyelenggaraan penataan ruang partisipatif dengan membentuk Forum Penataan Ruang.",
+  },
+];
+
+const PORTAL_MODULES = [
+  {
+    badge: "Spasial",
+    number: "01",
+    type: "spatial",
+    title: "Peta Spasial",
+    description: "Basis data spasial: informasi geografi, batas wilayah, penggunaan lahan, dan elemen tata ruang digital.",
+    image: `${HERO_MEDIA}/editilustrasiparti3.png`,
+    href: "/jelajah-dataset",
+  },
+  {
+    badge: "Dokumen",
+    number: "02",
+    type: "document",
+    title: "Dokumen Teknis",
+    description: "Dokumen resmi, kebijakan, pedoman perencanaan, serta laporan kegiatan yang relevan dengan tata ruang.",
+    image: `${HERO_MEDIA}/editilustrasiparti4.png`,
+    href: "/jelajah-dokumen",
+  },
+  {
+    badge: "Dataset",
+    number: "03",
+    type: "dataset",
+    title: "Dataset RTR",
+    description: "Data kajian, hasil analisis, dan indikator kunci pendukung penyusunan dan pemantauan Rencana Tata Ruang.",
+    image: `${HERO_MEDIA}/editilustrasiparti2.png`,
+    href: "/jelajah-endpoint",
+  },
+];
+
+const NEWS_FEATURED = {
+  image: `${HERO_MEDIA}/IMG20250819WA00561536x1152.jpg`,
+  date: "19 Agustus 2025 · Dinas PUBMTR Sumsel",
+  title: "Sosialisasi Perda No. 6 Tahun 2024 tentang RTRW 2024-2044",
+  description:
+    "Pemerintah Provinsi Sumatera Selatan menyelenggarakan Rapat Koordinasi Forum Penataan Ruang (FPR) dalam rangka sosialisasi Perda RTRW Provinsi Sumatera Selatan Tahun 2024-2044 di Ballroom Hotel The Zuri Palembang.",
+};
+
+const NEWS_LIST = [
+  {
+    image: `${HERO_MEDIA}/Gemini_Generated_Image_qavq05qavq05qavq.png`,
+    date: "19 Agustus 2025",
+    title: "Tiga Program Strategis dalam RTRW Sumsel 2024-2044 Dorong Pembangunan Berkelanjutan",
+    description: "Meningkatkan konektivitas, mendorong pertumbuhan ekonomi, sekaligus menjaga kelestarian lingkungan.",
+  },
+  {
+    image: `${HERO_MEDIA}/kabh250px1607.jpg`,
+    date: "Perkembangan RTR Kab/Kota",
+    title: "RTR Kabupaten Banyuasin pada Tahap Proses Pengesahan Perda",
+    description: "Perkembangan penyusunan rencana tata ruang kabupaten/kota di wilayah Sumatera Selatan.",
+  },
+];
+
+const VIDEO_GALLERY = [
+  {
+    href: "https://www.youtube.com/watch?v=Xraf9kZlY3M",
+    image: `${HERO_MEDIA}/video.png`,
+    title: "Podcast One Day One Innovation tentang SITARUNG dengan narasumber Faustino Do Carmo, ST., M.Si.",
+  },
+  {
+    href: "https://www.youtube.com/watch?v=vu32XVPob-Q",
+    image: `${HERO_MEDIA}/part2.png`,
+    title: "Penguatan Peran Kelembagaan Penataan Ruang Daerah dalam Pembangunan Daerah - Kemendagri Ditjen Bina Bangda.",
+  },
+  {
+    href: "https://www.youtube.com/watch?v=YM7XXF_vm6Q",
+    image: `${HERO_MEDIA}/part3.png`,
+    title: "Peran Pemerintah Daerah dalam Pengendalian Pemanfaatan Ruang - Kementerian ATR/BPN.",
+  },
+  {
+    href: "https://www.youtube.com/watch?v=7gj1dM8sSP8",
+    image: `${HERO_MEDIA}/part4.png`,
+    title: "Peran Pemda dalam Pengendalian Penataan Ruang melalui Instrumen Penataan Ruang - ATR/BPN.",
+  },
+];
+
+const DOWNLOAD_ITEMS = [
+  {
+    image: `${HERO_MEDIA}/DOK1.png`,
+    label: "PERDA",
+    description: "Peraturan Daerah tentang RTRW Provinsi Sumsel",
+  },
+  {
+    image: `${HERO_MEDIA}/DOK2.png`,
+    label: "BUKU",
+    description: "Dokumen Teknis RTRW Provinsi Sumatera Selatan",
+  },
+  {
+    image: `${HERO_MEDIA}/DOK3.png`,
+    label: "PETA",
+    description: "Album Peta RTRW Provinsi Sumatera Selatan",
+  },
+  {
+    image: `${HERO_MEDIA}/DOK4.png`,
+    label: "KLHS",
+    description: "Kajian Lingkungan Hidup Strategis Prov. Sumsel",
+  },
+];
+
+const KKPR_APPS = [
+  { image: `${HERO_MEDIA}/logosumsel.png`, label: "KKPR Sumatera Selatan" },
+  { image: `${HERO_MEDIA}/logosumsel.png`, label: "KKPR Provinsi" },
+  { image: `${HERO_MEDIA}/Logo_PALI.png`, label: "KKPR PALI" },
+  { image: `${HERO_MEDIA}/Lambang_Kabupaten_OKU_Timur.png`, label: "KKPR OKU Timur" },
+  { image: `${HERO_MEDIA}/Lambang_Kabupaten_Musi_Banyuasin.png`, label: "KKPR MUBA" },
+  { image: `${HERO_MEDIA}/Lambang_Kabupaten_Muara_Enim.gif`, label: "KKPR Muara Enim" },
+  { image: `${HERO_MEDIA}/Lambang_Kabupaten_Banyuasin.gif`, label: "KKPR Banyuasin" },
+  { image: `${HERO_MEDIA}/Lambang_Kabupaten_Ogan_Komering_Ulu.png`, label: "KKPR OKU" },
+  { image: `${HERO_MEDIA}/LambangOganKomeringUluSelatan.png`, label: "KKPR OKU Selatan", wide: true },
+];
+
+const KKPR_KABKOTA = [
+  { image: `${HERO_MEDIA}/OKU.png`, label: "Ogan Komering Ulu" },
+  { image: `${HERO_MEDIA}/OKUSELATAN.png`, label: "OKU Selatan" },
+  { image: `${HERO_MEDIA}/OKUTIMUR.png`, label: "OKU Timur" },
+  { image: `${HERO_MEDIA}/OGANILIR.png`, label: "Ogan Ilir" },
+  { image: `${HERO_MEDIA}/EMPATLAWANG.png`, label: "Empat Lawang" },
+  { image: `${HERO_MEDIA}/PENUKALABABPEMATANGILIR.png`, label: "Penukal Abab Pematang Ilir" },
+  { image: `${HERO_MEDIA}/MUSIRAWASUTARA.png`, label: "Musi Rawas Utara" },
+  { image: `${HERO_MEDIA}/PALEMBANG.png`, label: "Kota Palembang" },
+  { image: `${HERO_MEDIA}/PRABUMULIH.png`, label: "Kota Prabumulih" },
+  { image: `${HERO_MEDIA}/PAGARALAM.png`, label: "Kota Pagar Alam" },
+];
+
+// Menu landing: Materi · Berita · Akurat · Dokumen · Katalog · Dataset · FAQ.
 const NAV_LINKS = [
-  { href: "#screening", label: "Screening" },
-  { href: "#layanan", label: "Layanan" },
-  { href: "#indikator", label: "Indikator" },
+  { href: "#materi-rtrw", label: "Materi" },
+  { href: "#berita", label: "Berita" },
+  { href: "#screening", label: "Akurat" },
   { href: "#dokumen", label: "Dokumen" },
   { href: "#katalog", label: "Katalog" },
   { href: "#dataset", label: "Dataset" },
-  { href: "#tentang-program", label: "Tentang" },
+  { href: "#tentang-program", label: "FAQ" },
 ];
 
 
@@ -47,64 +247,69 @@ function accordionItems(namaKab: string, kabShort: string) {
   return [
   {
     id: "01",
-    label: "Latar Belakang",
-    title: <>Program <span className="italic font-normal text-gray-600">FOLUR</span></>,
+    label: "FAQ SITARUNG",
+    title: <>Informasi <span className="italic font-normal text-gray-600">Umum</span></>,
     content: (
       <>
-        <p>Program <strong className="text-gray-900">Food Systems, Land Use and Restoration (FOLUR)</strong> adalah inisiatif global yang didukung oleh UNDP dan GEF untuk mendorong perubahan mendasar dalam pengelolaan sistem pangan, penggunaan lahan, dan pemulihan ekosistem. Di Indonesia, program ini berfokus pada pengurangan deforestasi dan degradasi lahan melalui penguatan tata kelola komoditas pertanian utama.</p>
-        <p>Empat komoditas strategis yang menjadi fokus utama adalah <strong className="text-gray-900">kakao rakyat</strong>, <strong className="text-gray-900">padi sawah</strong>, <strong className="text-gray-900">kelapa sawit</strong>, dan <strong className="text-gray-900">kopi</strong> — keempatnya memiliki dampak langsung terhadap mata pencaharian petani kecil sekaligus menjadi faktor penentu dalam penggunaan lahan di kabupaten-kabupaten sasaran.</p>
-        <p>Program FOLUR diimplementasikan di <strong className="text-gray-900">5 kabupaten prioritas</strong> di Indonesia — Aceh Timur, Mandailing Natal, Sanggau, Luwu, dan Sorong — dalam kerangka Pengelolaan Lanskap Terpadu (ILM).</p>
+        <p><strong className="text-gray-900">SITARUNG</strong> adalah kependekan dari <em>Sistem Informasi Tata Ruang</em> Provinsi Sumatera Selatan. Sistem ini berfungsi sebagai basis data digital yang menyediakan informasi spasial untuk mendukung proses perencanaan, pemantauan, dan pengambilan keputusan terkait tata ruang wilayah.</p>
+        <p>Tujuan utama SITARUNG adalah mewujudkan visi dan misi pembangunan daerah ke dalam kondisi tata ruang ideal di Sumatera Selatan. Portal ini menjadi alat bantu dalam proses penataan ruang, mulai dari <strong className="text-gray-900">perencanaan</strong>, <strong className="text-gray-900">pemanfaatan</strong>, hingga <strong className="text-gray-900">pengendalian pemanfaatan ruang</strong>.</p>
+        <p>SITARUNG dikelola oleh <strong className="text-gray-900">Dinas Pekerjaan Umum Bina Marga dan Tata Ruang Pemerintah Provinsi Sumatera Selatan</strong>.</p>
       </>
     ),
   },
   {
     id: "02",
-    label: "Konteks Wilayah",
-    title: <>Mengapa Kabupaten <span className="italic font-normal text-gray-600">{kabShort}?</span></>,
+    label: "Portal Data",
+    title: <>Fitur dan <span className="italic font-normal text-gray-600">Data</span></>,
     content: (
       <>
-        <p>{namaKab} merupakan salah satu wilayah sasaran FOLUR karena peran strategisnya dalam produksi <strong className="text-gray-900">komoditas pertanian rakyat</strong>. Wilayah ini berpotensi menjadi model pengelolaan lanskap yang mempertemukan kepentingan produktivitas pertanian, konservasi kawasan, dan kesejahteraan petani kecil.</p>
-        <p>Dengan keragaman ekosistemnya, {namaKab} menghadapi tantangan nyata dalam menyeimbangkan ekspansi pertanian dan perlindungan kawasan bernilai tinggi <strong className="text-gray-900">(HCV/HCS)</strong>. Program FOLUR hadir untuk memperkuat kapasitas daerah menghadapi tantangan tersebut melalui pendekatan berbasis data.</p>
+        <p>SITARUNG menyediakan beberapa modul utama, di antaranya <strong className="text-gray-900">Portal Data SITARUNG</strong> untuk peta dan dokumen, serta <strong className="text-gray-900">Modul Pemetaan KKPR</strong> untuk pengawasan pemanfaatan ruang.</p>
+        <p>Melalui Portal Data, pengguna dapat mengakses tiga kategori informasi utama:</p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li><strong className="text-gray-900">Peta Spasial</strong> untuk informasi geografi, batas wilayah, peruntukan lahan, dan elemen spasial lainnya.</li>
+          <li><strong className="text-gray-900">Dokumen Teknis</strong> berupa dokumen resmi, kebijakan, pedoman perencanaan, dan laporan kegiatan.</li>
+          <li><strong className="text-gray-900">Dataset RTR</strong> yang berisi data tematik, hasil analisis, temuan penelitian, dan indikator kunci untuk evaluasi RTR.</li>
+        </ul>
+        <p>SITARUNG juga menyediakan informasi tentang <strong className="text-gray-900">Rencana Struktur Ruang</strong> dan <strong className="text-gray-900">Rencana Pola Ruang</strong> sebagai materi utama penataan ruang wilayah.</p>
       </>
     ),
   },
   {
     id: "03",
-    label: "Platform Data",
-    title: <>Peran <span className="italic font-normal text-gray-600">DST ini</span></>,
+    label: "Regulasi",
+    title: <>Peraturan dan <span className="italic font-normal text-gray-600">Dokumen</span></>,
     content: (
       <>
-        <p><strong className="text-gray-900">Decision Support Tool (DST)</strong> {namaKab} adalah platform data resmi yang dikelola oleh BAPPEDA selaku walidata. DST ini berfungsi sebagai jembatan antara data di tingkat kabupaten dengan kebutuhan pemantauan dan evaluasi di tingkat nasional.</p>
-        <p>Seluruh dokumen kebijakan, peta tematik, dan dataset spasial yang dipublikasikan melalui portal ini dapat diakses secara terbuka oleh masyarakat, dan secara otomatis dipanen oleh <strong className="text-gray-900">DST Nasional</strong> untuk keperluan pelaporan program kepada UNDP dan pemangku kepentingan nasional.</p>
-        <p className="text-sm bg-gray-50 rounded-xl p-4 border border-gray-100">DST Kabupaten berfungsi sebagai <strong className="text-gray-900">penyedia data (data provider)</strong> — bukan alat analisis. Seluruh fungsi pemantauan dan rekomendasi kebijakan berada di DST Nasional.</p>
+        <p>Dasar hukum terkini yang tersedia di SITARUNG adalah <strong className="text-gray-900">Peraturan Daerah Nomor 6 Tahun 2024</strong> tentang Rencana Tata Ruang Wilayah Provinsi Sumatera Selatan Tahun 2024–2044. Dokumen ini menggantikan Perda Nomor 11 Tahun 2016.</p>
+        <p>Portal ini juga memuat dokumen yang dapat diunduh, termasuk materi sosialisasi RTRW terbaru serta regulasi terkait <strong className="text-gray-900">RTR Kawasan Strategis Nasional</strong> untuk kawasan perkotaan Palembang, Betung, Indralaya, dan Kayu Agung.</p>
+        <p><strong className="text-gray-900">Forum Penataan Ruang</strong> yang tercantum di dalam dokumen berfungsi memfasilitasi perencanaan tata ruang partisipatif dan memberikan pertimbangan kepada pemerintah dalam pelaksanaan penataan ruang.</p>
       </>
     ),
   },
   {
     id: "04",
-    label: "Pemangku Kepentingan",
-    title: <>Siapa yang <span className="italic font-normal text-gray-600">terlibat?</span></>,
+    label: "Pemanfaatan Ruang",
+    title: <>KKPR dan <span className="italic font-normal text-gray-600">Pengendalian</span></>,
     content: (
       <>
-        <p className="text-gray-600 leading-relaxed">Pengelolaan program melibatkan berbagai pihak di tingkat kabupaten maupun nasional, bekerja secara terkoordinasi dalam kerangka implementasi FOLUR.</p>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-            <h4 className="text-sm font-bold text-gray-900 mb-3">Tingkat Kabupaten</h4>
-            <div className="flex flex-wrap gap-2">
-              {["BAPPEDA", "Dinas Pertanian", "Dinas LH", "Dinas PUPR", "Dinas Kehutanan"].map((item) => (
-                <span key={item} className="px-3 py-1.5 text-xs rounded-lg bg-folur-100 text-folur-800 font-medium">{item}</span>
-              ))}
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-            <h4 className="text-sm font-bold text-gray-900 mb-3">Tingkat Nasional & Internasional</h4>
-            <div className="flex flex-wrap gap-2">
-              {["UNDP Indonesia", "Kemenko Pangan", "BAPPENAS", "Kementan", "KLHK", "GEF"].map((item) => (
-                <span key={item} className="px-3 py-1.5 text-xs rounded-lg bg-sky-100 text-sky-800 font-medium">{item}</span>
-              ))}
-            </div>
-          </div>
-        </div>
+        <p><strong className="text-gray-900">KKPR</strong> adalah singkatan dari <em>Kesesuaian Kegiatan Pemanfaatan Ruang</em>. Ini merupakan persyaratan dasar dalam proses perizinan usaha maupun non-usaha, baik di darat maupun perairan.</p>
+        <p>Dalam SITARUNG, Modul Pemetaan KKPR membantu pengawasan dan penegakan pelaksanaan rencana tata ruang agar pemanfaatan ruang tetap selaras dengan RTRW Provinsi Sumatera Selatan.</p>
+        <p>Arahan pengendalian pemanfaatan ruang menjadi acuan pemerintah dalam <strong className="text-gray-900">pengawasan</strong>, <strong className="text-gray-900">pemberian izin</strong>, <strong className="text-gray-900">insentif atau disinsentif</strong>, dan <strong className="text-gray-900">penerapan sanksi</strong>.</p>
+      </>
+    ),
+  },
+  {
+    id: "05",
+    label: "Kontak",
+    title: <>Informasi <span className="italic font-normal text-gray-600">Kontak</span></>,
+    content: (
+      <>
+        <p>Untuk menghubungi admin SITARUNG atau instansi terkait, pengguna dapat menghubungi <strong className="text-gray-900">Dinas Pekerjaan Umum Bina Marga dan Tata Ruang</strong> Provinsi Sumatera Selatan.</p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li><strong className="text-gray-900">Alamat:</strong> Jl. Ade Irma Nasution No. 10, Palembang, Sumatera Selatan</li>
+          <li><strong className="text-gray-900">Telepon:</strong> 071-313431</li>
+          <li><strong className="text-gray-900">Email:</strong> <a className="text-folur-700 underline decoration-folur-200 underline-offset-2 hover:text-folur-900" href="mailto:tataruang.sumsel@gmail.com">tataruang.sumsel@gmail.com</a></li>
+        </ul>
       </>
     ),
   },
@@ -168,8 +373,8 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
-  const nextSlide = useCallback(() => setActiveSlide((s) => (s + 1) % HERO_SLIDES), []);
-  const prevSlide = useCallback(() => setActiveSlide((s) => (s - 1 + HERO_SLIDES) % HERO_SLIDES), []);
+  const nextSlide = useCallback(() => setActiveSlide((s) => (s + 1) % HERO_BANNERS.length), []);
+  const prevSlide = useCallback(() => setActiveSlide((s) => (s - 1 + HERO_BANNERS.length) % HERO_BANNERS.length), []);
 
   // Auto-advance; berhenti saat di-hover/disentuh; timer di-reset setiap kali
   // slide berubah (termasuk navigasi manual) karena bergantung pada activeSlide.
@@ -193,10 +398,7 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
     if (Math.abs(dx) > SWIPE_THRESHOLD) (dx < 0 ? nextSlide : prevSlide)();
   }, [nextSlide, prevSlide]);
 
-  const slideClass = (i: number) =>
-    `absolute inset-0 flex items-center transition-opacity duration-700 ease-in-out ${
-      activeSlide === i ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-    }`;
+  const currentSlide = HERO_BANNERS[activeSlide] ?? HERO_BANNERS[0];
 
   const toggleAccordion = useCallback((id: string) => {
     setAccordionOpen((prev) => (prev === id ? null : id));
@@ -299,47 +501,95 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
   return (
     <div className="bg-white text-gray-800">
       {hideCss && <style dangerouslySetInnerHTML={{ __html: hideCss }} />}
-      {/* ============ HEADER SITARUNG: top-strip marquee + menu pill teal ============ */}
-      <header className="fixed top-0 inset-x-0 z-50">
-        {/* Strip putih: emblem + judul marquee + logo kanan */}
-        <div className="relative h-[46px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
-          <div className="relative mx-auto h-full max-w-[1280px] px-3">
-            <a href="/" className="absolute left-3 top-1 z-[60] block" aria-label={brandName}>
-              <img src={site.logo || `${HERO_MEDIA}/favicon.png`} alt={brandName} className="h-[64px] w-[64px] object-contain drop-shadow" />
+      {/* ============ HEADER SITARUNG + HERO CAROUSEL ============ */}
+      <div className="relative">
+        <header className="absolute inset-x-0 top-0 z-50 h-[50px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+          <div className="relative mx-auto h-full max-w-7xl">
+            <a href="/" className="absolute left-[5px] top-[3px] z-50 block w-[110px]" aria-label={brandName}>
+              <img src={site.logo || `${HERO_MEDIA}/favicon.png`} alt={brandName} className="h-[110px] w-[110px] object-contain drop-shadow" />
             </a>
-            <div className="hidden lg:block absolute left-[90px] right-[150px] top-0 h-[46px] overflow-hidden">
-              <div className="marquee-track flex items-center h-[46px] whitespace-nowrap">
+            <div className="absolute right-4 top-0 hidden w-[110px] sm:block lg:right-[30px]">
+              <img src={`${HERO_MEDIA}/lohorights.png`} alt="" className="w-[110px] object-contain drop-shadow" />
+            </div>
+            <div className="absolute left-[130px] right-[155px] top-0 hidden h-[50px] overflow-hidden lg:block">
+              <div className="marquee-track flex h-[50px] items-center whitespace-nowrap">
                 <span className="site-title shrink-0 pr-24">{MARQUEE_TITLE}</span>
                 <span className="site-title shrink-0 pr-24" aria-hidden="true">{MARQUEE_TITLE}</span>
               </div>
             </div>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:block">
-              <img src={`${HERO_MEDIA}/lohorights.png`} alt="" className="h-9 object-contain" />
+          </div>
+        </header>
+
+        {/* ============ HERO CAROUSEL SITARUNG (latar banner Jembatan Ampera) ============ */}
+        <section
+          id="beranda-carousel"
+          className="relative overflow-hidden bg-brand-900 text-white select-none"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          {HERO_BANNERS.map((banner, i) => (
+            <div
+              key={banner.bg}
+              aria-hidden={activeSlide !== i}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${activeSlide === i ? "opacity-100" : "pointer-events-none opacity-0"}`}
+              style={{ background: `${HERO_OVERLAY}, url('${banner.bg}') center/cover` }}
+            />
+          ))}
+          <div className="relative mx-auto max-w-7xl px-6 pt-[50px]">
+            <div key={currentSlide.bg} className="relative z-10 grid min-h-[362px] items-center gap-8 py-6 transition-opacity duration-700 ease-in-out lg:grid-cols-2">
+              <div>
+                <span className="mb-5 inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium tracking-wide ring-1 ring-white/20 backdrop-blur">{brandSubtitle}</span>
+                <h1 className="text-5xl font-bold leading-none tracking-tight drop-shadow-lg md:text-7xl">{brandName}</h1>
+                <p className="mt-4 text-xl font-light text-white/95 drop-shadow md:text-2xl">Sistem Informasi Tata Ruang<br />{brandSubtitle}</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <a href="/jelajah-dataset" className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-700 shadow-lg transition hover:bg-brand-50">Jelajahi Portal</a>
+                  <a href="/jelajah-dokumen" className="rounded-lg px-6 py-3 text-sm font-semibold text-white ring-1 ring-white/50 backdrop-blur transition hover:bg-white/10">Dokumen RTRW</a>
+                </div>
+              </div>
+              <div className="hidden justify-center lg:flex">
+                <img src={currentSlide.figure} alt="" className="max-h-[400px] object-contain drop-shadow-2xl" />
+              </div>
             </div>
+
+            <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+              {HERO_BANNERS.map((_, i) => (
+                <button type="button" key={i} onClick={() => setActiveSlide(i)} aria-label={`Slide ${i + 1}`} className={`h-2.5 rounded-full transition-all ${activeSlide === i ? "w-6 bg-white" : "w-2.5 bg-white/40 hover:bg-white/80"}`} />
+              ))}
+            </div>
+          </div>
+
+          <button type="button" onClick={prevSlide} aria-label="Slide sebelumnya" className="absolute left-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur transition-all duration-200 hover:scale-110 hover:bg-white/30 active:scale-95 sm:left-5 lg:left-8">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button type="button" onClick={nextSlide} aria-label="Slide berikutnya" className="absolute right-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur transition-all duration-200 hover:scale-110 hover:bg-white/30 active:scale-95 sm:right-5 lg:right-8">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </section>
+      </div>
+
+      {/* ============ BAR MENU TEAL STICKY ============ */}
+      <nav className="sticky top-0 z-40 border-b border-brand-500/20 backdrop-blur" style={{ background: "rgba(154,239,235,0.75)" }}>
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="flex h-[60px] items-center justify-between">
+            <a href="/" className="flex items-center gap-2 lg:hidden">
+              <img src={site.logo || `${HERO_MEDIA}/favicon.png`} alt="" className="h-8 w-8 object-contain" />
+              <span className="font-bold text-brand-800">{brandName}</span>
+            </a>
+            <ul className="mx-auto hidden items-center gap-2 lg:flex">
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} className="menu-pill">{link.label}</a>
+                </li>
+              ))}
+            </ul>
+            <button onClick={() => setMobileOpen(true)} className="ml-auto rounded-lg p-2 hover:bg-white/50 lg:hidden" aria-label="Buka menu">
+              <svg className="h-6 w-6 text-brand-800" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
           </div>
         </div>
-        {/* Bar menu teal translucent */}
-        <nav className="backdrop-blur border-b border-brand-500/20" style={{ background: "rgba(154,239,235,0.92)" }}>
-          <div className="mx-auto max-w-[1280px] px-4">
-            <div className="flex items-center h-[56px]">
-              <a href="/" className="lg:hidden flex items-center gap-2 pl-[64px]">
-                <span className="font-bold text-brand-800">{brandName}</span>
-              </a>
-              <ul className="hidden lg:flex items-center gap-2 mx-auto">
-                {NAV_LINKS.map((link) => (
-                  <li key={link.href}>
-                    <a href={link.href} className="menu-pill">{link.label}</a>
-                  </li>
-                ))}
-              </ul>
-              <a href="/jelajah-dataset" className="hidden lg:inline-flex items-center rounded-[10px] bg-accent px-3.5 py-[6px] text-[13px] font-semibold text-white shadow-[0_2px_6px_1px_rgba(0,0,0,0.33)] hover:bg-accent-600 transition">Geoportal</a>
-              <button onClick={() => setMobileOpen(true)} className="lg:hidden ml-auto p-2 rounded-lg hover:bg-white/50" aria-label="Buka menu">
-                <svg className="w-6 h-6 text-brand-800" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
-              </button>
-            </div>
-          </div>
-        </nav>
-      </header>
+      </nav>
 
       {/* ============ OFFCANVAS (mobile) ============ */}
       <div
@@ -360,60 +610,12 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
           {NAV_LINKS.map((link) => (
             <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-gray-600 hover:bg-brand-500/10 hover:text-brand-700">{link.label}</a>
           ))}
-          <a href="/jelajah-dataset" onClick={() => setMobileOpen(false)} className="mt-3 block text-center rounded-lg bg-accent px-4 py-2.5 font-semibold text-white">Geoportal</a>
         </nav>
       </aside>
 
-      {/* ============ HERO CAROUSEL SITARUNG (latar banner Jembatan Ampera) ============ */}
-      <header
-        id="beranda-carousel"
-        className="relative h-[92vh] min-h-[600px] overflow-hidden bg-brand-900 text-white select-none"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        {HERO_BANNERS.map((b, i) => (
-          <div key={i} className={slideClass(i)} style={{ background: `${HERO_OVERLAY}, url('${b.bg}') center/cover` }}>
-            <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 items-center w-full">
-              <div>
-                <span className="inline-block rounded-full bg-white/15 backdrop-blur px-3 py-1 text-xs font-medium tracking-wide mb-5 ring-1 ring-white/20">{brandSubtitle}</span>
-                <h1 className="text-6xl md:text-7xl font-bold tracking-tight leading-none drop-shadow-lg">{brandName}</h1>
-                <p className="mt-4 text-xl md:text-2xl text-white/95 font-light drop-shadow">Sistem Informasi Tata Ruang<br />{brandSubtitle}</p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <a href="/jelajah-dataset" className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition shadow-lg">Jelajahi Portal</a>
-                  <a href="/jelajah-dokumen" className="rounded-lg ring-1 ring-white/50 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition backdrop-blur">Dokumen RTRW</a>
-                </div>
-              </div>
-              <div className="hidden lg:flex justify-center items-end">
-                <img src={b.figure} alt="" className="max-h-[420px] object-contain drop-shadow-2xl" />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Kontrol prev/next — di sisi kiri & kanan */}
-        <button onClick={prevSlide} aria-label="Slide sebelumnya" className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/30 text-white backdrop-blur ring-1 ring-white/30 shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
-          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-        </button>
-        <button onClick={nextSlide} aria-label="Slide berikutnya" className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/30 text-white backdrop-blur ring-1 ring-white/30 shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
-          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-        </button>
-
-        {/* Indikator dot */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {HERO_BANNERS.map((_, i) => (
-            <button key={i} onClick={() => setActiveSlide(i)} aria-label={`Slide ${i + 1}`} className={`h-2.5 rounded-full transition-all ${activeSlide === i ? "w-6 bg-white" : "w-2.5 bg-white/50 hover:bg-white/80"}`} />
-          ))}
-        </div>
-      </header>
-
-
-
-
       {/* ============ STAT STRIP ============ */}
-      <section id="statistik" className="relative -mt-20 z-20">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="statistik" className="relative z-20 bg-white py-8 sm:py-10">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { value: String(data.documentsTotal), label: "Dokumen Kebijakan", sub: "Perda, Perbup, RPJMD, Renstra", color: "text-folur-700" },
@@ -426,6 +628,167 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
                 <p className="text-sm font-semibold text-gray-700 mt-1">{stat.label}</p>
                 <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ MATERI MUATAN RTRW ============ */}
+      <section id="materi-rtrw" className="mx-auto max-w-7xl px-6 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Materi Muatan RTRW</span>
+          <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Pola &amp; Struktur Ruang</h2>
+          <p className="mt-3 text-gray-500">Tujuan, kebijakan, dan strategi penataan ruang wilayah {brandSubtitle}.</p>
+        </div>
+        <div className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+          {RTRW_CONTENT.map((item) => (
+            <a key={item.id} href={item.href} className="group relative flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_10px_30px_-12px_rgba(13,179,144,0.25)] ring-1 ring-brand-500/10 transition duration-300 hover:-translate-y-2 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white">
+              <div className="relative flex h-56 items-center justify-center overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-100/50">
+                <span className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand-400/20 blur-2xl" />
+                <span className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-brand-300/20 blur-2xl" />
+                <span className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 text-sm font-extrabold text-brand-600 ring-1 ring-brand-500/10 backdrop-blur">{item.id}</span>
+                <img src={item.image} alt={item.title} className="relative max-h-[86%] max-w-[84%] object-contain drop-shadow-xl transition duration-500 group-hover:scale-110" />
+              </div>
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="text-lg font-bold leading-snug text-brand-700">{item.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-500">{item.description}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">Pelajari <svg className="h-4 w-4 transition group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+              </div>
+              <span className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-brand-400 to-brand-600 transition-transform duration-500 group-hover:scale-x-100" />
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ PENYELENGGARAAN ============ */}
+      <section id="penyelenggaraan" className="border-y border-brand-500/10 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Penyelenggaraan</span>
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Penataan Ruang</h2>
+          </div>
+          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {PENATAAN_RUANG_ITEMS.map((item) => (
+              <div key={item.title} className="group text-center">
+                <div className="mx-auto flex h-40 w-40 items-center justify-center sm:h-48 sm:w-48">
+                  <img src={item.image} alt={item.title} className="max-h-full max-w-full object-contain drop-shadow-xl transition duration-500 group-hover:scale-110" />
+                </div>
+                <h4 className="mt-4 font-bold text-brand-700">{item.title}</h4>
+                <p className="mt-2 text-sm leading-relaxed text-gray-500">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ SATU PINTU DATA ============ */}
+      <section id="modul" className="mx-auto max-w-7xl px-6 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Satu Pintu Data</span>
+          <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Modul Portal Data SITARUNG</h2>
+          <p className="mt-3 text-gray-500">Tiga modul utama yang menyatukan data spasial, dokumen, dan dataset tata ruang dalam satu portal terpadu.</p>
+        </div>
+        <div className="mt-14 grid gap-7 md:grid-cols-3">
+          {PORTAL_MODULES.map((module) => (
+            <a key={module.title} href={module.href} className="group relative flex flex-col rounded-3xl bg-white shadow-[0_10px_30px_-12px_rgba(13,179,144,0.25)] ring-1 ring-brand-500/10 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
+              <span className="absolute inset-x-6 top-0 h-1 origin-left scale-x-0 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-transform duration-500 group-hover:scale-x-100" />
+              <div className="p-5 pb-0">
+                <div className="relative aspect-[5/4] overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-500/10">
+                  <span className="absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-500/10 backdrop-blur">{module.badge}</span>
+                  <span className="absolute right-4 top-3 text-2xl font-extrabold text-brand-200 transition group-hover:text-brand-300">{module.number}</span>
+                  <img src={module.image} alt={module.title} className="h-full w-full object-contain p-6 drop-shadow transition duration-500 group-hover:scale-105" />
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col p-6">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600">
+                    {module.type === "spatial" && <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3Z" /><path d="M9 3v15M15 6v15" /></svg>}
+                    {module.type === "document" && <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M8 13h8M8 17h5" /></svg>}
+                    {module.type === "dataset" && <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" /></svg>}
+                  </span>
+                  <h3 className="text-lg font-bold text-brand-700">{module.title}</h3>
+                </div>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-500">{module.description}</p>
+                <span className="mt-5 inline-flex items-center gap-2 self-start rounded-full bg-brand-500/10 px-4 py-2 text-sm font-semibold text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white">Buka Modul <svg className="h-4 w-4 transition group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ TERKINI ============ */}
+      <section id="berita" className="border-y border-brand-500/10 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Terkini</span>
+              <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Info &amp; Berita</h2>
+            </div>
+            <a href="#" className="hidden text-sm font-semibold text-accent hover:underline sm:inline">Semua berita →</a>
+          </div>
+          <div className="mt-10 grid gap-8 lg:grid-cols-2">
+            <article className="group overflow-hidden rounded-2xl bg-gray-50 shadow-[0_10px_30px_-12px_rgba(13,179,144,0.25)] ring-1 ring-brand-500/10 transition hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
+              <div className="aspect-[16/9] overflow-hidden"><img src={NEWS_FEATURED.image} alt={NEWS_FEATURED.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
+              <div className="p-6">
+                <p className="text-xs text-gray-400">{NEWS_FEATURED.date}</p>
+                <h3 className="mt-2 text-lg font-bold leading-snug text-gray-900 transition group-hover:text-brand-700">{NEWS_FEATURED.title}</h3>
+                <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-500">{NEWS_FEATURED.description}</p>
+              </div>
+            </article>
+            <div className="space-y-6">
+              {NEWS_LIST.map((item) => (
+                <article key={item.title} className="group flex gap-4 rounded-2xl bg-gray-50 p-4 ring-1 ring-brand-500/10 transition hover:shadow-[0_10px_30px_-12px_rgba(13,179,144,0.25)]">
+                  <div className="h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-brand-50"><img src={item.image} alt={item.title} className="h-full w-full object-cover" /></div>
+                  <div>
+                    <p className="text-xs text-gray-400">{item.date}</p>
+                    <h4 className="font-semibold leading-snug text-gray-900 transition group-hover:text-brand-700">{item.title}</h4>
+                    <p className="mt-1 line-clamp-2 text-sm text-gray-500">{item.description}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ GALERI VIDEO ============ */}
+      <section id="galeri-video" className="mx-auto max-w-7xl px-6 py-20">
+        <div>
+          <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Galeri Video</span>
+          <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Video</h2>
+        </div>
+        <div className="mt-10 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {VIDEO_GALLERY.map((item) => (
+            <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_10px_30px_-12px_rgba(13,179,144,0.25)] ring-1 ring-brand-500/10 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
+              <div className="relative aspect-video overflow-hidden bg-brand-900">
+                <img src={item.image} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white"><svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M23 12s0-3.9-.5-5.8a3 3 0 0 0-2.1-2.1C18.5 3.6 12 3.6 12 3.6s-6.5 0-8.4.5A3 3 0 0 0 1.5 6.2 30 30 0 0 0 1 12a30 30 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 8.4.5 8.4.5s6.5 0 8.4-.5a3 3 0 0 0 2.1-2.1C23 15.9 23 12 23 12ZM10 15.5v-7l6 3.5-6 3.5Z" /></svg>YOUTUBE</span>
+                <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)] transition duration-300 group-hover:scale-110"><svg className="ml-0.5 h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></span></span>
+              </div>
+              <div className="flex flex-1 flex-col p-4">
+                <p className="line-clamp-3 text-sm font-medium leading-snug text-gray-900 transition group-hover:text-brand-700">{item.title}</p>
+                <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-xs font-semibold text-accent">Tonton video <svg className="h-3.5 w-3.5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ UNDUHAN ============ */}
+      <section id="unduhan" className="border-y border-brand-500/10 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <div>
+            <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Unduhan</span>
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Dokumen RTRW</h2>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {DOWNLOAD_ITEMS.map((item) => (
+              <a key={item.label} href="/jelajah-dokumen" className="group rounded-2xl bg-gray-50 p-6 text-center ring-1 ring-brand-500/10 transition hover:-translate-y-1 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
+                <img src={item.image} alt={item.label} className="mx-auto h-28 object-contain transition group-hover:scale-105" />
+                <p className="mt-4 font-bold text-brand-700">{item.label}</p>
+                <p className="mt-1 text-sm text-gray-500">{item.description}</p>
+              </a>
             ))}
           </div>
         </div>
@@ -547,17 +910,34 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-[1fr_1.6fr] gap-12 items-center">
             <div>
-              <p className="text-sm font-semibold text-sky-600 tracking-widest uppercase mb-2">Modul Screening Tools</p>
-              <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-gray-900 mb-4"><span className="italic font-light text-folur-600">Decision Support Tool</span><br className="hidden md:block" /> untuk Sinkronisasi Intervensi Zonasi Spasial</h2>
-              <p className="text-gray-500 mb-8"><strong>Analisis {kabShort}</strong> — Modul screening tools untuk memenuhi kebutuhan publik yang mengoverlay data AoI/PoI dengan layer-layer peta dasar, peta tematik dan peta rencana di dalam modul pemetaan interaktif dengan output laporan PDF.</p>
+              <p className="text-sm font-semibold text-sky-600 tracking-widest uppercase mb-2">Peta Interaktif</p>
+              <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Modul Akurat</h2>
+              <p className="text-gray-500 mb-8">SITARUNG AKURAT (Modul Analisis Kesesuaian Kegiatan Pemanfaatan Ruang) sebagai panel manajerial untuk membantu dalam menganalisis, memvisualisasikan, dan mengelola data spasial terkait kesesuaian dan pemanfaatan ruang. Modul ini mampu mengidentifikasi secara cepat area (misalnya potensi pelanggaran atau tumpang tindih pemanfaatan ruang).</p>
               <div className="flex flex-wrap gap-3">
-                <a href="/webgis-screening" className="inline-flex items-center px-6 py-3 bg-folur-700 text-white font-semibold rounded-lg hover:bg-folur-800 transition">Screening Tools</a>
-                <a href="/capaian-folur" className="inline-flex items-center px-6 py-3 border-2 border-folur-700 text-folur-700 font-semibold rounded-lg hover:bg-folur-50 transition">Capaian Program</a>
+                <a href="/webgis-screening" className="inline-flex items-center px-6 py-3 bg-folur-700 text-white font-semibold rounded-lg hover:bg-folur-800 transition">Modul AKURAT</a>
               </div>
             </div>
-            <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-gray-50">
-              <img src="/images/zonasi-folur.png" alt="Peta Zonasi FOLUR" className="w-full h-auto" />
+            <div className="overflow-hidden shadow-xl border border-gray-200 bg-gray-50">
+              <img src="/images/akurat.jpg" alt="SITARUNG AKURAT" className="w-full h-auto" />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ SITARUNG KABUPATEN/KOTA ============ */}
+      <section id="sitarung-kabupaten" className="border-y border-brand-500/10 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="text-sm font-semibold uppercase tracking-wider text-brand-600">Tautan Sitarung</span>
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">Sitarung Kabupaten/Kota</h2>
+          </div>
+          <div className="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
+            {KKPR_KABKOTA.map((item) => (
+              <a key={item.label} href="/webgis-screening" className="group rounded-2xl bg-gray-50 p-5 text-center ring-1 ring-brand-500/10 transition hover:-translate-y-1 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
+                <img src={item.image} alt={item.label} className="mx-auto h-28 object-contain transition group-hover:scale-110" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                <p className="mt-3 text-sm font-semibold text-gray-800">{item.label}</p>
+              </a>
+            ))}
           </div>
         </div>
       </section>
@@ -809,9 +1189,9 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
       {/* ============ TENTANG PROGRAM ============ */}
       <section id="tentang-program" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-sm font-semibold text-folur-600 tracking-widest uppercase mb-2">DST FOLUR · Tentang</p>
-          <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Tentang <span className="italic font-light text-folur-600">Program</span></h2>
-          <p className="text-gray-500 max-w-3xl mb-16">Program FOLUR adalah inisiatif global yang didukung UNDP dan GEF untuk mendorong perubahan mendasar dalam pengelolaan sistem pangan, penggunaan lahan, dan pemulihan ekosistem di Indonesia.</p>
+          <p className="text-sm font-semibold text-folur-600 tracking-widest uppercase mb-2">SITARUNG · FAQ</p>
+          <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Pertanyaan yang <span className="italic font-light text-folur-600">Sering Diajukan</span></h2>
+          <p className="text-gray-500 max-w-3xl mb-16">Ringkasan informasi dari halaman FAQ SITARUNG Sumatera Selatan, mencakup gambaran umum sistem, fitur data, dokumen RTRW, KKPR, dan kontak instansi pengelola.</p>
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             {ACCORDION_ITEMS.map((item) => (
               <div key={item.id} className="border-b border-gray-200 last:border-b-0">
@@ -879,7 +1259,10 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
                   <p className="text-xs text-folur-200">{brandSubtitle}</p>
                 </div>
               </div>
-              <p className="text-sm text-folur-200/70 max-w-xs">Decision Support Tool untuk tata kelola bentang lahan berkelanjutan di {namaKab}.</p>
+              <div className="max-w-xs text-sm text-folur-200/70 space-y-1">
+                <p>Address: Jl. Ade Irma Nasution No. 10, Palembang, Sumatera Selatan, Indonesia</p>
+                <p>Phone: 071-313431, Email: tataruang.sumsel@gmail.com</p>
+              </div>
             </div>
             <div>
               <h4 className="text-sm font-bold mb-4">Navigasi</h4>
@@ -888,6 +1271,7 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
                 <li><a href={"/jelajah-dataset"} className="hover:text-white">Eksplorasi Dataset</a></li>
                 <li><a href={"/webgis-screening/"} className="hover:text-white">Screening Tools</a></li>
                 <li><a href={"/jelajah-endpoint"} className="hover:text-white">API & Endpoint</a></li>
+                <li><a href={"/pengaduan"} className="hover:text-white">Pengaduan</a></li>
               </ul>
             </div>
             <div>
@@ -902,7 +1286,6 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
           </div>
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-folur-200/50">&copy; 2026 {brandName} &middot; {brandSubtitle}</p>
-            <p className="text-xs text-folur-200/50">Didukung oleh UNDP · GEF · Program FOLUR Indonesia</p>
           </div>
         </div>
       </footer>

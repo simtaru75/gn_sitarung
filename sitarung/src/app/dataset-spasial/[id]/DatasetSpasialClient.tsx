@@ -4,19 +4,19 @@ import "./dataset-spasial.css";
 import { useMemo, useState } from "react";
 import type { DatasetDetail, SiteIdentity } from "@/lib/geonode";
 import dynamic from "next/dynamic";
+import LoadingState from "@/components/LoadingState";
 
 const MapComponent = dynamic(
   () => import("./MapComponent"),
   {
     ssr: false,
     loading: () => (
-      <div className="absolute inset-0 flex flex-col gap-2.5 items-center justify-center text-center p-10 z-[400] bg-gray-100 animate-pulse">
-        <svg className="w-10 h-10 opacity-40 text-gray-500 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-          <path fill="currentColor" d="M12 2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8V2z" />
-        </svg>
-        <span>Memuat peta spasial...</span>
-      </div>
+      <LoadingState
+        label="Memuat peta spasial..."
+        className="absolute inset-0 z-400 bg-gray-100/95 p-10"
+        spinnerClassName="h-14 w-14 opacity-75"
+        labelClassName="text-xs font-semibold tracking-[0.18em] uppercase text-gray-500 animate-pulse"
+      />
     ),
   }
 );

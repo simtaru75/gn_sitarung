@@ -14,6 +14,8 @@ import {
   rewriteHostToPublic,
 } from "./config";
 
+export const DEFAULT_SITE_LOGO = "http://localhost/uploaded/img/2026/06/prov-250-16.png";
+
 export interface DocumentItem {
   pk: string;
   title: string;
@@ -365,7 +367,7 @@ export async function getSiteIdentity(): Promise<SiteIdentity> {
     namaKabupaten: String(d.nama_kabupaten ?? "") || "Kabupaten",
     siteName: String(d.site_name ?? "") || "DST",
     siteDomain: String(d.site_domain ?? ""),
-    logo: d.logo ? publicUrl(String(d.logo)) : "",
+    logo: d.logo ? publicUrl(String(d.logo)) : DEFAULT_SITE_LOGO,
     theme: String(d.theme ?? "") || "luwu",
     webgisReferenceMapId: Number(d.webgis_reference_map_id ?? 1),
     fonts: {
