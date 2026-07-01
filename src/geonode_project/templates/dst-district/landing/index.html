@@ -644,10 +644,10 @@
 
   <div class="data-grid">
     {% for ds in landing_datasets %}
-    <a href="{% url 'dst:dataset_detail' ds.id %}" class="data-card" style="text-decoration: none; color: inherit; display: block;">
+    <a href="{% url 'dst:dataset_detail' ds.id %}" class="data-card" style="text-decoration: none; color: inherit;">
       <div class="card-thumb">
         {% if ds.thumbnail_url %}
-          <img src="{{ ds.thumbnail_url }}" alt="{{ ds.title }}" style="width:100%; height:100%; object-fit: cover; display: block;">
+          <img src="{{ ds.thumbnail_url }}" alt="{{ ds.title }}" loading="lazy" onerror="this.style.display='none'">
         {% elif ds.is_raster %}
           <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">
             <rect width="320" height="200" fill="#1F3A2E"/>

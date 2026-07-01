@@ -647,24 +647,32 @@
 .data-card {
   background: var(--cream);
   border: 1px solid var(--line);
-  padding: 28px;
+  border-radius: 10px;
+  padding: 0 0 20px;
   transition: all 0.25s;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  min-height: 320px;
+  overflow: hidden;
+  min-height: 280px;
 }
 .data-card:hover {
   border-color: var(--forest);
   transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 .data-card .card-thumb {
-  aspect-ratio: 16/10;
   background: var(--cream-200);
-  margin: -28px -28px 24px;
-  margin-bottom: 24px;
   overflow: hidden;
   position: relative;
+  height: 150px;
+  flex-shrink: 0;
+}
+.data-card .card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .card-thumb svg { width: 100%; height: 100%; display: block; }
 .data-card .card-cat {
@@ -674,6 +682,7 @@
   letter-spacing: 0.12em;
   color: var(--ochre-600);
   margin-bottom: 10px;
+  padding: 0 20px;
 }
 .data-card .card-title {
   font-family: var(--serif);
@@ -684,16 +693,26 @@
   margin-bottom: 12px;
   font-variation-settings: "SOFT" 40;
   letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  padding: 0 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .data-card .card-desc {
   font-size: 13px;
   color: var(--ink-600);
   line-height: 1.5;
   flex: 1;
+  padding: 0 20px;
 }
 .data-card .card-meta {
   margin-top: 24px;
-  padding-top: 16px;
+  padding: 16px 20px 0;
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
@@ -1244,6 +1263,9 @@
   letter-spacing: 0.12em; color: rgba(244,239,230,0.45); line-height: 1.4;
 }
 
+@media (max-width: 1100px) {
+  .data-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 1024px) {
   .search-section { padding: 72px 32px; }
   .search-header { grid-template-columns: 1fr; gap: 20px; }
