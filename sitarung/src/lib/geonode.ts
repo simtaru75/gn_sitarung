@@ -360,9 +360,9 @@ export interface SiteIdentity {
 }
 
 export async function getSiteIdentity(): Promise<SiteIdentity> {
-  // Identitas situs identik di semua halaman & jarang berubah → cache 5 menit
-  // (bukan no-store) supaya tiap halaman detail tak round-trip backend lagi.
-  const d = (await apiGet<Record<string, unknown>>("/api/folur/site-identity/", 300)) ?? {};
+  // Identitas situs identik di semua halaman → cache singkat 10 detik
+  // agar perubahan tema di /dst-auth/tema/ segera tampil di frontend.
+  const d = (await apiGet<Record<string, unknown>>("/api/folur/site-identity/", 10)) ?? {};
   return {
     namaKabupaten: String(d.nama_kabupaten ?? "") || "Kabupaten",
     siteName: String(d.site_name ?? "") || "DST",
