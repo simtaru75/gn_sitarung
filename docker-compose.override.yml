@@ -28,3 +28,13 @@ services:
     # next dev butuh sedikit waktu kompilasi saat request pertama
     healthcheck:
       start_period: 60s
+
+  # SITARUNG — mode DEV: hot-reload dengan volume mount (tanpa rebuild tiap edit)
+  sitarung:
+    build:
+      target: deps
+    volumes:
+      - ./sitarung:/app
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true

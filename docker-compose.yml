@@ -109,7 +109,7 @@ services:
         - BASE_IMAGE_VERSION=${GEOSERVER_BASE_IMAGE_VERSION}
     container_name: geoserver4${COMPOSE_PROJECT_NAME}
     healthcheck:
-      test: "curl -m 10 --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://geoserver:8080/geoserver/ows"
+      test: "curl -m 10 --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://localhost:8080/geoserver/ows"
       start_period: 60s
       interval: 60s
       timeout: 10s
@@ -204,6 +204,22 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  # SITARUNG — landing page statis RTRW dengan hot-reload (BrowserSync)
+  sitarung:
+    build:
+      context: ./
+      dockerfile: ./docker/sitarung/Dockerfile
+    container_name: sitarung4${COMPOSE_PROJECT_NAME}
+    ports:
+      - "3030:3030"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3030/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   statics:
