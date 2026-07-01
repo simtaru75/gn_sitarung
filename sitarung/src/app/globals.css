@@ -77,7 +77,7 @@
    selaras dengan :root template GeoNode dst-district. Sumber tunggal warna &
    tipografi — komponen merujuk var(--token) tanpa nilai hardcode. */
 :root {
-  --forest: #0B4B3F; --forest-700: #0D5C4E; --forest-500: #177766;
+  --forest: #0d5c4e; --forest-700: #5cbdb8; --forest-500: #177766;
   --cream: #F4EFE6; --cream-200: #E8DFCE; --cream-300: #D9CEB8; --paper: #FAF7F0;
   --ink: #1A1A1A; --ink-600: #4A4A4A; --ink-400: #7A7A7A;
   --ochre: #C77D3E; --ochre-600: #A66830; --ochre-100: #F5E6D3;
