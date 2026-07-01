@@ -119,9 +119,29 @@ const STATIC_PAGE_CSS = `
   .static-page-html blockquote {
     margin: 0 0 1rem;
   }
-  .static-page-html ol,
   .static-page-html ul {
+    list-style-type: disc;
     padding-left: 1.35rem;
+  }
+  .static-page-html ol {
+    list-style-type: decimal;
+    padding-left: 1.35rem;
+  }
+  .static-page-html ol[type="a"],
+  .static-page-html ol[type="A"] {
+    list-style-type: lower-alpha;
+  }
+  .static-page-html ol[type="i"],
+  .static-page-html ol[type="I"] {
+    list-style-type: lower-roman;
+  }
+  .static-page-html ul ul,
+  .static-page-html ol ul {
+    list-style-type: circle;
+  }
+  .static-page-html ul ul ul,
+  .static-page-html ol ul ul {
+    list-style-type: square;
   }
   .static-page-html li + li {
     margin-top: 0.35rem;

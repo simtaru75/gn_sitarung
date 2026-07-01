@@ -620,8 +620,8 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
             {[
               { value: String(data.documentsTotal), label: "Dokumen Kebijakan", sub: "Perda, Perbup, RPJMD, Renstra", color: "text-folur-700" },
               { value: String(data.datasetsTotal), label: "Layer Spasial", sub: "Vektor & raster · ter-publish", color: "text-sky-600" },
-              { value: String(data.screeningTotal), label: "Screening Tools", sub: "Realtime AoI · Audit Log", color: "text-earth-600" },
-              { value: String(data.komoditas.length), label: "Komoditi Unggulan", sub: "Fokus komoditi daerah/FOLUR", color: "text-folur-600" },
+              { value: String(data.screeningTotal), label: "Modul Akurat", sub: "Realtime AoI · Audit Log", color: "text-earth-600" },
+              { value: String(data.komoditas.length), label: "Berita Terkini", sub: "Fokus Permasalahan Taru", color: "text-folur-600" },
             ].map((stat, i) => (
               <div key={i} className="stat-card bg-white rounded-2xl shadow-lg p-6 text-center">
                 <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
