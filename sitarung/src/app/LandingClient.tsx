@@ -499,7 +499,7 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
   const hideCss = hiddenSelectors.length ? `${hiddenSelectors.join(",")}{display:none!important}` : "";
 
   return (
-    <div className="bg-white text-gray-800">
+    <div className="bg-cap-bg text-gray-800">
       {hideCss && <style dangerouslySetInnerHTML={{ __html: hideCss }} />}
       {/* ============ HEADER SITARUNG + HERO CAROUSEL ============ */}
       <div className="relative">
