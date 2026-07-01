@@ -12,7 +12,21 @@ const OfflineBanner = () => (
 
 const AUTO_ADVANCE_MS = 6000;
 const SWIPE_THRESHOLD = 50;
-const HERO_SLIDES = 4;
+const HERO_SLIDES = 3;
+
+// Judul header bergulir (marquee) — selaras index-tailwind.html.
+const MARQUEE_TITLE = "SISTEM INFORMASI TATA RUANG (SITARUNG)";
+
+// Slide hero SITARUNG: latar banner Jembatan Ampera + figur pejabat.
+// Aset di-bundle dari situs ADMINSITARUNG di /adm/PUBLIK/assets/images/.
+const HERO_MEDIA = "/adm/PUBLIK/assets/images";
+const HERO_BANNERS = [
+  { bg: `${HERO_MEDIA}/banner1.png`, figure: `${HERO_MEDIA}/pakhdCopy.png` },
+  { bg: `${HERO_MEDIA}/banner2.png`, figure: `${HERO_MEDIA}/PSDATEMPLATEARACREATIVE6Copy.png` },
+  { bg: `${HERO_MEDIA}/banner3.png`, figure: `${HERO_MEDIA}/kepala.png` },
+];
+const HERO_OVERLAY =
+  "linear-gradient(90deg,rgba(8,55,46,.90),rgba(8,55,46,.50) 48%,rgba(8,55,46,.10))";
 
 // Selaras dengan menu landing GeoNode: Screening · Layanan · Indikator ·
 // Dokumen · Katalog · Dataset · Tentang.
@@ -285,139 +299,114 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
   return (
     <div className="bg-white text-gray-800">
       {hideCss && <style dangerouslySetInnerHTML={{ __html: hideCss }} />}
-      {/* ============ NAVBAR ============ */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-          <a href="/" className="flex items-center gap-3">
-            <img src={site.logo || asset("/icon.png")} alt={brandName} className="h-10 w-10 object-contain" />
-            <div className="leading-tight">
-              <span className="text-lg font-bold text-folur-800">{brandName}</span>
-              <span className="block text-xs text-gray-500">{brandSubtitle}</span>
+      {/* ============ HEADER SITARUNG: top-strip marquee + menu pill teal ============ */}
+      <header className="fixed top-0 inset-x-0 z-50">
+        {/* Strip putih: emblem + judul marquee + logo kanan */}
+        <div className="relative h-[46px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+          <div className="relative mx-auto h-full max-w-[1280px] px-3">
+            <a href="/" className="absolute left-3 top-1 z-[60] block" aria-label={brandName}>
+              <img src={site.logo || `${HERO_MEDIA}/favicon.png`} alt={brandName} className="h-[64px] w-[64px] object-contain drop-shadow" />
+            </a>
+            <div className="hidden lg:block absolute left-[90px] right-[150px] top-0 h-[46px] overflow-hidden">
+              <div className="marquee-track flex items-center h-[46px] whitespace-nowrap">
+                <span className="site-title shrink-0 pr-24">{MARQUEE_TITLE}</span>
+                <span className="site-title shrink-0 pr-24" aria-hidden="true">{MARQUEE_TITLE}</span>
+              </div>
             </div>
-          </a>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            {NAV_LINKS.map((link) => (
-              <a key={link.href} href={link.href} className="hover:text-folur-700">{link.label}</a>
-            ))}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:block">
+              <img src={`${HERO_MEDIA}/lohorights.png`} alt="" className="h-9 object-contain" />
+            </div>
           </div>
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-lg hover:bg-gray-100">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </div>
+        {/* Bar menu teal translucent */}
+        <nav className="backdrop-blur border-b border-brand-500/20" style={{ background: "rgba(154,239,235,0.92)" }}>
+          <div className="mx-auto max-w-[1280px] px-4">
+            <div className="flex items-center h-[56px]">
+              <a href="/" className="lg:hidden flex items-center gap-2 pl-[64px]">
+                <span className="font-bold text-brand-800">{brandName}</span>
+              </a>
+              <ul className="hidden lg:flex items-center gap-2 mx-auto">
+                {NAV_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <a href={link.href} className="menu-pill">{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+              <a href="/jelajah-dataset" className="hidden lg:inline-flex items-center rounded-[10px] bg-accent px-3.5 py-[6px] text-[13px] font-semibold text-white shadow-[0_2px_6px_1px_rgba(0,0,0,0.33)] hover:bg-accent-600 transition">Geoportal</a>
+              <button onClick={() => setMobileOpen(true)} className="lg:hidden ml-auto p-2 rounded-lg hover:bg-white/50" aria-label="Buka menu">
+                <svg className="w-6 h-6 text-brand-800" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* ============ OFFCANVAS (mobile) ============ */}
+      <div
+        onClick={() => setMobileOpen(false)}
+        className={`fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0 invisible"}`}
+      />
+      <aside className={`fixed inset-y-0 left-0 z-[70] w-[82%] max-w-xs bg-white shadow-2xl transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex items-center justify-between h-[56px] px-5 bg-brand-700 text-white">
+          <div className="flex items-center gap-2">
+            <img src={site.logo || `${HERO_MEDIA}/favicon.png`} alt="" className="h-8 w-8 object-contain bg-white/90 rounded-full p-0.5" />
+            <span className="font-bold">{brandName}</span>
+          </div>
+          <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-white/15" aria-label="Tutup menu">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
         </div>
-        {mobileOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white px-6 pb-4 pt-2 space-y-2 text-sm font-medium text-gray-600">
-            {NAV_LINKS.map((link) => (
-              <a key={link.href} href={link.href} className="block py-1 hover:text-folur-700" onClick={() => setMobileOpen(false)}>{link.label}</a>
-            ))}
-          </div>
-        )}
-      </nav>
+        <nav className="p-4 space-y-1">
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-gray-600 hover:bg-brand-500/10 hover:text-brand-700">{link.label}</a>
+          ))}
+          <a href="/jelajah-dataset" onClick={() => setMobileOpen(false)} className="mt-3 block text-center rounded-lg bg-accent px-4 py-2.5 font-semibold text-white">Geoportal</a>
+        </nav>
+      </aside>
 
-      {/* ============ HERO CAROUSEL ============ */}
+      {/* ============ HERO CAROUSEL SITARUNG (latar banner Jembatan Ampera) ============ */}
       <header
         id="beranda-carousel"
-        className="relative pt-20 h-[92vh] min-h-[600px] overflow-hidden bg-folur-900 select-none"
+        className="relative h-[92vh] min-h-[600px] overflow-hidden bg-brand-900 text-white select-none"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        <div className={slideClass(0)}>
-          <div className="absolute inset-0 bg-gradient-to-br from-folur-900 via-folur-800 to-folur-700" />
-          <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div>
-              <p className="text-folur-200 text-sm font-semibold tracking-widest uppercase mb-4">FOLUR · {namaKab}</p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Data otoritatif<br />untuk <span className="italic font-light text-folur-200">tata kelola</span><br />bentang lahan <span className="hero-underline">berkelanjutan</span></h1>
-              <p className="text-folur-100/70 max-w-xl mb-8">{kabShort} adalah hub data kabupaten yang mengelola dokumen kebijakan dan layer spasial terkait Integrated Landscape Management. Data di sini dipanen otomatis oleh DST Nasional FOLUR.</p>
-              <div className="flex flex-wrap gap-3">
-                <a href={"/jelajah-dokumen"} className="inline-flex items-center px-6 py-3 bg-white text-folur-800 font-semibold rounded-lg hover:bg-folur-50 transition">Jelajahi Dokumen</a>
-                <a href={"/jelajah-dataset"} className="inline-flex items-center px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-lg hover:bg-white/10 transition">Dataset Spasial</a>
+        {HERO_BANNERS.map((b, i) => (
+          <div key={i} className={slideClass(i)} style={{ background: `${HERO_OVERLAY}, url('${b.bg}') center/cover` }}>
+            <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 items-center w-full">
+              <div>
+                <span className="inline-block rounded-full bg-white/15 backdrop-blur px-3 py-1 text-xs font-medium tracking-wide mb-5 ring-1 ring-white/20">{brandSubtitle}</span>
+                <h1 className="text-6xl md:text-7xl font-bold tracking-tight leading-none drop-shadow-lg">{brandName}</h1>
+                <p className="mt-4 text-xl md:text-2xl text-white/95 font-light drop-shadow">Sistem Informasi Tata Ruang<br />{brandSubtitle}</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <a href="/jelajah-dataset" className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition shadow-lg">Jelajahi Portal</a>
+                  <a href="/jelajah-dokumen" className="rounded-lg ring-1 ring-white/50 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition backdrop-blur">Dokumen RTRW</a>
+                </div>
+              </div>
+              <div className="hidden lg:flex justify-center items-end">
+                <img src={b.figure} alt="" className="max-h-[420px] object-contain drop-shadow-2xl" />
               </div>
             </div>
-            <div className="hidden lg:flex justify-center relative w-72 h-72">
-              <Image src={asset("/static/dst-district/img/folur-kakao.svg")} alt="" fill className="brightness-0 invert object-contain" />
-            </div>
           </div>
-        </div>
-        <div className={slideClass(1)}>
-          <div className="absolute inset-0 bg-gradient-to-br from-earth-700 via-earth-600 to-earth-500" />
-          <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div>
-              <p className="text-earth-100 text-sm font-semibold tracking-widest uppercase mb-4">Komoditas Strategis · FOLUR</p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6"><span className="italic font-light text-earth-100">{data.komoditas[0]?.nama || "Kakao rakyat"}</span><br />dan <span className="italic font-light text-folur-200">{data.komoditas[1]?.nama || "padi sawah"}</span><br />dalam <br />satu <span className="hero-underline">lanskap</span></h1>
-              <p className="text-earth-100/70 max-w-xl mb-8">{namaKab} mengelola dua komoditas FOLUR secara terpadu — {data.komoditas[0]?.nama || "kakao rakyat"} dan {data.komoditas[1]?.nama || "padi sawah"} berkelanjutan. DST menyediakan dataset spasial untuk memantau konversi lahan dan kinerja produksi.</p>
-              <div className="flex flex-wrap gap-3">
-                <a href="#komoditas" className="inline-flex items-center px-6 py-3 bg-white text-earth-700 font-semibold rounded-lg hover:bg-earth-50 transition">Komoditas Fokus</a>
-                <a href={"/jelajah-dataset"} className="inline-flex items-center px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-lg hover:bg-white/10 transition">Dataset Spasial</a>
-              </div>
-            </div>
-            <div className="hidden lg:flex justify-center relative w-72 h-72">
-              <Image src={asset("/static/dst-district/img/folur-padi.svg")} alt="" fill className="brightness-0 invert object-contain" />
-            </div>
-          </div>
-        </div>
-        <div className={slideClass(2)}>
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-700 via-sky-600 to-sky-500" />
-          <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div>
-              <p className="text-sky-100 text-sm font-semibold tracking-widest uppercase mb-4">Repositori Kebijakan · FOLUR</p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Perda, Perbup,<br />dan <span className="italic font-light text-sky-100">kebijakan</span><br />dalam <br />satu <span className="hero-underline">direktori</span></h1>
-              <p className="text-sky-100/70 max-w-xl mb-8">Seluruh dokumen kebijakan {namaKab} yang berkaitan dengan tata ruang, komoditas, dan lingkungan hidup tersedia dalam satu direktori terstruktur dengan metadata SNI ISO 19115.</p>
-              <div className="flex flex-wrap gap-3">
-                <a href={"/jelajah-dokumen"} className="inline-flex items-center px-6 py-3 bg-white text-sky-700 font-semibold rounded-lg hover:bg-sky-50 transition">Jelajah Dokumen</a>
-                <a href={"/jelajah-dataset"} className="inline-flex items-center px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-lg hover:bg-white/10 transition">Dataset Spasial</a>
-              </div>
-            </div>
-            <div className="hidden lg:flex justify-center relative w-72 h-72">
-              <Image src={asset("/static/dst-district/img/folur-kopi.svg")} alt="" fill className="brightness-0 invert object-contain" />
-            </div>
-          </div>
-        </div>
-        <div className={slideClass(3)}>
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700" />
-          <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div>
-              <p className="text-gray-300 text-sm font-semibold tracking-widest uppercase mb-4">Transparansi · Open Data · Satu Data Indonesia</p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Data publik,<br /><span className="italic font-light text-gray-300">terbuka</span> dan<br />dapat <br /><span className="hero-underline">diverifikasi</span></h1>
-              <p className="text-gray-400 max-w-xl mb-8">DST {namaKab} dibangun di atas prinsip Satu Data Indonesia (SDI) dan Kebijakan Satu Peta (KSP). Semua data dapat diakses, diunduh, dan digunakan kembali oleh masyarakat dan stakeholder.</p>
-              <div className="flex flex-wrap gap-3">
-                <a href="#tentang-program" className="inline-flex items-center px-6 py-3 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-50 transition">Tentang Program</a>
-                <a href={"/jelajah-dataset"} className="inline-flex items-center px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-lg hover:bg-white/10 transition">Dataset Spasial</a>
-              </div>
-            </div>
-            <div className="hidden lg:flex justify-center relative w-72 h-72">
-              <Image src={asset("/static/dst-district/img/folur-sawit.svg")} alt="" fill className="brightness-0 invert object-contain" />
-            </div>
-          </div>
-        </div>
+        ))}
 
-        {/* Kontrol carousel: tombol prev/next */}
-        <button onClick={prevSlide} aria-label="Slide sebelumnya" className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 hidden md:grid place-items-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white text-white hover:text-folur-700 backdrop-blur ring-1 ring-white/30 shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
+        {/* Kontrol prev/next — di sisi kiri & kanan */}
+        <button onClick={prevSlide} aria-label="Slide sebelumnya" className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/30 text-white backdrop-blur ring-1 ring-white/30 shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
           <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <button onClick={nextSlide} aria-label="Slide berikutnya" className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 hidden md:grid place-items-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white text-white hover:text-folur-700 backdrop-blur ring-1 ring-white/30 shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
+        <button onClick={nextSlide} aria-label="Slide berikutnya" className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/30 text-white backdrop-blur ring-1 ring-white/30 shadow-lg hover:scale-110 active:scale-95 transition-all duration-200">
           <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
-      </header>
 
-
-
-      {/* ============ HERO ============ */}
-      <section id="beranda" className="relative pt-30 h-[92vh] min-h-[600px] overflow-hidden bg-folur-900 select-none">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-folur-900 via-folur-800 to-folur-700" />
-          <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div>
-              <p className="text-folur-200 text-sm font-semibold tracking-widest uppercase mb-4">FOLUR · {namaKab}</p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Data otoritatif<br />untuk <span className="italic font-light text-folur-200">tata kelola</span><br />bentang lahan <span className="hero-underline">berkelanjutan</span></h1>
-              <p className="text-folur-100/70 max-w-xl mb-8">{kabShort} adalah hub data kabupaten yang mengelola dokumen kebijakan dan layer spasial terkait Integrated Landscape Management. Data di sini dipanen otomatis oleh DST Nasional FOLUR.</p>
-            </div>
-            <div className="hidden lg:flex justify-center relative w-72 h-72">
-              <Image src={asset("/static/dst-district/img/folur-kakao.svg")} alt="" fill className="brightness-0 invert object-contain" />
-            </div>
-          </div>
+        {/* Indikator dot */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {HERO_BANNERS.map((_, i) => (
+            <button key={i} onClick={() => setActiveSlide(i)} aria-label={`Slide ${i + 1}`} className={`h-2.5 rounded-full transition-all ${activeSlide === i ? "w-6 bg-white" : "w-2.5 bg-white/50 hover:bg-white/80"}`} />
+          ))}
         </div>
-      </section>
+      </header>
 
 
 

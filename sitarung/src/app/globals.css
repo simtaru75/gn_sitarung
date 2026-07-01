@@ -49,6 +49,23 @@
   --color-ds-ochre-600: var(--ochre-600);
   --color-ds-cocoa: var(--cocoa);
   --color-ds-sage: var(--sage);
+
+  /* Brand SITARUNG — palet teal TETAP (tidak ikut tema kabupaten). Dipakai
+     untuk hero + menu yang diselaraskan dengan prototipe index-tailwind.html. */
+  --color-brand-50: #f0fbfa;
+  --color-brand-100: #d4f3f0;
+  --color-brand-200: #9edbd8;
+  --color-brand-300: #72c3c0;
+  --color-brand-400: #33ccc4;
+  --color-brand-500: #55bfba;
+  --color-brand-600: #0db390;
+  --color-brand-700: #0a8f74;
+  --color-brand-800: #0a6f5b;
+  --color-brand-900: #0b4b3f;
+  --color-accent: #c32130;
+  --color-accent-400: #d9534f;
+  --color-accent-600: #a81b28;
+
   /* var(--font-dm-sans) = DM Sans asli yang dimuat next/font (nama ter-hash);
      literal 'DM Sans' hanya fallback bila variable belum ter-set. */
   --font-sans: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
@@ -220,3 +237,38 @@ body {
   background-repeat: no-repeat;
   background-position: 0 88%;
 }
+
+/* ── SITARUNG: top-strip marquee + menu pill (selaras index-tailwind.html) ── */
+.site-title {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 5px;
+  word-spacing: 5px;
+  color: #555;
+  line-height: 25.7px;
+  white-space: nowrap;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 22s linear infinite; will-change: transform; }
+.marquee-track:hover { animation-play-state: paused; }
+
+.menu-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #72c3c0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  border-radius: 10px;
+  padding: 6px 14px;
+  box-shadow: 0 2px 6px 1px rgba(0, 0, 0, 0.33);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+.menu-pill:hover { background: #5cbdb8; box-shadow: 0 4px 12px 2px rgba(0, 0, 0, 0.30); transform: translateY(-1px); }
+.menu-pill.active { background: #0db390; }
