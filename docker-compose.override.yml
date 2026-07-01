@@ -29,12 +29,12 @@ services:
     healthcheck:
       start_period: 60s
 
-  # SITARUNG — mode DEV: hot-reload dengan volume mount (tanpa rebuild tiap edit)
+  # SITARUNG — mode DEV: serve static files ADMINSITARUNG via browser-sync
   sitarung:
     build:
       target: deps
     volumes:
-      - ./sitarung:/app
+      - ./ADMINSITARUNG:/app
     environment:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
