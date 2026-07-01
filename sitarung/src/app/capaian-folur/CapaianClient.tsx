@@ -22,7 +22,7 @@ export default function CapaianClient({
   // yang bisa basi/ter-cache. Deskripsi merujuk cakupan terpilih (Pengaturan).
   // Tanpa prefiks (label "Kabupaten"/"KABUPATEN" sudah ditambah di markup) agar
   // tak dobel saat sumbernya sudah ber-prefiks.
-  const kabRaw = data?.kabupaten?.namaKab || site?.namaKabupaten || "Luwu";
+  const kabRaw = data?.kabupaten?.namaKab || site?.namaKabupaten || "Sumatera Selatan";
   const isKota = /^Kota\s+/i.test(kabRaw);
   const kabName = kabRaw.replace(/^(Kabupaten|Kota)\s+/i, "");
   const kabPrefix = isKota ? "Kota" : "Kabupaten";

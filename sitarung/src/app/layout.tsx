@@ -27,7 +27,7 @@ export default async function RootLayout({
   const f = ident.fonts;
 
   return (
-    <html lang="id" data-theme={ident.theme || "luwu"}>
+    <html lang="id" data-theme={ident.theme || "simtaru"}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

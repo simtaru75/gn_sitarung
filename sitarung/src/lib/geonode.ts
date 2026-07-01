@@ -368,7 +368,7 @@ export async function getSiteIdentity(): Promise<SiteIdentity> {
     siteName: String(d.site_name ?? "") || "DST",
     siteDomain: String(d.site_domain ?? ""),
     logo: d.logo ? publicUrl(String(d.logo)) : DEFAULT_SITE_LOGO,
-    theme: String(d.theme ?? "") || "luwu",
+    theme: String(d.theme ?? "") || "simtaru",
     webgisReferenceMapId: Number(d.webgis_reference_map_id ?? 1),
     fonts: {
       serif: String((d.fonts as Record<string, unknown> | undefined)?.serif ?? "Fraunces"),

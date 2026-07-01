@@ -6,17 +6,17 @@ register = template.Library()
 
 @register.simple_tag
 def dst_active_theme():
-    """Slug tema CMS aktif (luwu/pesisir/pegunungan/vulkanik/rawa).
+    """Slug tema CMS aktif (simtaru/pesisir/pegunungan/vulkanik/rawa).
 
     Dipakai pada atribut ``data-theme`` di <body> agar variabel warna tema
-    berlaku global (landing, admin, viewer). Default 'luwu'.
+    berlaku global (landing, admin, viewer). Default 'simtaru'.
     """
     try:
         from geonode_project.models import SiteIdentity
 
-        return SiteIdentity.load().theme or "luwu"
+        return SiteIdentity.load().theme or "simtaru"
     except Exception:
-        return "luwu"
+        return "simtaru"
 
 
 @register.simple_tag
@@ -43,7 +43,7 @@ def _site_from_db():
 
 
 @register.simple_tag
-def dst_site_name(fallback="DST Kabupaten Luwu"):
+def dst_site_name(fallback="DST Kabupaten Simtaru"):
     """Return the current Django Site.name, or fallback when unavailable."""
     try:
         name = (_site_from_db().name or "").strip()

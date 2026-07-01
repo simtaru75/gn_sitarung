@@ -7251,13 +7251,13 @@ class TemaView(LoginRequiredMixin, DstAdminPageView):
 
         ctx = super().get_context_data(**kwargs)
         identity = SiteIdentity.load()
-        ctx["active_theme"] = identity.theme or "luwu"
+        ctx["active_theme"] = identity.theme or "simtaru"
         ctx["theme_choices"] = SiteIdentity.THEME_CHOICES
         ctx["font_option"] = identity.font_option or 1
         # Peta tema→3 opsi font untuk pratinjau dinamis di form (JS).
         ctx["font_combos_json"] = _json.dumps(SiteIdentity.FONT_COMBOS)
         ctx["active_font_combos"] = SiteIdentity.FONT_COMBOS.get(
-            identity.theme or "luwu", SiteIdentity.FONT_COMBOS["luwu"]
+            identity.theme or "simtaru", SiteIdentity.FONT_COMBOS["simtaru"]
         )
         return ctx
 

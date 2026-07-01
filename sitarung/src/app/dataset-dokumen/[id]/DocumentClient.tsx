@@ -39,7 +39,7 @@ export default function DocumentClient({
           </div>
           <div>
             <div className="text-[9px] tracking-[0.16em] uppercase" style={{ fontFamily: "var(--font-sans)", color: "var(--ochre)" }}>
-              Dokumen Kebijakan · {site?.namaKabupaten ?? "Luwu"}
+              Dokumen Kebijakan · {site?.namaKabupaten ?? "Sumatera Selatan"}
             </div>
             <div
               className="text-[17px] font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis"

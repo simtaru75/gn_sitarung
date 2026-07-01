@@ -34,7 +34,7 @@ export default function DatasetSpasialClient({
   const [basemap, setBasemap] = useState("osm");
   const [opacity, setOpacity] = useState(100);
 
-  const kabName = site?.namaKabupaten ?? "Luwu";
+  const kabName = site?.namaKabupaten ?? "Sumatera Selatan";
   const hasLayer = Boolean(ds.typename);
 
   const bbox = useMemo(() => ds.bbox || ds.extent?.coords || null, [ds]);

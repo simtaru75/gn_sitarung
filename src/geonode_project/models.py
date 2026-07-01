@@ -24,7 +24,7 @@ class SiteIdentity(models.Model):
     }
 
     THEME_CHOICES = [
-        ("luwu", "Luwu — Editorial Geospatial"),
+        ("simtaru", "Simtaru — Sumatera Selatan"),
         ("pesisir", "Pesisir — Tropical Coastal"),
         ("pegunungan", "Pegunungan — Highland Stoic"),
         ("vulkanik", "Vulkanik — Ash & Ember"),
@@ -38,7 +38,7 @@ class SiteIdentity(models.Model):
     # Google Fonts (dipakai next/font/google di frontend). Indeks opsi disimpan di
     # ``font_option`` (1..3) & berlaku untuk tema aktif.
     FONT_COMBOS = {
-        "luwu": [
+        "simtaru": [
             {"label": "Modern Editorial", "serif": "Fraunces", "sans": "Geist", "mono": "Geist Mono"},
             {"label": "Klasik Jurnalistik", "serif": "Merriweather", "sans": "Source Sans 3", "mono": "Source Code Pro"},
             {"label": "Humanis & Agraris", "serif": "Lora", "sans": "Fira Sans", "mono": "Fira Mono"},
@@ -88,7 +88,7 @@ class SiteIdentity(models.Model):
         "Zona waktu", max_length=8, choices=TIMEZONE_CHOICES, default="WIB"
     )
     theme = models.CharField(
-        "Tema CMS", max_length=20, choices=THEME_CHOICES, default="luwu"
+        "Tema CMS", max_length=20, choices=THEME_CHOICES, default="simtaru"
     )
     font_option = models.PositiveSmallIntegerField(
         "Kombinasi font", choices=FONT_OPTION_CHOICES, default=1,
@@ -137,7 +137,7 @@ class SiteIdentity(models.Model):
 
     def font_combo(self):
         """Kombinasi font {label, serif, sans, mono} untuk (theme, font_option) aktif."""
-        opts = self.FONT_COMBOS.get(self.theme or "luwu") or self.FONT_COMBOS["luwu"]
+        opts = self.FONT_COMBOS.get(self.theme or "simtaru") or self.FONT_COMBOS["simtaru"]
         idx = (self.font_option or 1) - 1
         if idx < 0 or idx >= len(opts):
             idx = 0
