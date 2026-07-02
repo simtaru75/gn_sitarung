@@ -193,13 +193,13 @@ services:
       # Base publik untuk link & gambar yang dimuat browser
       - NEXT_PUBLIC_GEONODE_URL=http://localhost
     ports:
-      - "3000:3000"
+      - "3040:3000"
     restart: unless-stopped
     depends_on:
       django:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3040/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
       interval: 30s
       timeout: 5s
       retries: 3
