@@ -34,6 +34,8 @@ const nextConfig: NextConfig = {
       // CORS. GeoNode menegakkan permission download_resourcebase. Trailing slash
       // di-hardcode (.../file/) supaya tidak kena APPEND_SLASH 301-loop Django.
       { source: "/dokumen/:pk/file/", destination: `${GEONODE_INTERNAL}/dokumen/:pk/file/` },
+      // Proxy uploaded media (gambar/dokumen GeoNode) — hindari http://localhost
+      { source: "/uploaded/:path*", destination: `${GEONODE_INTERNAL}/uploaded/:path*` },
     ];
   },
 };

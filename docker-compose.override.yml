@@ -22,7 +22,7 @@ services:
     environment:
       - HOSTNAME=0.0.0.0
       - GEONODE_INTERNAL_URL=http://django:8000
-      - NEXT_PUBLIC_GEONODE_URL=http://localhost
+      - NEXT_PUBLIC_GEONODE_URL=
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     # next dev butuh sedikit waktu kompilasi saat request pertama
@@ -49,7 +49,7 @@ services:
     environment:
       - HOSTNAME=0.0.0.0
       - GEONODE_INTERNAL_URL=http://django:8000
-      - NEXT_PUBLIC_GEONODE_URL=http://localhost
+      - NEXT_PUBLIC_GEONODE_URL=
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     healthcheck:

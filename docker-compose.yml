@@ -184,14 +184,14 @@ services:
       args:
         # NEXT_PUBLIC_* di-inline saat build untuk referensi sisi-client (jaring
         # pengaman); base utama tetap dibaca runtime di Server Component.
-        - NEXT_PUBLIC_GEONODE_URL=http://localhost
+        - NEXT_PUBLIC_GEONODE_URL=
     container_name: frontend4${COMPOSE_PROJECT_NAME}
     environment:
       - HOSTNAME=0.0.0.0
       # SSR fetch internal (dalam jaringan docker, tanpa CORS)
       - GEONODE_INTERNAL_URL=http://django:8000
       # Base publik untuk link & gambar yang dimuat browser
-      - NEXT_PUBLIC_GEONODE_URL=http://localhost
+      - NEXT_PUBLIC_GEONODE_URL=
     ports:
       - "3040:3000"
     restart: unless-stopped
