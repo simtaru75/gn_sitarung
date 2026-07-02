@@ -77,14 +77,14 @@
    selaras dengan :root template GeoNode dst-district. Sumber tunggal warna &
    tipografi — komponen merujuk var(--token) tanpa nilai hardcode. */
 :root {
-  --forest: #0A4D42; --forest-700: #1D6B5E; --forest-500: #358A7B;
-  --cream: #F6F2E6; --cream-200: #EAE4D4; --cream-300: #DCD4C0; --paper: #F3F3F4;
-  --ink: #1A1A1A; --ink-600: #4A4A4A; --ink-400: #7A7A7A;
-  --ochre: #B6E9E5; --ochre-600: #8ED4CE; --ochre-100: #D8F4F2;
-  --sage: #808282; --cocoa: #57B4AD;
-  --line: rgba(10, 77, 66, 0.1); --line-strong: rgba(10, 77, 66, 0.2);
-  --cream-a25: rgba(246, 242, 230, 0.25); --cream-a10: rgba(246, 242, 230, 0.1);
-  --danger: #8B3A2A;
+  --forest: #0b4b3f; --forest-700: #0a6f5b; --forest-500: #0a8f74;
+  --cream: #f0fbfa; --cream-200: #d4f3f0; --cream-300: #ade4df; --paper: #f8fafb;
+  --ink: #0f172a; --ink-600: #475569; --ink-400: #94a3b8;
+  --ochre: #0db390; --ochre-600: #0a8f74; --ochre-100: #d4f3f0;
+  --sage: #64748b; --cocoa: #55bfba;
+  --line: rgba(11, 75, 63, 0.1); --line-strong: rgba(11, 75, 63, 0.2);
+  --cream-a25: rgba(240, 251, 250, 0.25); --cream-a10: rgba(240, 251, 250, 0.1);
+  --danger: #c32130;
 
   --serif: 'Fraunces', 'Times New Roman', serif;
   --sans: 'Geist', system-ui, sans-serif;
