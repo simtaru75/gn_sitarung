@@ -12,7 +12,7 @@ NEW_TAUTAN = {
     "Data Pendidikan dan Kebudayaan": "/jelajah-dokumen/?kategori=educationCulture",
     "Data Pangan":                    "/jelajah-dokumen/?kategori=pangan",
     "Data Sosial":                    "/jelajah-dokumen/?kategori=society",
-    "Data Kecamatan Kab Luwu":        "/jelajah-dokumen/?kategori=kecamatan",
+    "Data Kecamatan":                 "/jelajah-dokumen/?kategori=kecamatan",
     "Data Pariwisata":                "/jelajah-dokumen/?kategori=pariwisata",
 }
 

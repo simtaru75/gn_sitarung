@@ -1,6 +1,0 @@
-*.zip
-*.py
-separate.py
-clean_filenames.py
-dedup_images.py
-remove_google_fonts.py

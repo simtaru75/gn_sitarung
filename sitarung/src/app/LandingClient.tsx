@@ -301,7 +301,7 @@ function accordionItems(namaKab: string, kabShort: string) {
   {
     id: "05",
     label: "Kontak",
-    title: <>Informasi <span className="italic font-normal text-gray-600">Kontak</span></>,
+    title: <>Informasi <span className="italic font-normal text-gray-600">Kontak & Pengaduan</span></>,
     content: (
       <>
         <p>Untuk menghubungi admin SITARUNG atau instansi terkait, pengguna dapat menghubungi <strong className="text-gray-900">Dinas Pekerjaan Umum Bina Marga dan Tata Ruang</strong> Provinsi Sumatera Selatan.</p>
@@ -570,7 +570,7 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
       </div>
 
       {/* ============ BAR MENU TEAL STICKY ============ */}
-      <nav className="sticky top-0 z-40 border-b border-brand-500/20 backdrop-blur" style={{ background: "rgba(154,239,235,0.75)" }}>
+      <nav className="sticky top-0 z-40 border-b border-brand-500/20 backdrop-blur bg-earth-500/50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-[60px] items-center justify-between">
             <a href="/" className="flex items-center gap-2 lg:hidden">
@@ -612,26 +612,6 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
           ))}
         </nav>
       </aside>
-
-      {/* ============ STAT STRIP ============ */}
-      <section id="statistik" className="relative z-20 bg-white py-8 sm:py-10">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { value: String(data.documentsTotal), label: "Dokumen Kebijakan", sub: "Perda, Perbup, RPJMD, Renstra", color: "text-folur-700" },
-              { value: String(data.datasetsTotal), label: "Layer Spasial", sub: "Vektor & raster · ter-publish", color: "text-sky-600" },
-              { value: String(data.screeningTotal), label: "Modul Akurat", sub: "Realtime AoI · Audit Log", color: "text-earth-600" },
-              { value: String(data.komoditas.length), label: "Berita Terkini", sub: "Fokus Permasalahan Taru", color: "text-folur-600" },
-            ].map((stat, i) => (
-              <div key={i} className="stat-card bg-white rounded-2xl shadow-lg p-6 text-center">
-                <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
-                <p className="text-sm font-semibold text-gray-700 mt-1">{stat.label}</p>
-                <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ============ MATERI MUATAN RTRW ============ */}
       <section id="materi-rtrw" className="mx-auto max-w-7xl px-6 py-20">
@@ -713,6 +693,27 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
               </div>
             </a>
           ))}
+        </div>
+      </section>
+
+      {/* ============ STAT STRIP ============ */}
+      <section id="statistik" className="relative z-20 py-10 sm:py-12 bg-gradient-to-b from-folur-900 to-folur-800">
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="text-sm font-semibold text-folur-200 tracking-widest uppercase mb-6 text-center">Data Makro · {namaKab}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { value: String(data.documentsTotal), label: "Dokumen Kebijakan", sub: "Perda, Perbup, RPJMD, Renstra", color: "text-white" },
+              { value: String(data.datasetsTotal), label: "Layer Spasial", sub: "Vektor & raster · ter-publish", color: "text-sky-100" },
+              { value: String(data.screeningTotal), label: "Modul Akurat", sub: "Realtime AoI · Audit Log", color: "text-amber-100" },
+              { value: String(data.komoditas.length), label: "Berita Terkini", sub: "Fokus Permasalahan Taru", color: "text-emerald-100" },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/10 text-center flex flex-col items-center hover:bg-white/15 transition">
+                <p className={`text-4xl font-extrabold ${stat.color}`}>{stat.value}</p>
+                <p className="text-sm font-semibold text-folur-100 mt-2">{stat.label}</p>
+                <p className="text-xs text-folur-200/60 mt-1">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -933,7 +934,7 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
           </div>
           <div className="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
             {KKPR_KABKOTA.map((item) => (
-              <a key={item.label} href="/webgis-screening" className="group rounded-2xl bg-gray-50 p-5 text-center ring-1 ring-brand-500/10 transition hover:-translate-y-1 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
+              <a key={item.label} href="" className="group rounded-2xl bg-gray-50 p-5 text-center ring-1 ring-brand-500/10 transition hover:-translate-y-1 hover:shadow-[0_20px_45px_-18px_rgba(11,75,63,0.45)]">
                 <img src={item.image} alt={item.label} className="mx-auto h-28 object-contain transition group-hover:scale-110" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                 <p className="mt-3 text-sm font-semibold text-gray-800">{item.label}</p>
               </a>
@@ -1271,7 +1272,6 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
                 <li><a href={"/jelajah-dataset"} className="hover:text-white">Eksplorasi Dataset</a></li>
                 <li><a href={"/webgis-screening/"} className="hover:text-white">Screening Tools</a></li>
                 <li><a href={"/jelajah-endpoint"} className="hover:text-white">API & Endpoint</a></li>
-                <li><a href={"/pengaduan"} className="hover:text-white">Pengaduan</a></li>
               </ul>
             </div>
             <div>
@@ -1281,6 +1281,7 @@ export default function LandingClient({ data, site, publicBase }: { data: Landin
                 <li>Kebijakan Satu Peta (KSP)</li>
                 <li>SNI ISO 19115</li>
                 <li>Lisensi CC BY 4.0</li>
+                <li><a href={"/pengaduan"} className="hover:text-white">Pengaduan</a></li>
               </ul>
             </div>
           </div>

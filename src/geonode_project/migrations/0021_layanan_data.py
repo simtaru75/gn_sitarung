@@ -32,7 +32,7 @@ SEED = [
     ("Data Pendidikan dan Kebudayaan","layanan-6.png",  _DETAIL + "educationCulture",         6),
     ("Data Pangan",                   "layanan-7.png",  _DETAIL + "pangan",                   7),
     ("Data Sosial",                   "layanan-8.png",  _DETAIL + "society",                  8),
-    ("Data Kecamatan Kab Luwu",       "layanan-9.png",  _DETAIL + "kecamatan",                9),
+    ("Data Kecamatan",                "layanan-9.png",  _DETAIL + "kecamatan",                9),
     ("Data Pariwisata",               "layanan-10.png", _DETAIL + "pariwisata",               10),
 ]
 

@@ -631,7 +631,7 @@
             <div class="field">
               <label class="field-label">Deskripsi</label>
               <input class="field-input" type="text" name="deskripsi" maxlength="255" value="{{ indikator_edit.deskripsi|default:'' }}" {% if not request.user.is_superuser %}readonly{% endif %}>
-              <div class="field-help">Keterangan singkat di bawah kartu. Mis. "Data inflasi Kab Luwu tahun 2022".</div>
+              <div class="field-help">Keterangan singkat di bawah kartu. Mis. "Data inflasi".</div>
             </div>
             <div class="field-row">
               <div class="field">

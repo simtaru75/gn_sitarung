@@ -20,13 +20,13 @@ NEW_ORDER = {
 # Indikator awal (seed) — bersumber dari situs Badik Luwu (konteks Kab. Luwu).
 # Ikon = berkas PNG permanen di static/dst-district/img/indikator/.
 SEED = [
-    ("Indeks Pembangunan Manusia",   "89%",         "Indeks Pembangunan Manusia Kab Luwu",      "indikator-strategis-1.png", 1),
-    ("Pertumbuhan Ekonomi",          "78%",         "Data pertumbuhan ekonomi Kab Luwu 2023",   "indikator-strategis-2.png", 2),
-    ("PDRB Per Kapita",              "90%",         "PDRB per kapita Kab Luwu 2023",            "indikator-strategis-3.png", 3),
-    ("Tingkat Kemiskinan",           "12%",         "Indeks kemiskinan Kab Luwu",               "indikator-strategis-4.png", 4),
-    ("Tingkat Pengangguran Terbuka", "11,5 persen", "Tingkat pengangguran terbuka Kab Luwu",    "indikator-strategis-5.png", 5),
-    ("Gini Ratio",                   "0,364",       "Gini ratio tahun 2022",                    "indikator-strategis-6.png", 6),
-    ("Inflasi",                      "5,13%",        "Data inflasi Kab Luwu tahun 2022",         "indikator-strategis-7.png", 7),
+    ("Indeks Pembangunan Manusia",   "89%",         "Indeks Pembangunan Manusia Provinsi Sumsel",      "indikator-strategis-1.png", 1),
+    ("Pertumbuhan Ekonomi",          "78%",         "Data pertumbuhan ekonomi Provinsi Sumsel",   "indikator-strategis-2.png", 2),
+    ("PDRB Per Kapita",              "90%",         "PDRB per kapita Provinsi Sumsel",            "indikator-strategis-3.png", 3),
+    ("Tingkat Kemiskinan",           "12%",         "Indeks kemiskinan Provinsi Sumsel",               "indikator-strategis-4.png", 4),
+    ("Tingkat Pengangguran Terbuka", "11,5 persen", "Tingkat pengangguran terbuka Provinsi Sumsel",    "indikator-strategis-5.png", 5),
+    ("Gini Ratio",                   "0,364",       "Gini ratio Provinsi Sumsel",                    "indikator-strategis-6.png", 6),
+    ("Inflasi",                      "5,13%",        "Data inflasi Provinsi Sumsel",         "indikator-strategis-7.png", 7),
 ]
 
 
